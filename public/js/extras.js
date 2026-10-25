@@ -51,7 +51,7 @@ function draw(){
   try{cx.filter=getComputedStyle(spr).filter}catch{}
   cx.drawImage(spr,44,GY-48-s.y,36,48);cx.filter='none';
   cx.font='12px "DM Mono",monospace';cx.fillStyle='#8c8279';cx.textAlign='right';cx.fillText(String(Math.floor(s.sc)).padStart(5,'0'),cv.width-14,24);
-  if(s.dead){cx.textAlign='center';cx.fillStyle='#f0e9e1';cx.font='22px "Instrument Serif",serif';cx.fillText('you oxidized',cv.width/2,86);
+  if(s.dead){cx.textAlign='center';cx.fillStyle='#f0e9e1';cx.font='22px "Pixelify Sans",sans-serif';cx.fillText('you oxidized',cv.width/2,86);
     cx.font='12px "DM Mono",monospace';cx.fillStyle='#8c8279';cx.fillText('tap or space to retry',cv.width/2,108)}
 }
 function loop(){if(!run)return;if(!s.dead)step();draw();raf=requestAnimationFrame(loop)}

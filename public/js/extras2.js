@@ -1,4 +1,4 @@
-/* notes, wallpapers, command bar, golem pals */
+/* notes + wallpapers */
 /* notes */
 const nt=$('#nt'),nta=$('#nta');
 $('#nx').onclick=()=>nt.close();
@@ -35,70 +35,7 @@ function drawWall(){
 new MutationObserver(drawWall).observe(document.documentElement,{attributes:true,attributeFilter:['data-stage']});
 drawWall();
 
-/* golem pals */
-const palsEl=$('#pals');let palT=[];
-function spawnPals(n){
-  palsEl.textContent='';palT.forEach(clearTimeout);palT=[];
-  for(let i=0;i<n;i++){
-    const im=new Image();im.src=$('#golem').src;im.className='pal';im.alt='';palsEl.append(im);
-    let x=60+Math.random()*Math.max(60,innerWidth-120);im.style.left=x+'px';
-    const loop=()=>{
-      const nx=Math.max(8,Math.min(innerWidth-32,x+Math.random()*600-300)),d=Math.abs(nx-x);
-      if(d<30)return void palT.push(setTimeout(loop,1500));
-      im.style.setProperty('--f',nx<x?-1:1);im.style.transitionDuration=d/40+'s';im.classList.add('walk');im.style.left=nx+'px';x=nx;
-      palT.push(setTimeout(()=>{im.classList.remove('walk');palT.push(setTimeout(loop,1000+Math.random()*3500))},d/40*1000));
-    };
-    palT.push(setTimeout(loop,i*900+500));
-    im.onclick=()=>{im.classList.remove('hop','walk');void im.offsetWidth;im.classList.add('hop');
-      toast(['clink','tink tink','*copper noises*','still shiny','oxidizing… slowly'][Math.random()*5|0])};
-    im.onanimationend=e=>{if(e.animationName==='phop')im.classList.remove('hop')};
-  }
-}
-const setPals=on=>{store.set('pals',on);spawnPals(on?3:0)};
-spawnPals(store.get('pals',true)?3:0);
-
-/* settings rows for the above */
-function syncMore(){
-  document.querySelectorAll('#s-wall button').forEach(b=>b.classList.toggle('on',b.dataset.v===store.get('wall','none')));
-  document.querySelectorAll('#s-pals button').forEach(b=>b.classList.toggle('on',b.dataset.v===(store.get('pals',true)?'1':'0')));
-}
+/* settings row */
+function syncMore(){document.querySelectorAll('#s-wall button').forEach(b=>b.classList.toggle('on',b.dataset.v===store.get('wall','none')))}
 $('#open-set').addEventListener('click',syncMore);
 $('#s-wall').onclick=e=>{const b=e.target.closest('button');if(b){store.set('wall',b.dataset.v);drawWall();syncMore()}};
-$('#s-pals').onclick=e=>{const b=e.target.closest('button');if(b){setPals(b.dataset.v==='1');syncMore()}};
-
-/* command bar (ctrl/cmd + K) */
-const cm=$('#cmd'),ci=$('#ci'),cl=$('#cl');let shown=[],sel=0;
-const A=(label,hint,fn)=>({label,hint,fn});
-function allCmds(){
-  const c=[A('Go home','',goHome),A('Play Golem Hop','games',()=>$('#open-games').click()),A('Open notes','',()=>$('#open-notes').click()),A('Open settings','',()=>$('#open-set').click())];
-  ['lite','scramjet','uv','direct'].forEach(v=>c.push(A('Engine: '+v,'engine',()=>{store.set('engine',v);$('#eng').value=v;toast('engine · '+v)})));
-  Object.keys(SE).forEach(v=>c.push(A('Search with '+v,'search',()=>{store.set('search',v);toast('search · '+v)})));
-  ['none','night','cave','desert'].forEach(v=>c.push(A('Wallpaper: '+v,'look',()=>{store.set('wall',v);drawWall()})));
-  [['auto',null],['fresh',0],['exposed',1],['weathered',2],['oxidized',3]].forEach(([n,v])=>c.push(A('Copper: '+n,'look',()=>{store.set('wax',v);paint()})));
-  c.push(A('Golem pals on','look',()=>setPals(true)),A('Golem pals off','look',()=>setPals(false)));
-  links.forEach(l=>c.push(A('Open '+l.n,host(l.u),()=>newTab(l.u))));
-  tabs.forEach((t,i)=>c.push(A('Tab: '+t.title,'switch',()=>select(i))));
-  return c;
-}
-function renderCmd(){
-  const v=ci.value.trim(),words=v.toLowerCase().split(/\s+/).filter(Boolean);
-  shown=allCmds().filter(c=>words.every(w=>c.label.toLowerCase().includes(w))).slice(0,8);
-  if(v){const u=normalize(v);shown.unshift(u?A('Open '+u,'link',()=>newTab(u)):A('Search “'+v+'”',SE[store.get('search','ddg')]?store.get('search','ddg'):'ddg',()=>newTab(toUrl(v))))}
-  sel=Math.min(sel,shown.length-1);cl.textContent='';
-  shown.forEach((c,i)=>{const d=document.createElement('div');d.className='ci'+(i===sel?' sel':'');
-    const s=document.createElement('span');s.textContent=c.label;const h=document.createElement('small');h.textContent=c.hint;
-    d.append(s,h);d.onclick=()=>runCmd(i);cl.append(d)});
-}
-function runCmd(i){const c=shown[i];if(!c)return;closeCmd();c.fn()}
-function openCmd(){cm.classList.add('on');ci.value='';sel=0;renderCmd();ci.focus()}
-function closeCmd(){cm.classList.remove('on');ci.blur()}
-$('#open-cmd').onclick=openCmd;
-cm.addEventListener('pointerdown',e=>{if(e.target===cm)closeCmd()});
-ci.addEventListener('input',()=>{sel=0;renderCmd()});
-ci.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){e.stopPropagation();closeCmd()}
-  else if(e.key==='ArrowDown'){e.preventDefault();sel=(sel+1)%Math.max(1,shown.length);renderCmd()}
-  else if(e.key==='ArrowUp'){e.preventDefault();sel=(sel-1+shown.length)%Math.max(1,shown.length);renderCmd()}
-  else if(e.key==='Enter'){e.preventDefault();runCmd(sel)}
-});
-addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();cm.classList.contains('on')?closeCmd():openCmd()}});

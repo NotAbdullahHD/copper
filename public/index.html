@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Copper</title>
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAABACAYAAABcIPRGAAACi0lEQVR4nO1aPWsVQRTdj1mD+TIKFq/SIgY/OokIQYJobBTS2AVtJIHYRlBsLOzyD8Qilf4AMSatWKidjaApgs0ziahE39u3ydt9O2N9zoMdHi5cBuZ0d2b2zpy9987cO7thUDOePbljqvqXn74I65wvqlOZBDwBaai6FV5sjNetshLOW8ATkEbtMfDh63bdKivhvAU8AWlY85LPa/chtxlLMGyyVhvkJCSVJBalBjmi/la3B/KllZeVa3TeAp6ANKznwIhCjkcVuuRO8yc+YNDHkygGOS9LkIcU91eWE31w3gKegDSsMdD88g3kGF08mFndgKB4OHcBnHjh8mkYP726CeMf3cDxt6dP2ZYEcN4CnoA0rDGgC97X8Rx4cP0c+PDZxjHoLzTu6yvXzmNDLwfx/VbTtiSA8xbwBKRhjQFO7xPKXRZnp0DuFpjrdCm3uXdlEuSP5PP7hxgTNjhvAU9AGuHbxzfBSYcT5KRo3x8fxbtPbUnfueY1VCRrjedMO21hf4ATZAXKzlvAE5CGSn+l0KApBjiXKSZwn4/IyY0xJOOEmhsI7b8ZLjBG/VlO90qV2hyAJyANRSVuQFeXQWiq920eH1h8/tP2Lg6n/jMnj4Mc0Tvm6Zy3gCcgDZUeHECDOYIlAu/ao2YI5O+/MXeJqYBonMDcqaS705LqhSzvgpzE+I7THL8fOG8BT0Aaan2vAw0x18CU69ydGAPZUK7UoXOiQzWyivCd9TT2v9rBb250DPWdO85bwBOQxsD/r71ZvopOTz5/6/m7Sp2vl2bhefbxecvzDOct4AlIY+D/hf608dzgu1Mb+nKvQRdAcN4CnoA0Bo6BzR//FwMb9LzlmsgK5y3gCUjjH2dCw1yGxO66AAAAAElFTkSuQmCC">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="top"><button id="open-games">games</button><button id="open-set">settings</button></div>
+<main id="home">
+  <h1 class="brand">copper<i>.</i></h1>
+  <div class="searchwrap">
+    <img id="golem" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAACACAYAAAD03Gy6AAADiUlEQVR4nO2dO4+MYRiG5/CNDXbXkiimokAcOlmRiGzEoSHR6IRGSFa7EqJR6PYfiELFDxDstqJAp5Gg2GjGIgjmtOb0ff7B/UTenVybuK/2+d73e2eueZL3POXSBufenUtFSvn5uw/L69WWcVChG/C/YwEwFgBjATAWAGMBMBYAk9ENiDhcn6abMFacATAWAGMBMBYAYwEwFgBjATAbfhzw6v0K3YSx4gyAsQAYC4CxABgLgLEAGAuASd4z8/bBdblvZ6qmhxrdZkvGa+WgiUF4MMplvBKUb/aGMn5k4VHSd+gMgLEAGAuAsQAYC4CxABgLgEleD9iaaYebM91NXm180y8odD++VqnKeH80kvGJLCqfdDwhxBkAYwEwFgBjATAWAGMBMBYAkzwOaLz7KONV3Y0vHVtckgOFm6cPyY74xaO7Zf2zi8uy/ltndP0XZnfJ+lNxBsBYAIwFwFgAjAXAWACMBcAkjwPyQTRfr9cDbpw6IPvh++vbZPlBrufrF04e1A8M+zL88kNDxlNxBsBYAIwFwFgAjAXAWACMBcAkjwOi7fu1YN/N1bl9Mt4b6H09vWDfzpXje2T8ddDP//lHjxNScQbAWACMBcBYAIwFwFgAjAXAlJ/fPis70ltq2lEWzPdPT+p7P4Pp/JDonG8RHCTOc72e0Wo3dfmS/gDdgY47A2AsAMYCYCwAxgJgLADGAmCy9ve2fCAPxgHRvpzBjJ7PrwQd+aLQ9QfhUh49END63ZXxrKrb3+0H9xX9c4vMumIBMBYAYwEwFgBjATAWAJMFx3hLwbWbpXKRNt8e1R9Mt4f9/Dcrn3X1Qfm9O7fLeCX4DUcfzxkAYwEwFgBjATAWAGMBMBYAk7XX1uQDxSZ9hCCabZ8sJmT80w+976YaHECo79D7jkbBvaOj4HxBt9+T8VpV/4bbff3/A84AGAuAsQAYC4CxABgLgLEAmOzpl458INj2Et4HdHlmSsaLYF9RJ1hP6ATniLOK/o0Nc13+8ar+n7NgOSRc73AGwFgAjAXAWACMBcBYAIwFwCT/n3DEs/kTuqMf9PPP3X+R1MYn1+bk+6N+/PnE90c4A2AsAMYCYCwAxgJgLADGAmCS7w2N+NXS6w3RvaOphPuexvv6EGcAjAXAWACMBcBYAIwFwFgAzNjHActf2XHAUvD+xOuEknEGwFgAjAXAWACMBcBYAIwFwPwFYL7D3D3oXiwAAAAASUVORK5CYII=" alt="Copper golem" title="Click me">
+    <form id="sf" autocomplete="off">
+      <input id="q" placeholder="Search or type a link" spellcheck="false" aria-label="Search">
+      <kbd>/</kbd>
+      <button id="go" type="submit">Go</button>
+    </form>
+  </div>
+  <nav class="tiles" id="tiles" aria-label="Shortcuts"></nav>
+</main>
+
+<div class="foot"><span>copper · v0.4 · <b id="stage">fresh</b></span><button id="back" hidden></button><span id="clock"></span></div>
+
+<section id="view">
+  <div class="tabs" id="tabs"></div>
+  <div class="bar">
+    <button class="ib" id="home-btn" title="Home (Esc)"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAACACAYAAAD03Gy6AAADiUlEQVR4nO2dO4+MYRiG5/CNDXbXkiimokAcOlmRiGzEoSHR6IRGSFa7EqJR6PYfiELFDxDstqJAp5Gg2GjGIgjmtOb0ff7B/UTenVybuK/2+d73e2eueZL3POXSBufenUtFSvn5uw/L69WWcVChG/C/YwEwFgBjATAWAGMBMBYAk9ENiDhcn6abMFacATAWAGMBMBYAYwEwFgBjATAbfhzw6v0K3YSx4gyAsQAYC4CxABgLgLEAGAuASd4z8/bBdblvZ6qmhxrdZkvGa+WgiUF4MMplvBKUb/aGMn5k4VHSd+gMgLEAGAuAsQAYC4CxABgLgEleD9iaaYebM91NXm180y8odD++VqnKeH80kvGJLCqfdDwhxBkAYwEwFgBjATAWAGMBMBYAkzwOaLz7KONV3Y0vHVtckgOFm6cPyY74xaO7Zf2zi8uy/ltndP0XZnfJ+lNxBsBYAIwFwFgAjAXAWACMBcAkjwPyQTRfr9cDbpw6IPvh++vbZPlBrufrF04e1A8M+zL88kNDxlNxBsBYAIwFwFgAjAXAWACMBcAkjwOi7fu1YN/N1bl9Mt4b6H09vWDfzpXje2T8ddDP//lHjxNScQbAWACMBcBYAIwFwFgAjAXAlJ/fPis70ltq2lEWzPdPT+p7P4Pp/JDonG8RHCTOc72e0Wo3dfmS/gDdgY47A2AsAMYCYCwAxgJgLADGAmCy9ve2fCAPxgHRvpzBjJ7PrwQd+aLQ9QfhUh49END63ZXxrKrb3+0H9xX9c4vMumIBMBYAYwEwFgBjATAWAJMFx3hLwbWbpXKRNt8e1R9Mt4f9/Dcrn3X1Qfm9O7fLeCX4DUcfzxkAYwEwFgBjATAWAGMBMBYAk7XX1uQDxSZ9hCCabZ8sJmT80w+976YaHECo79D7jkbBvaOj4HxBt9+T8VpV/4bbff3/A84AGAuAsQAYC4CxABgLgLEAmOzpl458INj2Et4HdHlmSsaLYF9RJ1hP6ATniLOK/o0Nc13+8ar+n7NgOSRc73AGwFgAjAXAWACMBcBYAIwFwCT/n3DEs/kTuqMf9PPP3X+R1MYn1+bk+6N+/PnE90c4A2AsAMYCYCwAxgJgLADGAmCS7w2N+NXS6w3RvaOphPuexvv6EGcAjAXAWACMBcBYAIwFwFgAzNjHActf2XHAUvD+xOuEknEGwFgAjAXAWACMBcBYAIwFwPwFYL7D3D3oXiwAAAAASUVORK5CYII=" alt=""></button>
+    <button class="ib" id="reload" title="Reload">↻</button>
+    <input id="url" spellcheck="false" aria-label="Address">
+    <select id="eng" title="Proxy engine"><option value="lite">Lite</option><option value="scramjet">Scramjet</option><option value="uv">Ultraviolet</option><option value="direct">Direct</option></select>
+    <button class="ib" id="ext" title="Open in new tab">↗</button>
+  </div>
+  <div id="load"></div>
+  <div id="frames"></div>
+  <div id="hint">Blank page? Many sites block embedding.<a id="hint-ext">Open in new tab ↗</a></div>
+</section>
+
+<dialog id="gm" class="wide"><div class="dh"><h3>Games</h3><button class="ib" id="gx">×</button></div>
+  <canvas id="gc" width="520" height="190"></canvas>
+  <p class="hs">golem hop · space or tap to jump · best <b id="best">0</b></p>
+  <div class="set"><span>Your games</span><span id="glist"></span></div>
+  <form id="ga" class="addrow"><input id="gn" placeholder="name"><input id="gu" placeholder="https://..."><button class="ok">Add</button></form></dialog>
+<dialog id="st" class="wide"><div class="dh"><h3>Settings</h3><button class="ib" id="sx">×</button></div>
+  <div class="set"><span>Engine</span><select id="s-eng"><option value="lite">Lite</option><option value="scramjet">Scramjet</option><option value="uv">Ultraviolet</option><option value="direct">Direct</option></select></div>
+  <div class="set"><span>Search</span><select id="s-se"><option value="ddg">DuckDuckGo</option><option value="brave">Brave</option><option value="bing">Bing</option><option value="google">Google</option></select></div>
+  <div class="set"><span>Copper</span><span class="seg" id="s-pat"><button data-s="auto">auto</button><button data-s="0">fresh</button><button data-s="1">exposed</button><button data-s="2">weathered</button><button data-s="3">oxidized</button></span></div>
+  <div class="set"><span>Data</span><span class="seg"><button id="s-reset">reset shortcuts</button><button id="s-clear">clear everything</button></span></div></dialog>
+<div id="toast"></div>
+<dialog id="dlg"><form method="dialog" id="df"><h3>New shortcut</h3>
+  <input id="dn" placeholder="example.com" spellcheck="false">
+  <div class="row"><button type="button" id="dc">Cancel</button><button class="ok">Add</button></div></form></dialog>
+
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script src="js/proxy.js"></script>
+<script src="js/tabs.js"></script>
+<script src="js/extras.js"></script>
+</body>
+</html>

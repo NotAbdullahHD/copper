@@ -110,3 +110,16 @@ dialog.wide{width:min(560px,94vw)}
 #glist{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}#glist .g i{font-style:normal;color:var(--muted);margin-left:8px}
 .addrow{display:flex;gap:6px;margin-top:6px}.addrow input{flex:1;min-width:0;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);padding:0 12px;font:inherit;outline:0}
 .addrow input:focus{border-color:var(--accent)}.addrow .ok{padding:0 16px;border-radius:10px;background:var(--accent);color:#120a04;font-weight:600}
+#wall{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;image-rendering:pixelated;opacity:.55;pointer-events:none;display:none}
+body.viewing #wall{display:none!important}
+#nta{width:100%;min-height:240px;resize:vertical;background:var(--bg);border:1px solid var(--line);border-radius:12px;color:var(--text);padding:14px;font:13px/1.6 var(--mono);outline:0;caret-color:var(--accent)}
+#nta:focus{border-color:var(--accent)}
+#cmd{position:fixed;inset:0;display:none;align-items:flex-start;justify-content:center;padding-top:16vh;background:#000b;z-index:60}
+#cmd.on{display:flex}.cbox{width:min(560px,92vw);background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+#ci{width:100%;height:54px;background:none;border:0;border-bottom:1px solid var(--line);outline:0;color:var(--text);font:inherit;font-size:16px;padding:0 18px;caret-color:var(--accent)}
+#cl{max-height:320px;overflow:auto;padding:6px}.ci{display:flex;justify-content:space-between;gap:12px;padding:9px 12px;border-radius:9px;color:var(--muted);font-size:14px;cursor:pointer}
+.ci.sel{background:var(--bg);color:var(--text);box-shadow:inset 2px 0 var(--accent)}.ci small{font:11px var(--mono);color:var(--muted)}
+.pals{position:fixed;left:0;right:0;bottom:52px;height:34px;pointer-events:none;z-index:1}body.viewing .pals{display:none}
+.pal{position:absolute;bottom:0;width:24px;height:32px;image-rendering:pixelated;filter:var(--golem);pointer-events:auto;cursor:pointer;transform:scaleX(var(--f,1));transition-property:left;transition-timing-function:linear}
+.pal.walk{animation:bob .36s steps(2) infinite}.pal.hop{animation:phop .4s}
+@keyframes bob{50%{translate:0 -2px}}@keyframes phop{40%{translate:0 -14px}}

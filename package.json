@@ -1,0 +1,17 @@
+{
+  "name": "copper",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "start": "node node/server.js" },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@mercuryworkshop/bare-mux": "^2.1.9",
+    "@mercuryworkshop/libcurl-transport": "^2.0.6",
+    "@mercuryworkshop/scramjet": "2.0.67-alpha.2",
+    "@mercuryworkshop/scramjet-controller": "0.0.14",
+    "@mercuryworkshop/wisp-js": "^0.4.0",
+    "@titaniumnetwork-dev/ultraviolet": "^3.2.10",
+    "express": "^4.21.0"
+  }
+}

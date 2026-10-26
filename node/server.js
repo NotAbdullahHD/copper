@@ -17,6 +17,22 @@ wisp.options.allow_loopback_ips = false;
 wisp.options.allow_private_ips = false;
 
 const app = express();
+// Scramjet runs on the wasm rewriter, which reaches for SharedArrayBuffer — and a browser only
+// hands that out to a page that is cross-origin isolated. Both headers go on documents and on
+// the workers themselves; scraping a script that is importScripts()'d back into a worker fails
+// if that script carries them too. credentialless rather than require-corp: the start page
+// still loads its fonts and favicons from other origins, which require-corp would refuse.
+const isDocument = req => (req.headers.accept || '').includes('text/html');
+const isWorkerScript = req => /^\/(sj-sw|uv-sw)\.js$/.test(req.path);
+app.use((req, res, next) => {
+  // Only documents and the workers themselves: a subresource served with these headers
+  // cannot be importScripts()'d back into the worker (Chrome refuses it outright).
+  if (isDocument(req) || isWorkerScript(req)) {
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    res.setHeader('Cross-Origin-Embedder-Policy', isWorkerScript(req) ? 'require-corp' : 'credentialless');
+  }
+  next();
+});
 app.use(express.static(join(root, 'public')));
 app.use('/scramjet', express.static(scramjetPath));
 app.use('/controller', express.static(nm('@mercuryworkshop/scramjet-controller/dist')));

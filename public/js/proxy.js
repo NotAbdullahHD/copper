@@ -1,12 +1,23 @@
 /* proxy engines: Scramjet v2, Ultraviolet, direct. Service workers need https (or localhost). */
 const wispUrl=(location.protocol==='https:'?'wss://':'ws://')+location.host+'/wisp/';
 const loadScript=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error('missing '+src));document.head.append(s)});
-async function activeWorker(reg){
-  if(reg.active)return reg.active;
-  const w=reg.installing||reg.waiting;
-  await new Promise(r=>{if(w.state==='activated')return r();w.addEventListener('statechange',()=>w.state==='activated'&&r())});
+const withTimeout=(p,ms,what)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error(what+' timed out after '+ms+'ms')),ms))]);
+
+// A worker that has just been registered is not usable yet: it still has to install, evaluate its
+// scripts and activate. Waiting on it with no limit is what turns a worker that never activates
+// into a tab that hangs forever with nothing in the console to explain it.
+async function activeWorker(reg,ms=15000){
+  const w=reg.active||reg.installing||reg.waiting;
+  if(!w)throw new Error('service worker did not start');
+  if(w.state!=='activated')
+    await withTimeout(new Promise(r=>{
+      const check=()=>{if(w.state==='activated'){w.removeEventListener('statechange',check);setTimeout(r,0)}};
+      w.addEventListener('statechange',check);check();
+    }),ms,'worker activation');
+  if(!reg.active)throw new Error('service worker never became active');
   return reg.active;
 }
+
 let uvP,sjP;
 function initUV(){return uvP??=(async()=>{
   if(!('serviceWorker' in navigator))throw new Error('service workers unavailable (use https)');
@@ -31,3 +42,21 @@ const Engines={
   async scramjet(t,u){const c=await initSJ();(t.sj??=c.createFrame(t.f)).go(u)},
   async direct(t,u){t.f.src=u}
 };
+
+// Booting the engine costs about two and a half seconds, and today all of it is spent after the
+// person presses Enter — the search box has focus long before that. Starting the boot when they
+// reach for the box moves the wait under the time they spend typing instead of in front of them.
+// It is wired to focus rather than page load on purpose: someone who only uses the manga or games
+// pages never triggers it, so it costs those people nothing. Best effort only — if it fails the
+// real navigation runs it again and reports the error properly.
+const warmable=()=>{const e=store.get('engine',DEFAULT_ENGINE);return e==='scramjet'?initSJ:e==='uv'?initUV:null};
+let warmed=false;
+function warmEarly(){
+  if(warmed||!('serviceWorker' in navigator))return;
+  const boot=warmable();if(!boot)return;
+  warmed=true;boot().catch(()=>{warmed=false});
+}
+for(const sel of ['#q','#url']){
+  const el=document.querySelector(sel);
+  if(el){el.addEventListener('focus',warmEarly);el.addEventListener('pointerdown',warmEarly);el.addEventListener('input',warmEarly)}
+}

@@ -27,7 +27,7 @@
   <nav class="tiles" id="tiles" aria-label="Shortcuts"></nav>
 </main>
 
-<div class="foot"><span>copper · v0.6 · <b id="stage">fresh</b> · <button id="open-notes">notes</button></span><button id="back" hidden></button><span id="clock"></span></div>
+<div class="foot"><span>copper · v0.7 · <b id="stage">fresh</b> · <button id="open-notes">notes</button></span><button id="back" hidden></button><span id="clock"></span></div>
 
 <section id="view">
   <div class="tabs" id="tabs"></div>
@@ -46,8 +46,7 @@
 <dialog id="gm" class="wide"><div class="dh"><h3>Games</h3><button class="ib" id="gx">×</button></div>
   <canvas id="gc" width="520" height="190"></canvas>
   <p class="hs">golem hop · space or tap to jump · best <b id="best">0</b></p>
-  <div class="set"><span>Your games</span><span id="glist"></span></div>
-  <form id="ga" class="addrow"><input id="gn" placeholder="name"><input id="gu" placeholder="https://..."><button class="ok">Add</button></form></dialog>
+</dialog>
 <dialog id="st" class="wide"><div class="dh"><h3>Settings</h3><button class="ib" id="sx">×</button></div>
   <div class="set"><span>Engine</span><select id="s-eng"><option value="lite">Lite</option><option value="scramjet">Scramjet</option><option value="uv">Ultraviolet</option><option value="direct">Direct</option></select></div>
   <div class="set"><span>Search</span><select id="s-se"><option value="ddg">DuckDuckGo</option><option value="brave">Brave</option><option value="bing">Bing</option><option value="google">Google</option></select></div>
@@ -56,6 +55,11 @@
   <div class="set"><span>Data</span><span class="seg"><button id="s-reset">reset shortcuts</button><button id="s-clear">clear everything</button></span></div></dialog>
 <dialog id="nt" class="wide"><div class="dh"><h3>Notes</h3><button class="ib" id="nx">×</button></div>
   <textarea id="nta" placeholder="Jot something down…" spellcheck="false"></textarea><p class="hs">saved in this browser</p></dialog>
+<section id="gp"><div class="mg-bar"><button class="ib" id="gp-back" title="Back (Esc)">←</button><h3>games</h3></div>
+  <div id="gpbody"><div class="mg-grid g-grid" id="gl"></div>
+   <div class="set"><span>Your games</span><span id="glist"></span></div>
+   <form id="ga" class="addrow"><input id="gn" placeholder="name"><input id="gu" placeholder="https://..."><button class="ok">Add</button></form>
+   <p class="mg-credit">bundled games and licenses: games/NOTICE.md</p></div></section>
 <section id="mg"><div class="mg-bar"><button class="ib" id="mg-back" title="Back (Esc)">←</button><h3>manga</h3>
   <span class="seg" id="mg-tabs"><button data-t="popular" class="on">popular</button><button data-t="latest">latest</button><button data-t="library">saved</button></span>
   <input id="mg-q" placeholder="search manga" spellcheck="false"></div><div id="mgbody"></div></section>

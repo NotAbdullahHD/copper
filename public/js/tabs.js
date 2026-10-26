@@ -18,7 +18,7 @@ function drawTabs(){
   const bk=$('#back');bk.hidden=!tabs.length;bk.textContent='↩ '+tabs.length+(tabs.length>1?' tabs':' tab');
 }
 async function load(t,u){
-  t.u=u;t.title=host(u);$('#url').value=u;
+  t.u=u;t.title=t.fixed||host(u);$('#url').value=u;
   bar.style.width='0';requestAnimationFrame(()=>bar.style.width='70%');hint();drawTabs();
   const e=t.pre||store.get('engine',DEFAULT_ENGINE);
   if(t.engine&&t.engine!==e){const nf=document.createElement('iframe');nf.referrerPolicy='no-referrer';nf.allow='fullscreen';nf.title='page';
@@ -26,9 +26,9 @@ async function load(t,u){
   t.engine=e;
   try{await Engines[e](t,u)}catch(err){console.error(err);toast(e+' failed ('+(err.message||err)+')');if(window.COPPER_LITE&&e!=='lite'){t.engine='lite';return Engines.lite(t,u)}t.f.src=u}
 }
-function newTab(u,pre){
+function newTab(u,pre,title){
   const f=document.createElement('iframe');f.referrerPolicy='no-referrer';f.allow='fullscreen';f.title='page';frames.append(f);
-  const t={u,f,title:host(u),pre};
+  const t={u,f,title:title||host(u),fixed:title,pre};
   f.onload=()=>{if(t===tabs[act]){bar.style.width='100%';setTimeout(()=>bar.style.width='0',350)}};
   tabs.push(t);select(tabs.length-1);load(t,u);
 }

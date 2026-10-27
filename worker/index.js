@@ -55,6 +55,9 @@ const R=u=>{try{if(typeof u!=='string')u=String(u);const a=new URL(u,T);if(a.ori
 const f=window.fetch;window.fetch=(i,o)=>f(i instanceof Request?new Request(R(i.url),i):R(i),o);
 const x=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u,...r){return x.call(this,m,R(u),...r)};
 const wo=window.open;window.open=(u,...r)=>wo(u?R(u):u,...r);
+const ifd=Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype,'src');if(ifd&&ifd.set)Object.defineProperty(HTMLIFrameElement.prototype,'src',{get:ifd.get,set(v){ifd.set.call(this,v?R(v):v)},configurable:true});
+const sa=Element.prototype.setAttribute;Element.prototype.setAttribute=function(n,v){return sa.call(this,n,this instanceof HTMLIFrameElement&&n==='src'&&v?R(v):v)};
+['pushState','replaceState'].forEach(k=>{const o=history[k];history[k]=function(...a){try{return o.apply(this,a)}catch{}}});
 const go=u=>location.href=R(u);
 document.addEventListener('submit',e=>{const fm=e.target;if((fm.method||'get').toLowerCase()!=='get')return;e.preventDefault();let u=new URL(fm.getAttribute('action')||T,T);if(u.origin===P&&u.searchParams.get('url'))u=new URL(u.searchParams.get('url'));new FormData(fm).forEach((v,k)=>u.searchParams.set(k,v));go(u.href)},true);
 })()</script>`;

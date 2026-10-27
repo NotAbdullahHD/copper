@@ -25,7 +25,7 @@ function drawGames(){
   games.forEach((g,i)=>{const b=document.createElement('button');b.className='g';b.textContent=g.n;
     const x=document.createElement('i');x.textContent='×';
     x.onclick=e=>{e.stopPropagation();games.splice(i,1);store.set('games',games);drawGames()};
-    b.append(x);b.onclick=()=>{gp.classList.remove('on');newTab(g.u,'direct')};el.append(b)});
+    b.append(x);b.onclick=()=>playGame(g.n,g.u);el.append(b)});
 }
 $('#ga').onsubmit=e=>{e.preventDefault();const u=normalize($('#gu').value),n=$('#gn').value.trim()||(u&&host(u));
   if(!u){toast('enter a valid link');return}games.push({n,u});store.set('games',games);$('#gn').value=$('#gu').value='';drawGames()};
@@ -56,18 +56,6 @@ function draw(){
 }
 function loop(){if(!run)return;if(!s.dead)step();draw();raf=requestAnimationFrame(loop)}
 function startHop(){$('#best').textContent=store.get('best',0);reset();gm.showModal();run=true;loop()}
-const gp=$('#gp');
-const LIB=[{n:'Golem Hop',d:'Our own runner. Jump the copper blocks.',l:'built in · by Copper',run:startHop},
-  {n:'2048',d:'Slide and merge tiles to reach 2048.',l:'MIT · Gabriele Cirulli',u:'/games/2048/'},
-  {n:'Hextris',d:'Rotate the hexagon and match the colors.',l:'GPL-3.0 · Hextris team',u:'/games/hextris/'},
-  {n:'Clumsy Bird',d:'Flap through the pipes without crashing.',l:'GPL-3.0 · Ellison Leao',u:'/games/clumsy-bird/'}];
-function drawLib(){$('#gl').replaceChildren(...LIB.map(g=>{
-  const b=document.createElement('button');b.className='gcard';
-  b.innerHTML='<b></b><span></span><small></small>';b.children[0].textContent=g.n;b.children[1].textContent=g.d;b.children[2].textContent=g.l;
-  b.onclick=()=>g.run?g.run():(gp.classList.remove('on'),newTab(location.origin+g.u,'direct',g.n));return b}))}
-$('#open-games').onclick=()=>{drawLib();drawGames();gp.classList.add('on')};
-$('#gp-back').onclick=()=>gp.classList.remove('on');
-addEventListener('keydown',e=>{if(e.key==='Escape'&&gp.classList.contains('on')&&!gm.open&&!/INPUT/.test(document.activeElement.tagName))gp.classList.remove('on')});
 gm.addEventListener('close',()=>{run=false;cancelAnimationFrame(raf)});
 cv.addEventListener('pointerdown',jump);
 addEventListener('keydown',e=>{if(run&&gm.open&&(e.code==='Space'||e.code==='ArrowUp')&&!/INPUT/.test(document.activeElement.tagName)){e.preventDefault();jump()}});

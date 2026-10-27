@@ -147,3 +147,13 @@ body.viewing #wall{display:none!important}
 .rc img{width:14px;height:14px;border-radius:3px;flex:none}.rc span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rc:hover{border-color:var(--accent);color:var(--text)}.rc.pin{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));color:var(--text)}
 .rc.clear{border-color:transparent;margin-left:auto}
+#gplay{flex:1;display:none;flex-direction:column;min-height:0}
+#gp.playing #gplay{display:flex}#gp.playing .lbar,#gp.playing #gpbody{display:none}
+#gslot{flex:1;display:flex;min-height:0}#gslot iframe{flex:1;border:0;background:#000}
+.gp-cats{max-width:1100px;margin:0 auto 18px;justify-content:flex-start}
+.g-grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.gcard{min-height:0;padding:10px;gap:8px}
+.gcard img,.gart{width:100%;aspect-ratio:16/10;object-fit:cover;background:var(--bg);border-radius:3px;display:block}
+.gart{display:grid;place-items:center;border:1px solid var(--line)}
+.gart img{width:44px;height:auto;aspect-ratio:auto;image-rendering:pixelated;filter:var(--golem);border-radius:0}
+.gcard b{font:600 17px var(--serif)}

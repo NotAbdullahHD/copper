@@ -35,8 +35,13 @@ function initSJ(){return sjP??=(async()=>{
   const c=new $scramjetController.Controller({serviceworker:sw,transport});
   await c.wait();return c;
 })().catch(e=>{sjP=null;throw e})}
-const DEFAULT_ENGINE=window.COPPER_LITE?'lite':'scramjet';
+const DEFAULT_ENGINE='auto';
+let fullDead=false;
 const Engines={
+  async auto(t,u){
+    if(!fullDead){try{await Engines.scramjet(t,u);return}catch(e){fullDead=true;console.warn('full engine unavailable, using Lite',e)}}
+    return window.COPPER_LITE?Engines.lite(t,u):Engines.direct(t,u);
+  },
   async lite(t,u){if(!window.COPPER_LITE)throw new Error('set COPPER_LITE in js/config.js');t.f.src=COPPER_LITE.replace(/\/$/,'')+'/?url='+encodeURIComponent(u)},
   async uv(t,u){await initUV();t.f.src=__uv$config.prefix+__uv$config.encodeUrl(u)},
   async scramjet(t,u){const c=await initSJ();(t.sj??=c.createFrame(t.f)).go(u)},
@@ -49,7 +54,7 @@ const Engines={
 // It is wired to focus rather than page load on purpose: someone who only uses the manga or games
 // pages never triggers it, so it costs those people nothing. Best effort only — if it fails the
 // real navigation runs it again and reports the error properly.
-const warmable=()=>{const e=store.get('engine',DEFAULT_ENGINE);return e==='scramjet'?initSJ:e==='uv'?initUV:null};
+const warmable=()=>{const e=store.get('engine',DEFAULT_ENGINE);return e==='scramjet'||e==='auto'?initSJ:e==='uv'?initUV:null};
 let warmed=false;
 function warmEarly(){
   if(warmed||!('serviceWorker' in navigator))return;

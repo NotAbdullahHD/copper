@@ -36,7 +36,7 @@
     <button class="ib" id="home-btn" title="Home (Esc)"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAACACAYAAAD03Gy6AAADiUlEQVR4nO2dO4+MYRiG5/CNDXbXkiimokAcOlmRiGzEoSHR6IRGSFa7EqJR6PYfiELFDxDstqJAp5Gg2GjGIgjmtOb0ff7B/UTenVybuK/2+d73e2eueZL3POXSBufenUtFSvn5uw/L69WWcVChG/C/YwEwFgBjATAWAGMBMBYAk9ENiDhcn6abMFacATAWAGMBMBYAYwEwFgBjATAbfhzw6v0K3YSx4gyAsQAYC4CxABgLgLEAGAuASd4z8/bBdblvZ6qmhxrdZkvGa+WgiUF4MMplvBKUb/aGMn5k4VHSd+gMgLEAGAuAsQAYC4CxABgLgEleD9iaaYebM91NXm180y8odD++VqnKeH80kvGJLCqfdDwhxBkAYwEwFgBjATAWAGMBMBYAkzwOaLz7KONV3Y0vHVtckgOFm6cPyY74xaO7Zf2zi8uy/ltndP0XZnfJ+lNxBsBYAIwFwFgAjAXAWACMBcAkjwPyQTRfr9cDbpw6IPvh++vbZPlBrufrF04e1A8M+zL88kNDxlNxBsBYAIwFwFgAjAXAWACMBcAkjwOi7fu1YN/N1bl9Mt4b6H09vWDfzpXje2T8ddDP//lHjxNScQbAWACMBcBYAIwFwFgAjAXAlJ/fPis70ltq2lEWzPdPT+p7P4Pp/JDonG8RHCTOc72e0Wo3dfmS/gDdgY47A2AsAMYCYCwAxgJgLADGAmCy9ve2fCAPxgHRvpzBjJ7PrwQd+aLQ9QfhUh49END63ZXxrKrb3+0H9xX9c4vMumIBMBYAYwEwFgBjATAWAJMFx3hLwbWbpXKRNt8e1R9Mt4f9/Dcrn3X1Qfm9O7fLeCX4DUcfzxkAYwEwFgBjATAWAGMBMBYAk7XX1uQDxSZ9hCCabZ8sJmT80w+976YaHECo79D7jkbBvaOj4HxBt9+T8VpV/4bbff3/A84AGAuAsQAYC4CxABgLgLEAmOzpl458INj2Et4HdHlmSsaLYF9RJ1hP6ATniLOK/o0Nc13+8ar+n7NgOSRc73AGwFgAjAXAWACMBcBYAIwFwCT/n3DEs/kTuqMf9PPP3X+R1MYn1+bk+6N+/PnE90c4A2AsAMYCYCwAxgJgLADGAmCS7w2N+NXS6w3RvaOphPuexvv6EGcAjAXAWACMBcBYAIwFwFgAzNjHActf2XHAUvD+xOuEknEGwFgAjAXAWACMBcBYAIwFwPwFYL7D3D3oXiwAAAAASUVORK5CYII=" alt=""></button>
     <button class="ib" id="reload" title="Reload">↻</button>
     <input id="url" spellcheck="false" aria-label="Address">
-    <select id="eng" title="Proxy engine"><option value="lite">Lite</option><option value="scramjet">Scramjet</option><option value="uv">Ultraviolet</option><option value="direct">Direct</option></select>
+    <select id="eng" title="Proxy engine"><option value="auto">Auto</option><option value="lite">Lite</option><option value="scramjet">Scramjet</option><option value="uv">Ultraviolet</option><option value="direct">Direct</option></select>
     <button class="ib" id="ext" title="Open in new tab">↗</button>
   </div>
   <div id="load"></div>
@@ -49,18 +49,20 @@
   <p class="hs">golem hop · space or tap to jump · best <b id="best">0</b></p>
 </dialog>
 <dialog id="st" class="wide"><div class="dh"><h3>Settings</h3><button class="ib" id="sx">×</button></div>
-  <div class="set"><span>Engine</span><select id="s-eng"><option value="lite">Lite</option><option value="scramjet">Scramjet</option><option value="uv">Ultraviolet</option><option value="direct">Direct</option></select></div>
+  <div class="set"><span>Engine</span><select id="s-eng"><option value="auto">Auto</option><option value="lite">Lite</option><option value="scramjet">Scramjet</option><option value="uv">Ultraviolet</option><option value="direct">Direct</option></select></div>
   <div class="set"><span>Search</span><select id="s-se"><option value="ddg">DuckDuckGo</option><option value="brave">Brave</option><option value="bing">Bing</option><option value="google">Google</option></select></div>
   <div class="set"><span>Copper</span><span class="seg" id="s-pat"><button data-s="auto">auto</button><button data-s="0">fresh</button><button data-s="1">exposed</button><button data-s="2">weathered</button><button data-s="3">oxidized</button></span></div>
   <div class="set"><span>Wallpaper</span><span class="seg" id="s-wall"><button data-v="none">none</button><button data-v="night">night</button><button data-v="cave">cave</button><button data-v="desert">desert</button></span></div>
   <div class="set"><span>Data</span><span class="seg"><button id="s-reset">reset shortcuts</button><button id="s-clear">clear everything</button></span></div></dialog>
 <dialog id="nt" class="wide"><div class="dh"><h3>Notes</h3><button class="ib" id="nx">×</button></div>
   <textarea id="nta" placeholder="Jot something down…" spellcheck="false"></textarea><p class="hs">saved in this browser</p></dialog>
-<section id="gp"><div class="mg-bar"><button class="ib" id="gp-back" title="Back (Esc)">←</button><h3>games</h3></div>
-  <div id="gpbody"><div class="mg-grid g-grid" id="gl"></div>
+<section id="gp"><div class="mg-bar lbar"><button class="ib" id="gp-back" title="Back (Esc)">←</button><h3>games</h3><input id="gp-q" placeholder="search games" spellcheck="false"></div>
+  <div id="gpbody"><div class="seg gp-cats" id="gp-cats"></div><div class="mg-grid g-grid" id="gl"></div>
    <div class="set"><span>Your games</span><span id="glist"></span></div>
    <form id="ga" class="addrow"><input id="gn" placeholder="name"><input id="gu" placeholder="https://..."><button class="ok">Add</button></form>
-   <p class="mg-credit">bundled games and licenses: games/NOTICE.md</p></div></section>
+   <p class="mg-credit">game catalog from OnlineGames.io</p></div>
+  <div id="gplay"><div class="mg-bar pbar"><button class="ib" id="gpl-back" title="Back (Esc)">←</button><h3 id="gpl-t"></h3>
+   <span class="seg" style="margin-left:auto"><button id="gpl-fs">fullscreen</button><button id="gpl-ext">new tab ↗</button></span></div><div id="gslot"></div></div></section>
 <section id="mg"><div class="mg-bar"><button class="ib" id="mg-back" title="Back (Esc)">←</button><h3>manga</h3>
   <span class="seg" id="mg-tabs"><button data-t="popular" class="on">popular</button><button data-t="latest">latest</button><button data-t="library">saved</button></span>
   <input id="mg-q" placeholder="search manga" spellcheck="false"></div><div id="mgbody"></div></section>
@@ -75,6 +77,8 @@
 <script src="js/tabs.js"></script>
 <script src="js/extras.js"></script>
 <script src="js/extras2.js"></script>
+<script src="js/games-data.js"></script>
+<script src="js/games.js"></script>
 <script src="js/manga.js"></script>
 </body>
 </html>

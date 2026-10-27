@@ -139,3 +139,11 @@ body.viewing #wall{display:none!important}
 .gcard:hover{transform:translate(-2px,-2px);box-shadow:3px 3px 0 var(--accent);border-color:var(--accent)}
 .gcard b{font:600 24px var(--serif)}.gcard span{color:var(--muted);font-size:13px}.gcard small{margin-top:auto;font:11px var(--mono);color:var(--muted)}
 #gpbody .set,#gpbody .addrow{max-width:1100px;margin-left:auto;margin-right:auto}
+.tab img{width:14px;height:14px;border-radius:3px;flex:none}
+.tab.pin{padding:0 11px}.tab.pin span,.tab.pin i{display:none}
+.recent{width:min(var(--w),92vw);margin-top:20px;display:flex;flex-wrap:wrap;gap:6px;animation:rise .5s .3s both}
+.recent:empty{display:none}
+.rc{display:flex;align-items:center;gap:7px;max-width:170px;padding:6px 10px;border:1px solid var(--line);border-radius:4px;font:12px var(--mono);color:var(--muted);transition:border-color .15s,color .15s}
+.rc img{width:14px;height:14px;border-radius:3px;flex:none}.rc span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rc:hover{border-color:var(--accent);color:var(--text)}.rc.pin{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));color:var(--text)}
+.rc.clear{border-color:transparent;margin-left:auto}

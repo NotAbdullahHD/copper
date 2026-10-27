@@ -2,7 +2,7 @@
 // and rewrites links/assets so everything flows through the Worker. No Node server, no Wisp needed.
 // Good for articles, docs, search, simple sites. No cookies/logins; heavy web apps won't run.
 const PRIVATE = /^(localhost|.*\.local|.*\.internal|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|\[?::1\]?$)/i;
-const DROP = ['x-frame-options','content-security-policy','content-security-policy-report-only','set-cookie','cross-origin-opener-policy','cross-origin-embedder-policy','cross-origin-resource-policy','content-length','content-encoding','strict-transport-security'];
+const DROP = ['x-frame-options','content-security-policy','content-security-policy-report-only','set-cookie','cross-origin-opener-policy','cross-origin-embedder-policy','content-length','content-encoding','strict-transport-security'];
 const SKIP = /^(data:|javascript:|#|mailto:|tel:|blob:|about:)/i;
 
 export default {
@@ -32,6 +32,7 @@ export default {
     const out = new Headers(up.headers);
     DROP.forEach(k => out.delete(k));
     out.set('access-control-allow-origin', '*');
+    out.set('cross-origin-resource-policy', 'cross-origin');
     const loc = up.headers.get('location');
     if (loc && up.status >= 300 && up.status < 400) { out.set('location', rw(loc)); return new Response(null, { status: up.status, headers: out }); }
 
@@ -44,6 +45,7 @@ export default {
     }
     if (!type.includes('text/html')) return new Response(up.body, { status: up.status, headers: out });
 
+    out.set('cross-origin-embedder-policy', 'credentialless'); // lets Copper's isolated pages frame this
     const attr = (sel, name) => ({ sel, name, handler: { element(el) { const v = el.getAttribute(name); if (v) el.setAttribute(name, rw(v)); } } });
     const srcset = { element(el) { const v = el.getAttribute('srcset'); if (v) el.setAttribute('srcset', v.split(',').map(p => { const [u, ...r] = p.trim().split(/\s+/); return [rw(u), ...r].join(' '); }).join(', ')); } };
     const strip = names => ({ element(el) { names.forEach(n => el.removeAttribute(n)); } });

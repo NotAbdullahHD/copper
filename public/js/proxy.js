@@ -42,7 +42,7 @@ const Engines={
     if(!fullDead){try{await Engines.scramjet(t,u);return}catch(e){fullDead=true;console.warn('full engine unavailable, using Lite',e)}}
     return window.COPPER_LITE?Engines.lite(t,u):Engines.direct(t,u);
   },
-  async lite(t,u){if(!window.COPPER_LITE)throw new Error('set COPPER_LITE in js/config.js');t.f.src=COPPER_LITE.replace(/\/$/,'')+'/?url='+encodeURIComponent(u)},
+  async lite(t,u){if(!window.COPPER_LITE)throw new Error('set COPPER_LITE in js/config.js');t.f.referrerPolicy='origin';t.f.src=COPPER_LITE.replace(/\/$/,'')+'/?url='+encodeURIComponent(u)},
   async uv(t,u){await initUV();t.f.src=__uv$config.prefix+__uv$config.encodeUrl(u)},
   async scramjet(t,u){const c=await initSJ();(t.sj??=c.createFrame(t.f)).go(u)},
   async direct(t,u){t.f.src=u}

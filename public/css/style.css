@@ -157,3 +157,7 @@ body.viewing #wall{display:none!important}
 .gart{display:grid;place-items:center;border:1px solid var(--line)}
 .gart img{width:44px;height:auto;aspect-ratio:auto;image-rendering:pixelated;filter:var(--golem);border-radius:0}
 .gcard b{font:600 17px var(--serif)}
+.foot a{color:var(--muted)}.foot a:hover{color:var(--text)}
+#an{position:fixed;left:20px;bottom:56px;max-width:360px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:5px;font:12px/1.5 var(--mono);color:var(--muted);z-index:30}
+#an button{padding:5px 10px;border:1px solid var(--line);border-radius:4px;color:var(--text)}
+#an #an-y{background:var(--accent);color:#120a04;border-color:var(--accent);font-weight:600}body.viewing #an{display:none}

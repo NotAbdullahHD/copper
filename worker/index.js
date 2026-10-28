@@ -2,8 +2,18 @@
 // and rewrites links/assets so everything flows through the Worker. No Node server, no Wisp needed.
 // Good for articles, docs, search, simple sites. No cookies/logins; heavy web apps won't run.
 const PRIVATE = /^(localhost|.*\.local|.*\.internal|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|\[?::1\]?$)/i;
-const DROP = ['x-frame-options','content-security-policy','content-security-policy-report-only','set-cookie','cross-origin-opener-policy','cross-origin-embedder-policy','content-length','content-encoding','strict-transport-security'];
+const DROP = ['x-frame-options','content-security-policy','content-security-policy-report-only','set-cookie','cross-origin-opener-policy','cross-origin-embedder-policy','content-length','content-encoding','strict-transport-security','referrer-policy'];
+// Only these sites may use this proxy. Add your own domain here when you get one (no trailing slash).
+const ALLOWED = ['https://copper.gghh.workers.dev'];
 const SKIP = /^(data:|javascript:|#|mailto:|tel:|blob:|about:)/i;
+
+function permitted(req, self) {
+  if (req.headers.get('sec-fetch-site') === 'same-origin') return true; // the proxied page loading its own assets
+  const origin = req.headers.get('origin') || '';
+  let ref = '';
+  try { ref = new URL(req.headers.get('referer')).origin; } catch {}
+  return [origin, ref].some(o => o === self.origin || ALLOWED.includes(o));
+}
 
 export default {
   async fetch(req) {
@@ -11,6 +21,7 @@ export default {
     const cors = { 'access-control-allow-origin': '*' };
     const raw = self.searchParams.get('url');
     if (!raw) return new Response('copper lite ok', { headers: cors });
+    if (!permitted(req, self)) return new Response('Copper Lite only works inside Copper.', { status: 403, headers: cors });
     let target;
     try { target = new URL(raw); } catch { return new Response('bad url', { status: 400, headers: cors }); }
     if (!/^https?:$/.test(target.protocol) || PRIVATE.test(target.hostname)) return new Response('blocked', { status: 403, headers: cors });
@@ -65,7 +76,8 @@ document.addEventListener('submit',e=>{const fm=e.target;if((fm.method||'get').t
     const hr = new HTMLRewriter()
       .on('base', { element(el) { el.remove(); } })
       .on('meta[http-equiv]', { element(el) { if (/content-security-policy|refresh/i.test(el.getAttribute('http-equiv'))) el.remove(); } })
-      .on('head', { element(el) { el.prepend(inject, { html: true }); } })
+      .on('meta[name="referrer"]', { element(el) { el.remove(); } })
+      .on('head', { element(el) { el.prepend('<meta name="referrer" content="origin">' + inject, { html: true }); } })
       .on('script[integrity], link[integrity]', strip(['integrity']))
       .on('script[nonce]', strip(['nonce']));
     [['a', 'href'], ['area', 'href'], ['link', 'href'], ['img', 'src'], ['script', 'src'], ['iframe', 'src'], ['source', 'src'],

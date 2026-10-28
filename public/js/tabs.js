@@ -72,7 +72,7 @@ async function load(t,u){
   const e=t.pre||store.get('engine',DEFAULT_ENGINE);
   if(t.engine&&t.engine!==e){const nf=document.createElement('iframe');nf.referrerPolicy='no-referrer';nf.allow='fullscreen';nf.title='page';
     nf.className=t.f.className;nf.onload=t.f.onload;t.f.replaceWith(nf);t.f=nf;t.sj=null}
-  t.engine=e;
+  t.engine=e;track('site_open',{engine:e});
   try{await Engines[e](t,u)}catch(err){console.error(err);toast(e+' failed ('+(err.message||err)+')');
     if(window.COPPER_LITE&&e!=='lite'){t.engine='lite';return Engines.lite(t,u)}t.f.src=u}
 }

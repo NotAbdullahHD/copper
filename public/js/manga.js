@@ -43,6 +43,7 @@ async function showList(){
 }
 
 async function openManga(m){
+  track('manga_open');
   back=showList;note('loading chapters…');
   try{
     const seen=new Map();

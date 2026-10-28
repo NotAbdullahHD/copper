@@ -9,7 +9,7 @@ function card(g){
   else{art=new Image();art.src=g.img;art.alt='';art.loading='lazy';art.onerror=()=>art.style.visibility='hidden'}
   const t=document.createElement('b');t.textContent=g.n;
   const s=document.createElement('small');s.textContent=g.own?'built in · by Copper':g.cat;
-  b.append(art,t,s);b.onclick=()=>g.run?g.run():playGame(g.n,g.u);return b;
+  b.append(art,t,s);b.onclick=()=>{track('game_play',{game:g.n});g.run?g.run():playGame(g.n,g.u)};return b;
 }
 function drawLib(){
   const all=[{n:'Golem Hop',cat:'arcade',own:true,run:startHop}].concat(GAMES.map(([n,h,p,i,c])=>({n,cat:c,u:GH[h]+p,img:GI+i})));

@@ -23,7 +23,7 @@ addEventListener('message',e=>{ // Lite frames report the key through the Worker
   if(e.data&&e.data.copperPanic&&[...document.querySelectorAll('#frames iframe')].some(f=>f.contentWindow===e.source))panic();
 });
 addEventListener('keydown',e=>{
-  if(recording){e.preventDefault();e.stopPropagation();recording=false;if(e.key!=='Escape')store.set('pkey',e.key);syncStealth();return}
+  if(recording){e.preventDefault();e.stopPropagation();recording=false;if(e.key!=='Escape'){store.set('pkey',e.key);badge('ready')}syncStealth();return}
   if(isPanic(e)){e.preventDefault();panic()}
 },true);
 

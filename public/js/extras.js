@@ -40,7 +40,7 @@ function step(){
   s.vy-=.62;s.y=Math.max(0,s.y+s.vy);if(s.y===0)s.vy=0;
   if(--s.next<=0){s.obs.push({x:cv.width,w:16+Math.random()*16|0,h:18+Math.random()*28|0});s.next=(42+Math.random()*50)*5/s.sp|0}
   s.obs.forEach(o=>o.x-=s.sp);s.obs=s.obs.filter(o=>o.x>-40);
-  for(const o of s.obs)if(78>o.x+4&&48<o.x+o.w-4&&s.y<o.h-4){s.dead=true;
+  for(const o of s.obs)if(78>o.x+4&&48<o.x+o.w-4&&s.y<o.h-4){s.dead=true;if(s.sc>=50)badge('hop50');
     if(s.sc>store.get('best',0)){store.set('best',Math.floor(s.sc));$('#best').textContent=Math.floor(s.sc)}}
 }
 function draw(){

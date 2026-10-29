@@ -20,7 +20,7 @@ function togglePin(i){
   const t=tabs[i],cur=tabs[act];t.pinned=!t.pinned;
   if(!t.pinned&&!t.f)tabs.splice(i,1);
   tabs.sort((a,b)=>!!b.pinned-!!a.pinned);act=tabs.indexOf(cur);
-  savePins();drawTabs();toast(t.pinned?'pinned · stays after you close Copper':'unpinned');
+  savePins();drawTabs();toast(t.pinned?'pinned · stays after you close Copper':'unpinned');if(t.pinned)badge('pinned');
 }
 
 /* recent sites (games excluded) */
@@ -77,6 +77,7 @@ async function load(t,u){
     if(window.COPPER_LITE&&e!=='lite'){t.engine='lite';return Engines.lite(t,u)}t.f.src=u}
 }
 function newTab(u,pre,title){
+  badge('first-tab');
   const t={u,title:title||host(u),fixed:title,pre};tabs.push(t);mkFrame(t);select(tabs.length-1);load(t,u);
 }
 function select(i){
@@ -97,12 +98,25 @@ $('#home-btn').onclick=goHome;
 $('#eng').value=store.get('engine',DEFAULT_ENGINE);
 $('#eng').onchange=e=>{store.set('engine',e.target.value);toast('engine · '+e.target.value+' (applies on next load)')};
 $('#back').onclick=()=>{let j=tabs.length-1;while(j>=0&&!tabs[j].f)j--;if(j>=0)select(j)};
+function navTab(dir){
+  const t=tabs[act];if(!t||!t.f)return;
+  if(window.COPPER_LITE&&t.f.src.startsWith(COPPER_LITE.replace(/\/$/,''))){t.f.contentWindow.postMessage({copperNav:dir},'*');return}
+  try{t.f.contentWindow.history[dir]()}catch{toast('back and forward need Lite, Scramjet or Ultraviolet')}
+}
+$('#nav-back').onclick=()=>navTab('back');$('#nav-fwd').onclick=()=>navTab('forward');
+addEventListener('message',e=>{ // Lite pages report their real address and title
+  const d=e.data&&e.data.copperPage;if(!d||!/^https?:\/\//.test(d.u||''))return;
+  const t=tabs.find(x=>x.f&&x.f.contentWindow===e.source);if(!t)return;
+  t.u=d.u;if(d.t&&!t.fixed)t.title=String(d.t).slice(0,40);if(t.pinned)savePins();if(tabs[act]===t)$('#url').value=d.u;drawTabs();
+});
 $('#reload').onclick=()=>act>=0&&load(tabs[act],tabs[act].u);
 $('#ext').onclick=$('#hint-ext').onclick=()=>act>=0&&window.open(tabs[act].u,'_blank','noopener');
 $('#url').addEventListener('keydown',e=>{if(e.key==='Enter'&&act>=0)load(tabs[act],toUrl(e.target.value))});
 addEventListener('keydown',e=>{
   const viewing=document.body.classList.contains('viewing');
   if(e.key==='Escape'&&viewing&&!$('#dlg').open)goHome();
+  if(viewing&&e.altKey&&e.key==='ArrowLeft'){e.preventDefault();navTab('back')}
+  if(viewing&&e.altKey&&e.key==='ArrowRight'){e.preventDefault();navTab('forward')}
   if(e.key==='/'&&!viewing&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();q.focus()}
 });
 drawTabs();

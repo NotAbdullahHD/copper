@@ -14,9 +14,10 @@
 
 <canvas id="wall"></canvas>
 <canvas id="dots"></canvas>
-<div class="top"><button id="open-games">games</button><button id="open-manga">manga</button><button id="open-set">settings</button></div>
+<div class="top"><button id="open-games">games</button><button id="open-manga">manga</button><button id="open-movies">movies</button><button id="open-set">settings</button></div>
 <main id="home">
   <h1 class="brand">copper</h1>
+  <p class="tag" id="tag"></p>
   <div class="searchwrap">
     <img id="golem" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAACACAYAAAD03Gy6AAADiUlEQVR4nO2dO4+MYRiG5/CNDXbXkiimokAcOlmRiGzEoSHR6IRGSFa7EqJR6PYfiELFDxDstqJAp5Gg2GjGIgjmtOb0ff7B/UTenVybuK/2+d73e2eueZL3POXSBufenUtFSvn5uw/L69WWcVChG/C/YwEwFgBjATAWAGMBMBYAk9ENiDhcn6abMFacATAWAGMBMBYAYwEwFgBjATAbfhzw6v0K3YSx4gyAsQAYC4CxABgLgLEAGAuASd4z8/bBdblvZ6qmhxrdZkvGa+WgiUF4MMplvBKUb/aGMn5k4VHSd+gMgLEAGAuAsQAYC4CxABgLgEleD9iaaYebM91NXm180y8odD++VqnKeH80kvGJLCqfdDwhxBkAYwEwFgBjATAWAGMBMBYAkzwOaLz7KONV3Y0vHVtckgOFm6cPyY74xaO7Zf2zi8uy/ltndP0XZnfJ+lNxBsBYAIwFwFgAjAXAWACMBcAkjwPyQTRfr9cDbpw6IPvh++vbZPlBrufrF04e1A8M+zL88kNDxlNxBsBYAIwFwFgAjAXAWACMBcAkjwOi7fu1YN/N1bl9Mt4b6H09vWDfzpXje2T8ddDP//lHjxNScQbAWACMBcBYAIwFwFgAjAXAlJ/fPis70ltq2lEWzPdPT+p7P4Pp/JDonG8RHCTOc72e0Wo3dfmS/gDdgY47A2AsAMYCYCwAxgJgLADGAmCy9ve2fCAPxgHRvpzBjJ7PrwQd+aLQ9QfhUh49END63ZXxrKrb3+0H9xX9c4vMumIBMBYAYwEwFgBjATAWAJMFx3hLwbWbpXKRNt8e1R9Mt4f9/Dcrn3X1Qfm9O7fLeCX4DUcfzxkAYwEwFgBjATAWAGMBMBYAk7XX1uQDxSZ9hCCabZ8sJmT80w+976YaHECo79D7jkbBvaOj4HxBt9+T8VpV/4bbff3/A84AGAuAsQAYC4CxABgLgLEAmOzpl458INj2Et4HdHlmSsaLYF9RJ1hP6ATniLOK/o0Nc13+8ar+n7NgOSRc73AGwFgAjAXAWACMBcBYAIwFwCT/n3DEs/kTuqMf9PPP3X+R1MYn1+bk+6N+/PnE90c4A2AsAMYCYCwAxgJgLADGAmCS7w2N+NXS6w3RvaOphPuexvv6EGcAjAXAWACMBcBYAIwFwFgAzNjHActf2XHAUvD+xOuEknEGwFgAjAXAWACMBcBYAIwFwPwFYL7D3D3oXiwAAAAASUVORK5CYII=" alt="Copper golem" title="Click me">
     <form id="sf" autocomplete="off">
@@ -29,12 +30,13 @@
   <div class="recent" id="recent"></div>
 </main>
 
-<div class="foot"><span>copper · v0.9 · <b id="stage">fresh</b> · <button id="open-notes">notes</button> · <a href="privacy.html">privacy</a></span><button id="back" hidden></button><span id="clock"></span></div>
+<div class="foot"><span>copper · v1.0 · <b id="stage">fresh</b><span id="streak"></span> · <button id="open-notes">notes</button> · <a href="privacy.html">privacy</a></span><button id="back" hidden></button><span id="clock"></span></div>
 
 <section id="view">
   <div class="tabs" id="tabs"></div>
   <div class="bar">
     <button class="ib" id="home-btn" title="Home (Esc)"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAACACAYAAAD03Gy6AAADiUlEQVR4nO2dO4+MYRiG5/CNDXbXkiimokAcOlmRiGzEoSHR6IRGSFa7EqJR6PYfiELFDxDstqJAp5Gg2GjGIgjmtOb0ff7B/UTenVybuK/2+d73e2eueZL3POXSBufenUtFSvn5uw/L69WWcVChG/C/YwEwFgBjATAWAGMBMBYAk9ENiDhcn6abMFacATAWAGMBMBYAYwEwFgBjATAbfhzw6v0K3YSx4gyAsQAYC4CxABgLgLEAGAuASd4z8/bBdblvZ6qmhxrdZkvGa+WgiUF4MMplvBKUb/aGMn5k4VHSd+gMgLEAGAuAsQAYC4CxABgLgEleD9iaaYebM91NXm180y8odD++VqnKeH80kvGJLCqfdDwhxBkAYwEwFgBjATAWAGMBMBYAkzwOaLz7KONV3Y0vHVtckgOFm6cPyY74xaO7Zf2zi8uy/ltndP0XZnfJ+lNxBsBYAIwFwFgAjAXAWACMBcAkjwPyQTRfr9cDbpw6IPvh++vbZPlBrufrF04e1A8M+zL88kNDxlNxBsBYAIwFwFgAjAXAWACMBcAkjwOi7fu1YN/N1bl9Mt4b6H09vWDfzpXje2T8ddDP//lHjxNScQbAWACMBcBYAIwFwFgAjAXAlJ/fPis70ltq2lEWzPdPT+p7P4Pp/JDonG8RHCTOc72e0Wo3dfmS/gDdgY47A2AsAMYCYCwAxgJgLADGAmCy9ve2fCAPxgHRvpzBjJ7PrwQd+aLQ9QfhUh49END63ZXxrKrb3+0H9xX9c4vMumIBMBYAYwEwFgBjATAWAJMFx3hLwbWbpXKRNt8e1R9Mt4f9/Dcrn3X1Qfm9O7fLeCX4DUcfzxkAYwEwFgBjATAWAGMBMBYAk7XX1uQDxSZ9hCCabZ8sJmT80w+976YaHECo79D7jkbBvaOj4HxBt9+T8VpV/4bbff3/A84AGAuAsQAYC4CxABgLgLEAmOzpl458INj2Et4HdHlmSsaLYF9RJ1hP6ATniLOK/o0Nc13+8ar+n7NgOSRc73AGwFgAjAXAWACMBcBYAIwFwCT/n3DEs/kTuqMf9PPP3X+R1MYn1+bk+6N+/PnE90c4A2AsAMYCYCwAxgJgLADGAmCS7w2N+NXS6w3RvaOphPuexvv6EGcAjAXAWACMBcBYAIwFwFgAzNjHActf2XHAUvD+xOuEknEGwFgAjAXAWACMBcBYAIwFwPwFYL7D3D3oXiwAAAAASUVORK5CYII=" alt=""></button>
+    <button class="ib" id="nav-back" title="Back (Alt+←)">←</button><button class="ib" id="nav-fwd" title="Forward (Alt+→)">→</button>
     <button class="ib" id="reload" title="Reload">↻</button>
     <input id="url" spellcheck="false" aria-label="Address">
     <select id="eng" title="Proxy engine"><option value="auto">Auto</option><option value="lite">Lite</option><option value="scramjet">Scramjet</option><option value="uv">Ultraviolet</option><option value="direct">Direct</option></select>
@@ -61,7 +63,7 @@
   <div class="set"><span>Panic goes to</span><input id="pk-url" placeholder="https://classroom.google.com"></div>
   <div class="set"><span>Background dots</span><span class="seg" id="s-dots"><button data-v="1">on</button><button data-v="0">off</button></span></div>
   <div class="set"><span>Analytics</span><span class="seg" id="s-an"><button data-v="1">on</button><button data-v="0">off</button></span></div>
-  <div class="set"><span>Data</span><span class="seg"><button id="s-tour">replay guide</button><button id="s-reset">reset shortcuts</button><button id="s-clear">clear everything</button></span></div></dialog>
+  <div class="set"><span>Data</span><span class="seg"><button id="s-badges">badges</button><button id="s-tour">replay guide</button><button id="s-reset">reset shortcuts</button><button id="s-clear">clear everything</button></span></div></dialog>
 <dialog id="nt" class="wide"><div class="dh"><h3>Notes</h3><button class="ib" id="nx">×</button></div>
   <textarea id="nta" placeholder="Jot something down…" spellcheck="false"></textarea><p class="hs">saved in this browser</p></dialog>
 <section id="gp"><div class="mg-bar lbar"><button class="ib" id="gp-back" title="Back (Esc)">←</button><h3>games</h3><input id="gp-q" placeholder="search games" spellcheck="false"></div>
@@ -74,6 +76,10 @@
 <section id="mg"><div class="mg-bar"><button class="ib" id="mg-back" title="Back (Esc)">←</button><h3>manga</h3>
   <span class="seg" id="mg-tabs"><button data-t="popular" class="on">popular</button><button data-t="latest">latest</button><button data-t="library">saved</button></span>
   <input id="mg-q" placeholder="search manga" spellcheck="false"></div><div id="mgbody"></div></section>
+<section id="mv"><div class="mg-bar"><button class="ib" id="mv-back" title="Back (Esc)">←</button><h3>movies</h3>
+  <span class="seg" id="mv-tabs"><button data-t="trending">trending</button><button data-t="classics">free classics</button></span>
+  <input id="mv-q" placeholder="search movies" spellcheck="false"></div><div id="mvbody"></div></section>
+<dialog id="bd" class="wide"><div class="dh"><h3>Badges</h3><button class="ib" id="bdx">×</button></div><div id="bdl"></div></dialog>
 <div id="toast"></div>
 <dialog id="dlg"><form method="dialog" id="df"><h3>New shortcut</h3>
   <input id="dn" placeholder="example.com" spellcheck="false">
@@ -87,10 +93,12 @@
 <script src="js/extras2.js"></script>
 <script src="js/dots.js"></script>
 <script src="js/cloak.js"></script>
+<script src="js/perks.js"></script>
 <script src="js/analytics.js"></script>
 <script src="js/games-data.js"></script>
 <script src="js/games.js"></script>
 <script src="js/manga.js"></script>
+<script src="js/movies.js"></script>
 <script src="js/guide.js"></script>
 </body>
 </html>

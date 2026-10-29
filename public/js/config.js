@@ -3,3 +3,6 @@ window.COPPER_LITE = 'https://copperlite.zeoghost.workers.dev';
 
 // Google Analytics 4 Measurement ID, e.g. 'G-ABC123XYZ'. Leave empty to turn analytics off completely.
 window.COPPER_GA = '';
+
+// Free TMDB API key (themoviedb.org/settings/api) for the movies page. Leave empty to show only the free classics.
+window.COPPER_TMDB = '';

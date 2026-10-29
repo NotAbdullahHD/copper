@@ -8,11 +8,13 @@ function card(g){
   if(g.own){art=document.createElement('div');art.className='gart';const i=new Image();i.src=$('#golem').src;i.alt='';art.append(i)}
   else{art=new Image();art.src=g.img;art.alt='';art.loading='lazy';art.onerror=()=>art.style.visibility='hidden'}
   const t=document.createElement('b');t.textContent=g.n;
-  const s=document.createElement('small');s.textContent=g.own?'built in · by Copper':g.cat;
-  b.append(art,t,s);b.onclick=()=>{track('game_play',{game:g.n});g.run?g.run():playGame(g.n,g.u)};return b;
+  const s=document.createElement('small');s.textContent=g.own?'built in · by Copper':g.today?'game of the day · '+g.cat:g.cat;if(g.today)b.classList.add('today');
+  b.append(art,t,s);b.onclick=()=>{track('game_play',{game:g.n});const pl=new Set(store.get('played',[]));pl.add(g.n);store.set('played',[...pl]);if(pl.size>=5)badge('gamer');g.run?g.run():playGame(g.n,g.u)};return b;
 }
 function drawLib(){
-  const all=[{n:'Golem Hop',cat:'arcade',own:true,run:startHop}].concat(GAMES.map(([n,h,p,i,c])=>({n,cat:c,u:GH[h]+p,img:GI+i})));
+  const di=Math.floor(Date.now()/864e5)%GAMES.length;
+  const list=GAMES.map(([n,h,p,i,c],k)=>({n,cat:c,u:GH[h]+p,img:GI+i,today:k===di}));
+  const all=[{n:'Golem Hop',cat:'arcade',own:true,run:startHop}].concat(list.filter(x=>x.today),list.filter(x=>!x.today));
   gl.replaceChildren(...all.filter(g=>(gcat==='all'||g.cat===gcat)&&g.n.toLowerCase().includes(gq)).map(card));
   $('#gp-cats').replaceChildren(...CATS.map(c=>{const b=document.createElement('button');b.textContent=c;b.className=c===gcat?'on':'';
     b.onclick=()=>{gcat=c;drawLib()};return b}));

@@ -27,7 +27,8 @@ export default {
     if (!/^https?:$/.test(target.protocol) || PRIVATE.test(target.hostname)) return new Response('blocked', { status: 403, headers: cors });
 
     const P = self.origin;
-    const px = u => `${P}/?url=${encodeURIComponent(u)}`;
+    const pk = (self.searchParams.get('pk') || '').slice(0, 20);
+    const px = u => `${P}/?url=${encodeURIComponent(u)}${pk ? '&pk=' + encodeURIComponent(pk) : ''}`;
     const abs = v => { try { return v && !SKIP.test(v.trim()) ? new URL(v.trim(), target).href : null; } catch { return null; } };
     const rw = v => { const a = abs(v); return a ? px(a) : v; };
 
@@ -61,8 +62,9 @@ export default {
     const srcset = { element(el) { const v = el.getAttribute('srcset'); if (v) el.setAttribute('srcset', v.split(',').map(p => { const [u, ...r] = p.trim().split(/\s+/); return [rw(u), ...r].join(' '); }).join(', ')); } };
     const strip = names => ({ element(el) { names.forEach(n => el.removeAttribute(n)); } });
 
-    const inject = `<script>(()=>{const P=${JSON.stringify(P)},T=${JSON.stringify(target.href)};
-const R=u=>{try{if(typeof u!=='string')u=String(u);const a=new URL(u,T);if(a.origin===P||!/^https?:/.test(a.protocol))return u;return P+'/?url='+encodeURIComponent(a.href)}catch{return u}};
+    const inject = `<script>(()=>{const P=${JSON.stringify(P)},T=${JSON.stringify(target.href)},K=${JSON.stringify(pk)},SX=K?'&pk='+encodeURIComponent(K):'';
+document.addEventListener('keydown',e=>{if(K&&e.key===K&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();parent.postMessage({copperPanic:1},'*')}},true);
+const R=u=>{try{if(typeof u!=='string')u=String(u);const a=new URL(u,T);if(a.origin===P||!/^https?:/.test(a.protocol))return u;return P+'/?url='+encodeURIComponent(a.href)+SX}catch{return u}};
 const f=window.fetch;window.fetch=(i,o)=>f(i instanceof Request?new Request(R(i.url),i):R(i),o);
 const x=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u,...r){return x.call(this,m,R(u),...r)};
 const wo=window.open;window.open=(u,...r)=>wo(u?R(u):u,...r);

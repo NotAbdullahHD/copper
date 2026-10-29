@@ -63,7 +63,7 @@ function drawTabs(){
 
 function mkFrame(t){
   const f=document.createElement('iframe');f.referrerPolicy='no-referrer';f.allow='fullscreen';f.title='page';frames.append(f);
-  f.onload=()=>{if(t===tabs[act]){bar.style.width='100%';setTimeout(()=>bar.style.width='0',350)}};
+  f.onload=()=>{hookPanic(f);if(t===tabs[act]){bar.style.width='100%';setTimeout(()=>bar.style.width='0',350)}};
   t.f=f;t.sj=null;
 }
 async function load(t,u){

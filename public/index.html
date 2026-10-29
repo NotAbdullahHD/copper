@@ -13,6 +13,7 @@
 <body>
 
 <canvas id="wall"></canvas>
+<canvas id="dots"></canvas>
 <div class="top"><button id="open-games">games</button><button id="open-manga">manga</button><button id="open-set">settings</button></div>
 <main id="home">
   <h1 class="brand">copper</h1>
@@ -28,7 +29,7 @@
   <div class="recent" id="recent"></div>
 </main>
 
-<div class="foot"><span>copper · v0.8 · <b id="stage">fresh</b> · <button id="open-notes">notes</button> · <a href="privacy.html">privacy</a></span><button id="back" hidden></button><span id="clock"></span></div>
+<div class="foot"><span>copper · v0.9 · <b id="stage">fresh</b> · <button id="open-notes">notes</button> · <a href="privacy.html">privacy</a></span><button id="back" hidden></button><span id="clock"></span></div>
 
 <section id="view">
   <div class="tabs" id="tabs"></div>
@@ -53,8 +54,14 @@
   <div class="set"><span>Search</span><select id="s-se"><option value="ddg">DuckDuckGo</option><option value="brave">Brave</option><option value="bing">Bing</option><option value="google">Google</option></select></div>
   <div class="set"><span>Copper</span><span class="seg" id="s-pat"><button data-s="auto">auto</button><button data-s="0">fresh</button><button data-s="1">exposed</button><button data-s="2">weathered</button><button data-s="3">oxidized</button></span></div>
   <div class="set"><span>Wallpaper</span><span class="seg" id="s-wall"><button data-v="none">none</button><button data-v="night">night</button><button data-v="cave">cave</button><button data-v="desert">desert</button></span></div>
+  <div class="set"><span>Tab cloak</span><select id="s-cloak"><option value="off">off</option><option value="docs">Google Docs</option><option value="class">Classroom</option><option value="drive">Drive</option><option value="cal">Calendar</option><option value="custom">custom…</option></select></div>
+  <div class="set" id="cloak-custom" hidden><input id="cc-t" placeholder="tab title"><input id="cc-i" placeholder="icon: a site like docs.google.com, or an image link"></div>
+  <div class="set"><span>Cloak when</span><span class="seg" id="s-cmode"><button data-v="always">always</button><button data-v="away">I switch tabs</button></span></div>
+  <div class="set"><span>Panic key</span><span class="seg"><button id="pk-set"></button></span></div>
+  <div class="set"><span>Panic goes to</span><input id="pk-url" placeholder="https://classroom.google.com"></div>
+  <div class="set"><span>Background dots</span><span class="seg" id="s-dots"><button data-v="1">on</button><button data-v="0">off</button></span></div>
   <div class="set"><span>Analytics</span><span class="seg" id="s-an"><button data-v="1">on</button><button data-v="0">off</button></span></div>
-  <div class="set"><span>Data</span><span class="seg"><button id="s-reset">reset shortcuts</button><button id="s-clear">clear everything</button></span></div></dialog>
+  <div class="set"><span>Data</span><span class="seg"><button id="s-tour">replay guide</button><button id="s-reset">reset shortcuts</button><button id="s-clear">clear everything</button></span></div></dialog>
 <dialog id="nt" class="wide"><div class="dh"><h3>Notes</h3><button class="ib" id="nx">×</button></div>
   <textarea id="nta" placeholder="Jot something down…" spellcheck="false"></textarea><p class="hs">saved in this browser</p></dialog>
 <section id="gp"><div class="mg-bar lbar"><button class="ib" id="gp-back" title="Back (Esc)">←</button><h3>games</h3><input id="gp-q" placeholder="search games" spellcheck="false"></div>
@@ -78,9 +85,12 @@
 <script src="js/tabs.js"></script>
 <script src="js/extras.js"></script>
 <script src="js/extras2.js"></script>
+<script src="js/dots.js"></script>
+<script src="js/cloak.js"></script>
 <script src="js/analytics.js"></script>
 <script src="js/games-data.js"></script>
 <script src="js/games.js"></script>
 <script src="js/manga.js"></script>
+<script src="js/guide.js"></script>
 </body>
 </html>

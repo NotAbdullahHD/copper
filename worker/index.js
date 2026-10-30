@@ -5,6 +5,7 @@ const PRIVATE = /^(localhost|.*\.local|.*\.internal|127\.|10\.|192\.168\.|169\.2
 const DROP = ['x-frame-options','content-security-policy','content-security-policy-report-only','set-cookie','cross-origin-opener-policy','cross-origin-embedder-policy','content-length','content-encoding','strict-transport-security','referrer-policy'];
 // Only these sites may use this proxy. Add your own domain here when you get one (no trailing slash).
 const ALLOWED = ['https://copper.gghh.workers.dev'];
+const VERSION = 4; // bump when the browser side needs something new; Copper warns if your deployed copy is older
 const SKIP = /^(data:|javascript:|#|mailto:|tel:|blob:|about:)/i;
 
 function permitted(req, self) {
@@ -15,12 +16,44 @@ function permitted(req, self) {
   return [origin, ref].some(o => o === self.origin || ALLOWED.includes(o));
 }
 
+async function watchmode(self, req, env, ctx) {
+  const hdr = { 'access-control-allow-origin': '*', 'content-type': 'application/json' };
+  const out = (o, status = 200, extra = {}) => new Response(JSON.stringify(o), { status, headers: { ...hdr, ...extra } });
+  if (!permitted(req, self)) return out({ error: 'blocked' }, 403);
+  if (!env.WATCHMODE_KEY) return out({ error: 'not configured' }, 501);
+  const tmdb = (self.searchParams.get('tmdb') || '').replace(/\D/g, '').slice(0, 10);
+  const region = (self.searchParams.get('region') || 'US').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2) || 'US';
+  if (!tmdb) return out({ error: 'missing tmdb id' }, 400);
+  const cache = caches.default, ck = new Request(`https://watchmode.cache/${tmdb}/${region}`);
+  const hit = await cache.match(ck);
+  if (hit) return new Response(hit.body, { headers: hdr });
+  const base = env.WATCHMODE_BASE || 'https://api.watchmode.com/v1', key = encodeURIComponent(env.WATCHMODE_KEY);
+  let r = await fetch(`${base}/title/movie-${tmdb}/sources/?apiKey=${key}&regions=${region}`);
+  if (!r.ok) { // fall back to looking the title up by its TMDB id
+    const s = await fetch(`${base}/search/?apiKey=${key}&search_field=tmdb_movie_id&search_value=${tmdb}`).then(x => x.json()).catch(() => ({}));
+    const id = s.title_results && s.title_results[0] && s.title_results[0].id;
+    if (!id) return out({ sources: [] }, 200, { 'cache-control': 'public, max-age=3600' });
+    r = await fetch(`${base}/title/${id}/sources/?apiKey=${key}&regions=${region}`);
+  }
+  if (!r.ok) return out({ error: 'watchmode ' + r.status }, 502);
+  const seen = new Set(), sources = [];
+  for (const s of await r.json()) {
+    if (!['sub', 'free', 'rent', 'buy'].includes(s.type)) continue;
+    const k = s.name + s.type; if (seen.has(k)) continue; seen.add(k);
+    sources.push({ name: s.name, type: s.type, url: s.web_url || '' });
+  }
+  const res = out({ sources }, 200, { 'cache-control': 'public, max-age=86400' });
+  ctx.waitUntil(cache.put(ck, res.clone()));
+  return res;
+}
+
 export default {
-  async fetch(req) {
+  async fetch(req, env, ctx) {
     const self = new URL(req.url);
     const cors = { 'access-control-allow-origin': '*' };
     const raw = self.searchParams.get('url');
-    if (!raw) return new Response('copper lite ok', { headers: cors });
+    if (self.pathname === '/wm') return watchmode(self, req, env || {}, ctx);
+    if (!raw) return new Response('copper lite ok v' + VERSION, { headers: cors });
     if (!permitted(req, self)) return new Response('Copper Lite only works inside Copper.', { status: 403, headers: cors });
     let target;
     try { target = new URL(raw); } catch { return new Response('bad url', { status: 400, headers: cors }); }

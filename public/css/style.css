@@ -1,3 +1,7 @@
+@font-face{font-family:"Pixelify Sans";font-weight:500;font-display:swap;src:url(../fonts/pixelify-sans-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Pixelify Sans";font-weight:600;font-display:swap;src:url(../fonts/pixelify-sans-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"DM Mono";font-weight:400;font-display:swap;src:url(../fonts/dm-mono-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"DM Mono";font-weight:500;font-display:swap;src:url(../fonts/dm-mono-latin-500-normal.woff2) format("woff2")}
 :root{
   --bg:#0c0b0a; --surface:#151311; --line:#27221d; --text:#f0e9e1; --muted:#8c8279;
   --accent:#ff7b2e; --golem:none; --w:588px;
@@ -8,12 +12,12 @@
 :root[data-stage="oxidized"]{--accent:#3ecdb2;--golem:hue-rotate(148deg) saturate(1.1)}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%}
-body{background:var(--bg);color:var(--text);font:15px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
+body{background:var(--bg);color:var(--text);font:14px/1.5 var(--mono);overflow:hidden}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 ::selection{background:var(--accent);color:#000}
 
 /* ---------- home ---------- */
-#home{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;padding-top:clamp(72px,24vh,260px)}
+#home{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;padding-top:clamp(72px,27vh,300px)}
 .brand{position:relative;font:600 clamp(56px,8vw,84px)/1 var(--serif);letter-spacing:.01em;margin-bottom:12px}
 
 .searchwrap{position:relative;width:min(var(--w),92vw)}
@@ -86,7 +90,7 @@ dialog input:focus{border-color:var(--accent)}
 dialog .row{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 dialog .row button{height:38px;padding:0 16px;border-radius:5px}
 dialog .row .ok{background:var(--accent);color:#120a04;font-weight:600}
-@media(max-width:520px){.tiles{gap:8px}.tile span{display:none}.foot span:first-child{display:none}.foot{justify-content:center}}
+@media(max-width:520px){.tiles{gap:8px}.tile span{display:none}.foot{flex-direction:column;align-items:center;gap:3px;padding:12px}}
 #eng{height:34px;border-radius:5px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font:12px var(--mono);padding:0 8px;outline:0}
 #eng:focus{border-color:var(--accent)}
 .top{position:fixed;top:16px;right:20px;display:flex;gap:4px;z-index:3}
@@ -183,3 +187,17 @@ a.mg-btn{display:inline-flex;align-items:center}
 .mv-chip{padding:5px 10px;border:1px solid var(--line);border-radius:4px;font-size:12.5px}
 .gcard.today{border-color:var(--accent)}
 #bdl .set b{color:var(--text);font-weight:500}#bdl .set small{font:11px var(--mono)}#bdl .lock{opacity:.55}
+a{text-decoration:none}
+.mg-desc,#g-card p,.mv-chip{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.tile:not(.add),#sf{background:color-mix(in srgb,var(--surface) 84%,transparent)}
+#nav-back,#nav-fwd,#reload,#ext{color:var(--text);font-size:17px}
+.grp{font:11px var(--mono);letter-spacing:.1em;color:var(--accent);margin:20px 0 4px}.grp:first-of-type{margin-top:6px}
+.status{font:12px var(--mono);color:var(--muted)}
+.mg-empty{display:grid;justify-items:center;gap:14px;margin-top:90px;text-align:center;color:var(--muted);font:13px var(--mono)}
+.mg-empty img{width:40px;image-rendering:pixelated;filter:var(--golem);opacity:.85}
+.mg-empty.busy img{animation:ebob .5s steps(2) infinite}@keyframes ebob{50%{transform:translateY(-5px)}}
+.gart.init{font:600 30px var(--serif);color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,var(--bg))}
+a.mv-chip:hover{border-color:var(--accent)}
+a{color:inherit}
+.mv-chip{color:var(--text)}
+.mg-detail .mv-prov{margin:22px 0 0;max-width:none}

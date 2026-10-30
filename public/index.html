@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Copper</title>
 <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAABACAYAAABcIPRGAAACi0lEQVR4nO1aPWsVQRTdj1mD+TIKFq/SIgY/OokIQYJobBTS2AVtJIHYRlBsLOzyD8Qilf4AMSatWKidjaApgs0ziahE39u3ydt9O2N9zoMdHi5cBuZ0d2b2zpy9987cO7thUDOePbljqvqXn74I65wvqlOZBDwBaai6FV5sjNetshLOW8ATkEbtMfDh63bdKivhvAU8AWlY85LPa/chtxlLMGyyVhvkJCSVJBalBjmi/la3B/KllZeVa3TeAp6ANKznwIhCjkcVuuRO8yc+YNDHkygGOS9LkIcU91eWE31w3gKegDSsMdD88g3kGF08mFndgKB4OHcBnHjh8mkYP726CeMf3cDxt6dP2ZYEcN4CnoA0rDGgC97X8Rx4cP0c+PDZxjHoLzTu6yvXzmNDLwfx/VbTtiSA8xbwBKRhjQFO7xPKXRZnp0DuFpjrdCm3uXdlEuSP5PP7hxgTNjhvAU9AGuHbxzfBSYcT5KRo3x8fxbtPbUnfueY1VCRrjedMO21hf4ATZAXKzlvAE5CGSn+l0KApBjiXKSZwn4/IyY0xJOOEmhsI7b8ZLjBG/VlO90qV2hyAJyANRSVuQFeXQWiq920eH1h8/tP2Lg6n/jMnj4Mc0Tvm6Zy3gCcgDZUeHECDOYIlAu/ao2YI5O+/MXeJqYBonMDcqaS705LqhSzvgpzE+I7THL8fOG8BT0Aaan2vAw0x18CU69ydGAPZUK7UoXOiQzWyivCd9TT2v9rBb250DPWdO85bwBOQxsD/r71ZvopOTz5/6/m7Sp2vl2bhefbxecvzDOct4AlIY+D/hf608dzgu1Mb+nKvQRdAcN4CnoA0Bo6BzR//FwMb9LzlmsgK5y3gCUjjH2dCw1yGxO66AAAAAElFTkSuQmCC">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Pixelify+Sans:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -47,24 +44,31 @@
   <div id="hint">Blank page? Many sites block embedding.<a id="hint-ext">Open in new tab ↗</a></div>
 </section>
 
-<dialog id="gm" class="wide"><div class="dh"><h3>Games</h3><button class="ib" id="gx">×</button></div>
+<dialog id="gm" class="wide"><div class="dh"><h3>golem hop</h3><button class="ib" id="gx">×</button></div>
   <canvas id="gc" width="520" height="190"></canvas>
   <p class="hs">golem hop · space or tap to jump · best <b id="best">0</b></p>
 </dialog>
-<dialog id="st" class="wide"><div class="dh"><h3>Settings</h3><button class="ib" id="sx">×</button></div>
+<dialog id="st" class="wide">
+  <div class="dh"><h3>settings</h3><button class="ib" id="sx">×</button></div>
+  <p class="grp">browsing</p>
   <div class="set"><span>Engine</span><select id="s-eng"><option value="auto">Auto</option><option value="lite">Lite</option><option value="scramjet">Scramjet</option><option value="uv">Ultraviolet</option><option value="direct">Direct</option></select></div>
+  <div class="set"><span>Lite Worker</span><span id="s-lite" class="status">…</span></div>
   <div class="set"><span>Search</span><select id="s-se"><option value="ddg">DuckDuckGo</option><option value="brave">Brave</option><option value="bing">Bing</option><option value="google">Google</option></select></div>
+  <p class="grp">look</p>
   <div class="set"><span>Copper</span><span class="seg" id="s-pat"><button data-s="auto">auto</button><button data-s="0">fresh</button><button data-s="1">exposed</button><button data-s="2">weathered</button><button data-s="3">oxidized</button></span></div>
   <div class="set"><span>Wallpaper</span><span class="seg" id="s-wall"><button data-v="none">none</button><button data-v="night">night</button><button data-v="cave">cave</button><button data-v="desert">desert</button></span></div>
+  <div class="set"><span>Background dots</span><span class="seg" id="s-dots"><button data-v="1">on</button><button data-v="0">off</button></span></div>
+  <p class="grp">privacy</p>
   <div class="set"><span>Tab cloak</span><select id="s-cloak"><option value="off">off</option><option value="docs">Google Docs</option><option value="class">Classroom</option><option value="drive">Drive</option><option value="cal">Calendar</option><option value="custom">custom…</option></select></div>
   <div class="set" id="cloak-custom" hidden><input id="cc-t" placeholder="tab title"><input id="cc-i" placeholder="icon: a site like docs.google.com, or an image link"></div>
   <div class="set"><span>Cloak when</span><span class="seg" id="s-cmode"><button data-v="always">always</button><button data-v="away">I switch tabs</button></span></div>
   <div class="set"><span>Panic key</span><span class="seg"><button id="pk-set"></button></span></div>
   <div class="set"><span>Panic goes to</span><input id="pk-url" placeholder="https://classroom.google.com"></div>
-  <div class="set"><span>Background dots</span><span class="seg" id="s-dots"><button data-v="1">on</button><button data-v="0">off</button></span></div>
   <div class="set"><span>Analytics</span><span class="seg" id="s-an"><button data-v="1">on</button><button data-v="0">off</button></span></div>
-  <div class="set"><span>Data</span><span class="seg"><button id="s-badges">badges</button><button id="s-tour">replay guide</button><button id="s-reset">reset shortcuts</button><button id="s-clear">clear everything</button></span></div></dialog>
-<dialog id="nt" class="wide"><div class="dh"><h3>Notes</h3><button class="ib" id="nx">×</button></div>
+  <p class="grp">your data</p>
+  <div class="set"><span>Data</span><span class="seg"><button id="s-badges">badges</button><button id="s-tour">replay guide</button><button id="s-reset">reset shortcuts</button><button id="s-clear">clear everything</button></span></div>
+</dialog>
+<dialog id="nt" class="wide"><div class="dh"><h3>notes</h3><button class="ib" id="nx">×</button></div>
   <textarea id="nta" placeholder="Jot something down…" spellcheck="false"></textarea><p class="hs">saved in this browser</p></dialog>
 <section id="gp"><div class="mg-bar lbar"><button class="ib" id="gp-back" title="Back (Esc)">←</button><h3>games</h3><input id="gp-q" placeholder="search games" spellcheck="false"></div>
   <div id="gpbody"><div class="seg gp-cats" id="gp-cats"></div><div class="mg-grid g-grid" id="gl"></div>
@@ -77,11 +81,10 @@
   <span class="seg" id="mg-tabs"><button data-t="popular" class="on">popular</button><button data-t="latest">latest</button><button data-t="library">saved</button></span>
   <input id="mg-q" placeholder="search manga" spellcheck="false"></div><div id="mgbody"></div></section>
 <section id="mv"><div class="mg-bar"><button class="ib" id="mv-back" title="Back (Esc)">←</button><h3>movies</h3>
-  <span class="seg" id="mv-tabs"><button data-t="trending">trending</button><button data-t="classics">free classics</button></span>
   <input id="mv-q" placeholder="search movies" spellcheck="false"></div><div id="mvbody"></div></section>
-<dialog id="bd" class="wide"><div class="dh"><h3>Badges</h3><button class="ib" id="bdx">×</button></div><div id="bdl"></div></dialog>
+<dialog id="bd" class="wide"><div class="dh"><h3>badges</h3><button class="ib" id="bdx">×</button></div><div id="bdl"></div></dialog>
 <div id="toast"></div>
-<dialog id="dlg"><form method="dialog" id="df"><h3>New shortcut</h3>
+<dialog id="dlg"><form method="dialog" id="df"><h3>new shortcut</h3>
   <input id="dn" placeholder="example.com" spellcheck="false">
   <div class="row"><button type="button" id="dc">Cancel</button><button class="ok">Add</button></div></form></dialog>
 

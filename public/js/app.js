@@ -11,7 +11,7 @@ function stageIdx(){
   return d<2?0:d<5?1:d<10?2:3;
 }
 function paint(){const s=STAGES[stageIdx()];root.dataset.stage=s;$('#stage').textContent=s+(store.get('wax',null)!==null?' · waxed':'')}
-let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),1800)}
+let toastT;function toast(m,ms=1800){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),ms)}
 $('#golem').addEventListener('click',e=>{
   if(e.shiftKey){store.set('wax',null);paint();toast('unwaxed · oxidizing naturally');return}
   const n=(stageIdx()+1)%4;store.set('wax',n);paint();toast('waxed · '+STAGES[n]+' (shift+click to unwax)');

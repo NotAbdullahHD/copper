@@ -14,7 +14,12 @@ const h=(t,p={},...k)=>{const e=document.createElement(t);
 const mTitle=m=>{const t=m.attributes.title;return t.en||Object.values(t)[0]||'Untitled'};
 const cover=(m,sz=256)=>{const r=m.relationships.find(x=>x.type==='cover_art');
   return r&&r.attributes?lite(`https://uploads.mangadex.org/covers/${m.id}/${r.attributes.fileName}.${sz}.jpg`):''};
-const note=t=>mgb.replaceChildren(h('p',{class:'mg-note'},t));
+function empty(t,retry,busy){
+  t=/failed to fetch|networkerror|load failed/i.test(t)?"couldn't reach the server. check your connection and try again":t;
+  const i=new Image();i.src=$('#golem').src;i.alt='';
+  return h('div',{class:'mg-empty'+(busy?' busy':'')},i,h('span',{},t),retry?h('button',{class:'mg-btn',onclick:retry},'try again'):null);
+}
+const note=(t,retry)=>mgb.replaceChildren(empty(t,retry,t==='loading…'||t==='loading chapters…'||t==='loading chapter…'));
 const credit=()=>h('p',{class:'mg-credit'},'data and images from MangaDex');
 
 let tab='popular',query='',cur=null,back=closeManga;
@@ -39,7 +44,7 @@ async function showList(){
     if(!d.data.length)return note('no results');
     mgb.replaceChildren(h('div',{class:'mg-grid'},...d.data.map(m=>h('button',{class:'mg-card',onclick:()=>openManga(m)},
       h('img',{src:cover(m),loading:'lazy',alt:''}),h('span',{},mTitle(m))))),credit());
-  }catch(e){note(e.message)}
+  }catch(e){note(e.message,showList)}
 }
 
 async function openManga(m){

@@ -6,10 +6,10 @@ const CATS=['all','racing','arcade','puzzle','sports','action','sandbox','classi
 function card(g){
   const b=document.createElement('button');b.className='gcard';let art;
   if(g.own){art=document.createElement('div');art.className='gart';const i=new Image();i.src=$('#golem').src;i.alt='';art.append(i)}
-  else{art=new Image();art.src=g.img;art.alt='';art.loading='lazy';art.onerror=()=>art.style.visibility='hidden'}
+  else{art=new Image();art.src=g.img;art.alt='';art.loading='lazy';art.onerror=()=>{const f=document.createElement('div');f.className='gart init';f.textContent=g.n.split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();art.replaceWith(f)}}
   const t=document.createElement('b');t.textContent=g.n;
   const s=document.createElement('small');s.textContent=g.own?'built in · by Copper':g.today?'game of the day · '+g.cat:g.cat;if(g.today)b.classList.add('today');
-  b.append(art,t,s);b.onclick=()=>{track('game_play',{game:g.n});const pl=new Set(store.get('played',[]));pl.add(g.n);store.set('played',[...pl]);if(pl.size>=5)badge('gamer');g.run?g.run():playGame(g.n,g.u)};return b;
+  b.append(art,t,s);b.onclick=()=>{track('game_play',{game:g.n});const pl=new Set(store.get('played',[]));pl.add(g.n);store.set('played',[...pl]);if(pl.size>=5)badge('gamer');if(pl.size>=15)badge('gamer15');g.run?g.run():playGame(g.n,g.u)};return b;
 }
 function drawLib(){
   const di=Math.floor(Date.now()/864e5)%GAMES.length;

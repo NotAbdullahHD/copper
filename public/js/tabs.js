@@ -61,9 +61,18 @@ function drawTabs(){
   drawRecent();
 }
 
+function syncSame(t){ // Scramjet and Ultraviolet pages share our origin, so we can read their title (and UV's real address)
+  try{
+    const d=t.f.contentDocument;if(!d)return;
+    if(d.title&&!t.fixed)t.title=d.title.slice(0,40);
+    if(window.__uv$config){const p=t.f.contentWindow.location.pathname,x=__uv$config.prefix;
+      if(p.startsWith(x)){const u=__uv$config.decodeUrl(p.slice(x.length));if(/^https?:\/\//.test(u)){t.u=u;if(tabs[act]===t)$('#url').value=u}}}
+    drawTabs();
+  }catch{}
+}
 function mkFrame(t){
   const f=document.createElement('iframe');f.referrerPolicy='no-referrer';f.allow='fullscreen';f.title='page';frames.append(f);
-  f.onload=()=>{hookPanic(f);if(t===tabs[act]){bar.style.width='100%';setTimeout(()=>bar.style.width='0',350)}};
+  f.onload=()=>{hookPanic(f);syncSame(t);if(t===tabs[act]){bar.style.width='100%';setTimeout(()=>bar.style.width='0',350)}};
   t.f=f;t.sj=null;
 }
 async function load(t,u){
@@ -77,7 +86,7 @@ async function load(t,u){
     if(window.COPPER_LITE&&e!=='lite'){t.engine='lite';return Engines.lite(t,u)}t.f.src=u}
 }
 function newTab(u,pre,title){
-  badge('first-tab');
+  badge('first-tab');{const n=store.get('opened',0)+1;store.set('opened',n);if(n>=100)badge('tabs100')}
   const t={u,title:title||host(u),fixed:title,pre};tabs.push(t);mkFrame(t);select(tabs.length-1);load(t,u);
 }
 function select(i){
@@ -101,6 +110,7 @@ $('#back').onclick=()=>{let j=tabs.length-1;while(j>=0&&!tabs[j].f)j--;if(j>=0)s
 function navTab(dir){
   const t=tabs[act];if(!t||!t.f)return;
   if(window.COPPER_LITE&&t.f.src.startsWith(COPPER_LITE.replace(/\/$/,''))){t.f.contentWindow.postMessage({copperNav:dir},'*');return}
+  if(t.sj){t.sj[dir]();return}
   try{t.f.contentWindow.history[dir]()}catch{toast('back and forward need Lite, Scramjet or Ultraviolet')}
 }
 $('#nav-back').onclick=()=>navTab('back');$('#nav-fwd').onclick=()=>navTab('forward');

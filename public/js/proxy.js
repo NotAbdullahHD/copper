@@ -35,14 +35,27 @@ function initSJ(){return sjP??=(async()=>{
   const c=new $scramjetController.Controller({serviceworker:sw,transport});
   await c.wait();return c;
 })().catch(e=>{sjP=null;throw e})}
-const DEFAULT_ENGINE='auto';
+const DEFAULT_ENGINE='auto',LITE_NEEDED=4;
+let liteState=null; // null = unchecked, else {ok,v}
+async function liteCheck(){
+  if(!window.COPPER_LITE)return liteState={ok:false,none:true};
+  if(liteState)return liteState;
+  try{const t=await(await fetch(COPPER_LITE.replace(/\/$/,'')+'/')).text(),m=/ v(\d+)/.exec(t);liteState={ok:!!m&&+m[1]>=LITE_NEEDED,v:m?+m[1]:1}}
+  catch{liteState={ok:false,down:true}}
+  if(!liteState.ok&&!liteState.none&&!liteState.down)toast('Your Lite Worker is out of date · redeploy copper-lite-worker.js',6000);
+  return liteState;
+}
 let fullDead=false;
+$('#open-set').addEventListener('click',async()=>{
+  const el=$('#s-lite');el.textContent='checking…';liteState=null;const s=await liteCheck();
+  el.textContent=s.none?'not set (js/config.js)':s.down?"can't reach it":s.ok?'up to date · v'+s.v:'outdated · redeploy the worker file';
+});
 const Engines={
   async auto(t,u){
     if(!fullDead){try{await Engines.scramjet(t,u);return}catch(e){fullDead=true;console.warn('full engine unavailable, using Lite',e)}}
     return window.COPPER_LITE?Engines.lite(t,u):Engines.direct(t,u);
   },
-  async lite(t,u){if(!window.COPPER_LITE)throw new Error('set COPPER_LITE in js/config.js');t.f.referrerPolicy='origin';t.f.src=COPPER_LITE.replace(/\/$/,'')+'/?url='+encodeURIComponent(u)+'&pk='+encodeURIComponent(store.get('pkey','`'))},
+  async lite(t,u){liteCheck();if(!window.COPPER_LITE)throw new Error('set COPPER_LITE in js/config.js');t.f.referrerPolicy='origin';t.f.src=COPPER_LITE.replace(/\/$/,'')+'/?url='+encodeURIComponent(u)+'&pk='+encodeURIComponent(store.get('pkey','`'))},
   async uv(t,u){await initUV();t.f.src=__uv$config.prefix+__uv$config.encodeUrl(u)},
   async scramjet(t,u){const c=await initSJ();(t.sj??=c.createFrame(t.f)).go(u)},
   async direct(t,u){t.f.src=u}

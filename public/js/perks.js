@@ -12,7 +12,7 @@ function badge(id){const b=store.get('badges',[]);if(b.includes(id)||!BADGES[id]
 /* streak: a flame in the corner whose glow changes color the longer you keep it going */
 const FLAME=['....#....','....##...','...###...','...####..','..#######','.########','.########','.########','.#######.','..#####..','...###...'];
 const FLAME_IN=['.........','.........','.........','.........','.........','....#....','...###...','..#####..','..#####..','...###...','.........'];
-const TIERS=[[1,'#ff7b2e','orange'],[3,'#ff4d2e','red'],[7,'#ff3d9a','pink'],[14,'#a855f7','purple'],[30,'#6d7bff','blue']];
+const TIERS=[[1,'#d9854f','ember'],[3,'#ffa31f','gold'],[10,'#ff7410','orange'],[30,'#ff4b4b','red'],[100,'#ff3fa4','pink'],[200,'#a35cf6','purple']];
 const tierOf=s=>[...TIERS].reverse().find(t=>s>=t[0])||TIERS[0];
 const lighten=(hex,k)=>'#'+[1,3,5].map(i=>Math.round(parseInt(hex.slice(i,i+2),16)+(255-parseInt(hex.slice(i,i+2),16))*k).toString(16).padStart(2,'0')).join('');
 function flameSvg(c){
@@ -22,8 +22,19 @@ function flameSvg(c){
 function drawStreak(s){
   const t=tierOf(s),el=$('#streak');el.style.setProperty('--sc',t[1]);el.innerHTML=flameSvg(t[1])+'<span>'+s+'</span>';
   const next=TIERS.find(x=>x[0]>s);
-  el.dataset.tip=s+'-day streak'+(next?' · '+(next[0]-s)+' more day'+(next[0]-s>1?'s':'')+' for '+next[2]:' · top color reached');
-  el.title=el.dataset.tip;el.onclick=()=>toast(el.dataset.tip);
+  el.title=s+'-day streak'+(next?' · '+(next[0]-s)+' more day'+(next[0]-s>1?'s':'')+' for '+next[2]:' · top color reached');
+  el.onclick=()=>streakInfo(s);
+}
+let skd=null;
+function streakInfo(s){
+  if(!skd){skd=document.createElement('dialog');skd.className='wide';skd.id='sk';document.body.append(skd);
+    skd.addEventListener('click',e=>{if(e.target===skd||e.target.id==='skx')skd.close()})}
+  const t=tierOf(s),next=TIERS.find(x=>x[0]>s),steps=TIERS.slice(1);
+  skd.innerHTML=`<div class="dh"><h3>streak</h3><button class="ib" id="skx">×</button></div>
+    <div class="sk-big" style="--sc:${t[1]}">${flameSvg(t[1])}<b>${s}</b><span>day${s>1?'s':''}</span></div>
+    <p class="hint">Open Copper on consecutive days to keep your streak going. Miss a day and it starts over.${next?' '+(next[0]-s)+' more day'+(next[0]-s>1?'s':'')+' until the flame turns '+next[2]+'.':' You have the top flame.'}</p>
+    <div class="ladder">${steps.map(x=>`<div class="${s>=x[0]?'got':''}">${flameSvg(x[1])}<small>${x[0]}d</small></div>`).join('<i></i>')}</div>`;
+  skd.showModal();document.activeElement&&document.activeElement.blur();
 }
 const dayKey=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
 (function(){

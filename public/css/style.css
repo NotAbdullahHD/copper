@@ -218,3 +218,9 @@ dialog#st{width:min(700px,94vw)}
 @keyframes aura{50%{box-shadow:0 0 26px color-mix(in srgb,var(--sc,#ff7b2e) 62%,transparent)}}
 @media(prefers-reduced-motion:reduce){#streak{animation:none}}
 body.viewing #streak{display:none}
+.sk-big{display:flex;align-items:center;justify-content:center;gap:12px;margin:10px 0 6px;font:600 44px var(--serif);color:var(--text)}
+.sk-big svg{width:36px;height:44px;filter:drop-shadow(0 0 14px color-mix(in srgb,var(--sc) 70%,transparent))}.sk-big span{font:14px var(--mono);color:var(--muted);align-self:flex-end;margin-bottom:8px}
+.ladder{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:20px}
+.ladder div{display:grid;justify-items:center;gap:6px;opacity:.28;filter:grayscale(.7)}.ladder div.got{opacity:1;filter:none}
+.ladder small{font:11px var(--mono);color:var(--muted)}.ladder i{width:22px;border-top:1px dashed var(--line);margin-bottom:18px}
+#sk .hint{text-align:center}

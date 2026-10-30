@@ -9,12 +9,27 @@ const BADGES={
 };
 function badge(id){const b=store.get('badges',[]);if(b.includes(id)||!BADGES[id])return;b.push(id);store.set('badges',b);toast('badge · '+BADGES[id][0])}
 
-/* streak */
+/* streak: a flame in the corner whose glow changes color the longer you keep it going */
+const FLAME=['....#....','....##...','...###...','...####..','..#######','.########','.########','.########','.#######.','..#####..','...###...'];
+const FLAME_IN=['.........','.........','.........','.........','.........','....#....','...###...','..#####..','..#####..','...###...','.........'];
+const TIERS=[[1,'#ff7b2e','orange'],[3,'#ff4d2e','red'],[7,'#ff3d9a','pink'],[14,'#a855f7','purple'],[30,'#6d7bff','blue']];
+const tierOf=s=>[...TIERS].reverse().find(t=>s>=t[0])||TIERS[0];
+const lighten=(hex,k)=>'#'+[1,3,5].map(i=>Math.round(parseInt(hex.slice(i,i+2),16)+(255-parseInt(hex.slice(i,i+2),16))*k).toString(16).padStart(2,'0')).join('');
+function flameSvg(c){
+  const px=(rows,col)=>rows.map((r,y)=>[...r].map((ch,x)=>ch==='#'?`<rect x="${x}" y="${y}" width="1" height="1" fill="${col}"/>`:'').join('')).join('');
+  return `<svg viewBox="0 0 9 11" width="18" height="22" shape-rendering="crispEdges" aria-hidden="true">${px(FLAME,c)}${px(FLAME_IN,lighten(c,.55))}</svg>`;
+}
+function drawStreak(s){
+  const t=tierOf(s),el=$('#streak');el.style.setProperty('--sc',t[1]);el.innerHTML=flameSvg(t[1])+'<span>'+s+'</span>';
+  const next=TIERS.find(x=>x[0]>s);
+  el.dataset.tip=s+'-day streak'+(next?' · '+(next[0]-s)+' more day'+(next[0]-s>1?'s':'')+' for '+next[2]:' · top color reached');
+  el.title=el.dataset.tip;el.onclick=()=>toast(el.dataset.tip);
+}
 const dayKey=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
 (function(){
   const now=new Date(),today=dayKey(now),last=store.get('visit',''),yest=dayKey(new Date(now-864e5));let s=store.get('streak',0);
   if(last!==today){s=last===yest?s+1:1;store.set('streak',s);store.set('visit',today)}
-  $('#streak').textContent=s>=2?' · streak '+s:'';
+  s=Math.max(1,s);drawStreak(s);
   if(s>=3)badge('streak3');if(s>=7)badge('streak7');if(s>=14)badge('streak14');if(s>=30)badge('streak30');if(now.getHours()<5)badge('owl');
 })();
 

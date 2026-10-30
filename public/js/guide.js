@@ -4,8 +4,9 @@ const STEPS=[
   {s:'#sf',t:'search or paste a link',x:'Type a site or a search and press enter. It opens in a tab. Press / anywhere to jump back here.'},
   {s:'#tiles',t:'your shortcuts',x:'Press + to add one, or hover a tile and hit × to remove it. Sites you open show up under the shortcuts, and double-clicking a tab pins it.'},
   {s:'#golem',t:'this is the golem',x:'It slowly oxidizes the longer you use Copper. Click it to change its copper stage and keep it there.'},
+  {s:'#streak',t:'your streak',x:'Visit every day to keep the flame lit. Its glow changes color the longer your streak gets, all the way to purple and beyond.'},
   {s:'.top',t:'more pages',x:'Games, manga, movies and settings live up here.'},
-  {s:'#open-set',t:'set up cloak and panic',x:'In settings you can disguise the tab title and icon, and pick a panic key that jumps to a page of your choice. Worth doing now.'}
+  {s:'#open-set',t:'set up cloak and panic',x:'Settings has seven sections. Cloaking disguises the tab title and icon, and panic jumps to a page of your choice. Worth setting up now.'}
 ];
 let gi=-1,gEl=null;
 function gBuild(){

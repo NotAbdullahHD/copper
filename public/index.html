@@ -11,6 +11,7 @@
 
 <canvas id="wall"></canvas>
 <canvas id="dots"></canvas>
+<div id="streak" title="your streak"></div>
 <div class="top"><button id="open-games">games</button><button id="open-manga">manga</button><button id="open-movies">movies</button><button id="open-set">settings</button></div>
 <main id="home">
   <h1 class="brand">copper</h1>
@@ -27,7 +28,7 @@
   <div class="recent" id="recent"></div>
 </main>
 
-<div class="foot"><span>copper · v1.0 · <b id="stage">fresh</b><span id="streak"></span> · <button id="open-notes">notes</button> · <a href="privacy.html">privacy</a></span><button id="back" hidden></button><span id="clock"></span></div>
+<div class="foot"><span>copper · v1.0 · <b id="stage">fresh</b> · <button id="open-notes">notes</button></span><button id="back" hidden></button><span id="clock"></span></div>
 
 <section id="view">
   <div class="tabs" id="tabs"></div>
@@ -48,26 +49,39 @@
   <canvas id="gc" width="520" height="190"></canvas>
   <p class="hs">golem hop · space or tap to jump · best <b id="best">0</b></p>
 </dialog>
-<dialog id="st" class="wide">
-  <div class="dh"><h3>settings</h3><button class="ib" id="sx">×</button></div>
-  <p class="grp">browsing</p>
-  <div class="set"><span>Engine</span><select id="s-eng"><option value="auto">Auto</option><option value="lite">Lite</option><option value="scramjet">Scramjet</option><option value="uv">Ultraviolet</option><option value="direct">Direct</option></select></div>
-  <div class="set"><span>Lite Worker</span><span id="s-lite" class="status">…</span></div>
-  <div class="set"><span>Search</span><select id="s-se"><option value="ddg">DuckDuckGo</option><option value="brave">Brave</option><option value="bing">Bing</option><option value="google">Google</option></select></div>
-  <p class="grp">look</p>
-  <div class="set"><span>Copper</span><span class="seg" id="s-pat"><button data-s="auto">auto</button><button data-s="0">fresh</button><button data-s="1">exposed</button><button data-s="2">weathered</button><button data-s="3">oxidized</button></span></div>
-  <div class="set"><span>Wallpaper</span><span class="seg" id="s-wall"><button data-v="none">none</button><button data-v="night">night</button><button data-v="cave">cave</button><button data-v="desert">desert</button></span></div>
-  <div class="set"><span>Background dots</span><span class="seg" id="s-dots"><button data-v="1">on</button><button data-v="0">off</button></span></div>
-  <p class="grp">privacy</p>
-  <div class="set"><span>Tab cloak</span><select id="s-cloak"><option value="off">off</option><option value="docs">Google Docs</option><option value="class">Classroom</option><option value="drive">Drive</option><option value="cal">Calendar</option><option value="custom">custom…</option></select></div>
+<dialog id="st" class="wide"><div class="dh"><h3>settings</h3><button class="ib" id="sx">×</button></div>
+  <div class="sbody"><nav class="stabs" id="stabs"><button data-p="appearance" class="on">appearance</button><button data-p="search">search</button><button data-p="proxy">proxy</button><button data-p="cloaking">cloaking</button><button data-p="panic">panic</button><button data-p="data">data</button><button data-p="credit">credit</button></nav>
+  <div class="spanels">
+  <div class="sp on" data-p="appearance"><div class="set"><span>copper</span><span class="seg" id="s-pat"><button data-s="auto">auto</button><button data-s="0">fresh</button><button data-s="1">exposed</button><button data-s="2">weathered</button><button data-s="3">oxidized</button></span></div>
+  <div class="set"><span>wallpaper</span><span class="seg" id="s-wall"><button data-v="none">none</button><button data-v="night">night</button><button data-v="cave">cave</button><button data-v="desert">desert</button></span></div>
+  <div class="set"><span>background dots</span><span class="seg" id="s-dots"><button data-v="1">on</button><button data-v="0">off</button></span></div></div>
+  <div class="sp" data-p="search"><div class="set"><span>search engine</span><select id="s-se"><option value="ddg">DuckDuckGo</option><option value="brave">Brave</option><option value="bing">Bing</option><option value="google">Google</option></select></div>
+  <p class="hint">What Copper uses when you type something that isn't a link.</p></div>
+  <div class="sp" data-p="proxy"><div class="set"><span>engine</span><select id="s-eng"><option value="auto">Auto</option><option value="lite">Lite</option><option value="scramjet">Scramjet</option><option value="uv">Ultraviolet</option><option value="direct">Direct</option></select></div>
+  <div class="set"><span>lite worker</span><span id="s-lite" class="status">…</span></div>
+  <p class="hint">Auto tries Scramjet first and falls back to Lite. Direct loads sites without a proxy, so many will refuse.</p></div>
+  <div class="sp" data-p="cloaking"><div class="set"><span>tab cloak</span><select id="s-cloak"><option value="off">off</option><option value="docs">Google Docs</option><option value="class">Classroom</option><option value="drive">Drive</option><option value="cal">Calendar</option><option value="custom">custom…</option></select></div>
   <div class="set" id="cloak-custom" hidden><input id="cc-t" placeholder="tab title"><input id="cc-i" placeholder="icon: a site like docs.google.com, or an image link"></div>
-  <div class="set"><span>Cloak when</span><span class="seg" id="s-cmode"><button data-v="always">always</button><button data-v="away">I switch tabs</button></span></div>
-  <div class="set"><span>Panic key</span><span class="seg"><button id="pk-set"></button></span></div>
-  <div class="set"><span>Panic goes to</span><input id="pk-url" placeholder="https://classroom.google.com"></div>
-  <div class="set"><span>Analytics</span><span class="seg" id="s-an"><button data-v="1">on</button><button data-v="0">off</button></span></div>
-  <p class="grp">your data</p>
-  <div class="set"><span>Data</span><span class="seg"><button id="s-badges">badges</button><button id="s-tour">replay guide</button><button id="s-reset">reset shortcuts</button><button id="s-clear">clear everything</button></span></div>
-</dialog>
+  <div class="set"><span>cloak when</span><span class="seg" id="s-cmode"><button data-v="always">always</button><button data-v="away">I switch tabs</button></span></div></div>
+  <div class="sp" data-p="panic"><div class="set"><span>panic key</span><span class="seg"><button id="pk-set"></button></span></div>
+  <div class="set"><span>panic goes to</span><input id="pk-url" placeholder="https://classroom.google.com"></div>
+  <p class="hint">Press the key anywhere in Copper (or inside a proxied page) to jump away at once. Use a symbol, not a letter. It can't work inside embedded games.</p></div>
+  <div class="sp" data-p="data"><div class="set"><span>count my visits</span><span class="seg" id="s-an"><button data-v="1">on</button><button data-v="0">off</button></span></div>
+  <div class="set"><span>badges</span><span class="seg"><button id="s-badges">badges</button></span></div>
+  <div class="set"><span>guide</span><span class="seg"><button id="s-tour">replay guide</button></span></div>
+  <div class="set"><span>shortcuts</span><span class="seg"><button id="s-reset">reset shortcuts</button></span></div>
+  <div class="set"><span>everything</span><span class="seg"><button id="s-clear">clear all data</button></span></div></div>
+  <div class="sp" data-p="credit"><div class="cr">
+  <p><b>copper</b> · v1.0 · a pixel start page that browses, plays and reads.</p><p id="cr-contact"></p>
+  <h4>about your data</h4>
+  <p>Shortcuts, notes, settings and saved manga stay in this browser. There are no accounts.</p>
+  <p>Pages opened through a proxy are fetched for you, so the proxy host (Cloudflare) and the site itself see normal request data. Don't enter passwords or card numbers into proxied sites.</p>
+  <p id="cr-an">Copper counts visits with Google Analytics. It never receives the sites you open or what you search. You can turn it off in data.</p>
+  <h4>thanks to</h4>
+  <p>games · OnlineGames.io<br>manga · MangaDex<br>movies · TMDB, Watchmode, JustWatch<br>proxies · Scramjet and Ultraviolet (Mercury Workshop, Titanium Network)<br>fonts · Pixelify Sans and DM Mono (SIL Open Font License)<br>site icons · Google</p>
+  <p class="tm">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+  <p class="tm">The golem is inspired by the Minecraft copper golem. Copper is not affiliated with Mojang or Microsoft.</p></div></div>
+  </div></div></dialog>
 <dialog id="nt" class="wide"><div class="dh"><h3>notes</h3><button class="ib" id="nx">×</button></div>
   <textarea id="nta" placeholder="Jot something down…" spellcheck="false"></textarea><p class="hs">saved in this browser</p></dialog>
 <section id="gp"><div class="mg-bar lbar"><button class="ib" id="gp-back" title="Back (Esc)">←</button><h3>games</h3><input id="gp-q" placeholder="search games" spellcheck="false"></div>
@@ -102,6 +116,7 @@
 <script src="js/games.js"></script>
 <script src="js/manga.js"></script>
 <script src="js/movies.js"></script>
+<script src="js/settings.js"></script>
 <script src="js/guide.js"></script>
 </body>
 </html>

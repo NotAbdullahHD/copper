@@ -68,7 +68,9 @@ async function watchmode(self, req, env, ctx) {
 export default {
   async fetch(req, env, ctx) {
     const self = new URL(req.url);
-    const cors = { 'access-control-allow-origin': '*' };
+    // cross-origin-resource-policy on every response, not just documents: a redirect in the middle
+    // of a navigation is checked too, and without it Chrome refuses the whole chain in a Copper tab.
+    const cors = { 'access-control-allow-origin': '*', 'cross-origin-resource-policy': 'cross-origin' };
     const raw = self.searchParams.get('url');
     if (self.pathname === '/wm') return watchmode(self, req, env || {}, ctx);
     if (!raw) {

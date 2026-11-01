@@ -4,7 +4,7 @@
 const PRIVATE = /^(localhost|.*\.local|.*\.internal|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|\[?::1\]?$)/i;
 const DROP = ['x-frame-options','content-security-policy','content-security-policy-report-only','set-cookie','cross-origin-opener-policy','cross-origin-embedder-policy','content-length','content-encoding','strict-transport-security','referrer-policy'];
 // Only these sites may use this proxy. Add your own domain here when you get one (no trailing slash).
-const ALLOWED = ['https://copper.gghh.workers.dev'];
+const ALLOWED = ['https://copper.gghh.workers.dev', 'https://copper-p08m.onrender.com'];
 const VERSION = 5; // bump when the browser side needs something new; Copper warns if your deployed copy is older
 const SKIP = /^(data:|javascript:|#|mailto:|tel:|blob:|about:)/i;
 

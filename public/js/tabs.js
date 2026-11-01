@@ -70,13 +70,31 @@ function syncSame(t){ // Scramjet and Ultraviolet pages share our origin, so we 
     drawTabs();
   }catch{}
 }
+/* A site that reloads itself — a cookie wall it can never satisfy, a bot check, an app waiting
+   for something a proxy can't hand it — never settles: every load restarts the page, so it spins
+   forever and the tab can never be used. Nothing in Copper noticed that, so the tab just kept
+   reloading. Watch what each tab loads; if the same address comes back three times, or a tab eats
+   a dozen loads, stop it and say why. Reload (↻) resets this and tries once more. */
+const LOOP_HITS=3,LOOP_TOTAL=12,LOOP_MS=15000;
+// Scramjet puts a fresh random id in every address it navigates to, so the same page looks like a
+// new one each time. Drop that segment before comparing.
+const loadKey=src=>String(src||'').replace(/\/~\/sj\/[^/]+\/[^/]+\//,'/~/sj/');
+function watchReloads(t){
+  if(t.looped)return;
+  const now=Date.now(),src=loadKey(t.f&&t.f.src);
+  t.loads=(t.loads||[]).filter(x=>now-x.at<LOOP_MS);t.loads.push({at:now,src});
+  if(t.loads.filter(x=>x.src===src).length<LOOP_HITS&&t.loads.length<LOOP_TOTAL)return;
+  t.looped=true;t.loads=[];
+  try{t.f.src='about:blank'}catch{}
+  if(t===tabs[act]){toast('this site keeps reloading itself · try ↗ open in a new tab',6000);hint()}
+}
 function mkFrame(t){
   const f=document.createElement('iframe');f.referrerPolicy='no-referrer';f.allow='fullscreen';f.title='page';frames.append(f);
-  f.onload=()=>{hookPanic(f);syncSame(t);if(t===tabs[act]){bar.style.width='100%';setTimeout(()=>bar.style.width='0',350)}};
+  f.onload=()=>{watchReloads(t);hookPanic(f);syncSame(t);if(t===tabs[act]){bar.style.width='100%';setTimeout(()=>bar.style.width='0',350)}};
   t.f=f;t.sj=null;
 }
 async function load(t,u){
-  t.u=u;t.title=t.fixed||host(u);$('#url').value=u;addRecent(t);if(t.pinned)savePins();
+  t.u=u;t.looped=false;t.loads=[];t.title=t.fixed||host(u);$('#url').value=u;addRecent(t);if(t.pinned)savePins();
   bar.style.width='0';requestAnimationFrame(()=>bar.style.width='70%');hint();drawTabs();
   const e=t.pre||store.get('engine',DEFAULT_ENGINE);
   if(t.engine&&t.engine!==e){const nf=document.createElement('iframe');nf.referrerPolicy='no-referrer';nf.allow='fullscreen';nf.title='page';

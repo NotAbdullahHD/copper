@@ -5,8 +5,26 @@ const PRIVATE = /^(localhost|.*\.local|.*\.internal|127\.|10\.|192\.168\.|169\.2
 const DROP = ['x-frame-options','content-security-policy','content-security-policy-report-only','set-cookie','cross-origin-opener-policy','cross-origin-embedder-policy','content-length','content-encoding','strict-transport-security','referrer-policy'];
 // Only these sites may use this proxy. Add your own domain here when you get one (no trailing slash).
 const ALLOWED = ['https://copper.gghh.workers.dev'];
-const VERSION = 4; // bump when the browser side needs something new; Copper warns if your deployed copy is older
+const VERSION = 5; // bump when the browser side needs something new; Copper warns if your deployed copy is older
 const SKIP = /^(data:|javascript:|#|mailto:|tel:|blob:|about:)/i;
+
+// Which site does this request belong to? A page that navigates itself (location.href = '/inbox',
+// a reload after pushState) asks for a path on this worker's own origin, and the only thing left
+// that remembers the site is the referer of the page doing it.
+function refererTarget(req, self) {
+  try {
+    const ref = new URL(req.headers.get('referer'));
+    if (ref.origin !== self.origin) return null;
+    const u = ref.searchParams.get('url');
+    if (!u) return null;
+    const t = new URL(u);
+    return /^https?:$/.test(t.protocol) ? t : null;
+  } catch { return null; }
+}
+
+function refPk(req) {
+  try { return new URL(req.headers.get('referer')).searchParams.get('pk'); } catch { return null; }
+}
 
 function permitted(req, self) {
   if (req.headers.get('sec-fetch-site') === 'same-origin') return true; // the proxied page loading its own assets
@@ -53,7 +71,21 @@ export default {
     const cors = { 'access-control-allow-origin': '*' };
     const raw = self.searchParams.get('url');
     if (self.pathname === '/wm') return watchmode(self, req, env || {}, ctx);
-    if (!raw) return new Response('copper lite ok v' + VERSION, { headers: cors });
+    if (!raw) {
+      // Nav inside a page: rebuild the site address from the referer instead of answering with
+      // plain text, which used to throw the page away and look like the site vanished.
+      const from = refererTarget(req, self);
+      if (from) {
+        let real = null;
+        try { real = new URL(self.pathname + self.search, from); } catch {}
+        if (real && /^https?:$/.test(real.protocol) && real.href.split('#')[0] !== from.href.split('#')[0]) {
+          const k = (self.searchParams.get('pk') || refPk(req) || '').slice(0, 20);
+          return new Response(null, { status: 302, headers: { ...cors, 'cache-control': 'no-store',
+            location: `${self.origin}/?url=${encodeURIComponent(real.href)}${k ? '&pk=' + encodeURIComponent(k) : ''}` } });
+        }
+      }
+      return new Response('copper lite ok v' + VERSION, { headers: cors });
+    }
     if (!permitted(req, self)) return new Response('Copper Lite only works inside Copper.', { status: 403, headers: cors });
     let target;
     try { target = new URL(raw); } catch { return new Response('bad url', { status: 400, headers: cors }); }
@@ -79,7 +111,18 @@ export default {
     out.set('access-control-allow-origin', '*');
     out.set('cross-origin-resource-policy', 'cross-origin');
     const loc = up.headers.get('location');
-    if (loc && up.status >= 300 && up.status < 400) { out.set('location', rw(loc)); return new Response(null, { status: up.status, headers: out }); }
+    if (loc && up.status >= 300 && up.status < 400) {
+      // A site that redirects to the address it was just asked for makes the browser reload the
+      // same proxied URL forever. Notice that and stop, rather than handing the bounce back.
+      let same = false;
+      try { same = new URL(loc, target).href.split('#')[0] === target.href.split('#')[0]; } catch {}
+      if (same) {
+        if (self.searchParams.get('rd')) return new Response('this site keeps redirecting to itself', { status: 502, headers: cors });
+        const hop = new URL(self); hop.searchParams.set('rd', '1');
+        return new Response(null, { status: 302, headers: { ...cors, 'cache-control': 'no-store', location: hop.href } });
+      }
+      out.set('location', rw(loc)); return new Response(null, { status: up.status, headers: out });
+    }
 
     const type = up.headers.get('content-type') || '';
     if (type.includes('text/css')) {
@@ -111,17 +154,28 @@ const go=u=>location.href=R(u);
 document.addEventListener('submit',e=>{const fm=e.target;if((fm.method||'get').toLowerCase()!=='get')return;e.preventDefault();let u=new URL(fm.getAttribute('action')||T,T);if(u.origin===P&&u.searchParams.get('url'))u=new URL(u.searchParams.get('url'));new FormData(fm).forEach((v,k)=>u.searchParams.set(k,v));go(u.href)},true);
 })()</script>`;
 
+    // The script has to reach the page before anything else runs, but a document without a <head>
+    // never fires that handler, so body is the fallback. Without it the whole page is dead.
+    let injected = false;
+    const injectInto = el => { if (injected) return; injected = true; el.prepend(inject, { html: true }); };
     const hr = new HTMLRewriter()
       .on('base', { element(el) { el.remove(); } })
       .on('meta[http-equiv]', { element(el) { if (/content-security-policy|refresh/i.test(el.getAttribute('http-equiv'))) el.remove(); } })
       .on('meta[name="referrer"]', { element(el) { el.remove(); } })
-      .on('head', { element(el) { el.prepend('<meta name="referrer" content="origin">' + inject, { html: true }); } })
+      .on('head', { element: injectInto })
+      .on('body', { element: injectInto })
       .on('script[integrity], link[integrity]', strip(['integrity']))
       .on('script[nonce]', strip(['nonce']));
     [['a', 'href'], ['area', 'href'], ['link', 'href'], ['img', 'src'], ['script', 'src'], ['iframe', 'src'], ['source', 'src'],
-     ['video', 'src'], ['video', 'poster'], ['audio', 'src'], ['embed', 'src'], ['track', 'src'], ['form', 'action']]
+     ['video', 'src'], ['video', 'poster'], ['audio', 'src'], ['embed', 'src'], ['track', 'src'], ['form', 'action'],
+     ['object', 'data'], ['use', 'href'], ['image', 'href']]
       .forEach(([t, n]) => hr.on(`${t}[${n}]`, attr(t, n).handler));
     hr.on('img[srcset], source[srcset]', srcset);
+    // url(...) inside style="" never went through the rewriter, so those images stayed broken.
+    hr.on('[style]', { element(el) {
+      const v = el.getAttribute('style');
+      if (v && /url\(/i.test(v)) el.setAttribute('style', v.replace(/url\(\s*(['"]?)([^'")]+)\1\s*\)/g, (m, q, u) => (abs(u) ? `url(${q}${rw(u)}${q})` : m)));
+    } });
     return hr.transform(new Response(up.body, { status: up.status, headers: out }));
   },
 };

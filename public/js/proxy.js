@@ -35,7 +35,7 @@ function initSJ(){return sjP??=(async()=>{
   const c=new $scramjetController.Controller({serviceworker:sw,transport});
   await c.wait();return c;
 })().catch(e=>{sjP=null;throw e})}
-const DEFAULT_ENGINE='auto',LITE_NEEDED=4;
+const DEFAULT_ENGINE='auto',LITE_NEEDED=5;
 let liteState=null; // null = unchecked, else {ok,v}
 async function liteCheck(){
   if(!window.COPPER_LITE)return liteState={ok:false,none:true};
@@ -55,7 +55,10 @@ const Engines={
     if(!fullDead){try{await Engines.scramjet(t,u);return}catch(e){fullDead=true;console.warn('full engine unavailable, using Lite',e)}}
     return window.COPPER_LITE?Engines.lite(t,u):Engines.direct(t,u);
   },
-  async lite(t,u){liteCheck();if(!window.COPPER_LITE)throw new Error('set COPPER_LITE in js/config.js');t.f.referrerPolicy='origin';t.f.src=COPPER_LITE.replace(/\/$/,'')+'/?url='+encodeURIComponent(u)+'&pk='+encodeURIComponent(store.get('pkey','`'))},
+  // strict-origin-when-cross-origin rather than origin: the worker needs the whole address of the
+  // page a navigation starts from to know which site it belongs to (a site moving itself to
+  // '/inbox' has nothing else to go on), and it still only sees an origin for the first load.
+  async lite(t,u){liteCheck();if(!window.COPPER_LITE)throw new Error('set COPPER_LITE in js/config.js');t.f.referrerPolicy='strict-origin-when-cross-origin';t.f.src=COPPER_LITE.replace(/\/$/,'')+'/?url='+encodeURIComponent(u)+'&pk='+encodeURIComponent(store.get('pkey','`'))},
   async uv(t,u){await initUV();t.f.src=__uv$config.prefix+__uv$config.encodeUrl(u)},
   async scramjet(t,u){const c=await initSJ();(t.sj??=c.createFrame(t.f)).go(u)},
   async direct(t,u){t.f.src=u}

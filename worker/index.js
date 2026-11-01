@@ -1,12 +1,17 @@
 // Copper Lite: a Cloudflare Worker that fetches pages for you, strips the headers that block framing,
 // and rewrites links/assets so everything flows through the Worker. No Node server, no Wisp needed.
-// Good for articles, docs, search, simple sites. No cookies/logins; heavy web apps won't run.
+// Good for articles, docs, search, simple sites, and now anything that needs cookies or a socket.
+// Heavy web apps still won't run here — they need the full engine (node/server.js).
 const PRIVATE = /^(localhost|.*\.local|.*\.internal|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|\[?::1\]?$)/i;
 const DROP = ['x-frame-options','content-security-policy','content-security-policy-report-only','set-cookie','cross-origin-opener-policy','cross-origin-embedder-policy','content-length','content-encoding','strict-transport-security','referrer-policy'];
 // Only these sites may use this proxy. Add your own domain here when you get one (no trailing slash).
 const ALLOWED = ['https://copper.gghh.workers.dev', 'https://copper-p08m.onrender.com'];
 const VERSION = 5; // bump when the browser side needs something new; Copper warns if your deployed copy is older
 const SKIP = /^(data:|javascript:|#|mailto:|tel:|blob:|about:)/i;
+
+// Every proxied site shares this worker's origin, so their cookies would land in one jar and
+// overwrite each other. Give each site's cookies a short tag from its host and hide the rest.
+const tagOf = host => 'c' + [...host].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7).toString(36) + '_';
 
 // Which site does this request belong to? A page that navigates itself (location.href = '/inbox',
 // a reload after pushState) asks for a path on this worker's own origin, and the only thing left
@@ -91,6 +96,17 @@ export default {
     if (!permitted(req, self)) return new Response('Copper Lite only works inside Copper.', { status: 403, headers: cors });
     let target;
     try { target = new URL(raw); } catch { return new Response('bad url', { status: 400, headers: cors }); }
+    if (target.protocol === 'ws:' || target.protocol === 'wss:') {
+      // A page opening a socket (chat, live scores, a stream) used to fail outright, and the site
+      // would retry and reload forever. Carry the upgrade through to the site instead.
+      const socket = new URL(target.href.replace(/^ws/, 'http'));
+      if (PRIVATE.test(socket.hostname)) return new Response('blocked', { status: 403, headers: cors });
+      if ((req.headers.get('upgrade') || '').toLowerCase() !== 'websocket') return new Response('expected a socket', { status: 400, headers: cors });
+      let upws;
+      try { upws = await fetch(socket, { headers: req.headers }); } catch { return new Response('could not reach ' + socket.host, { status: 502, headers: cors }); }
+      if (upws.status !== 101 || !upws.webSocket) return new Response('socket refused', { status: 502, headers: cors });
+      return new Response(null, { status: 101, webSocket: upws.webSocket });
+    }
     if (!/^https?:$/.test(target.protocol) || PRIVATE.test(target.hostname)) return new Response('blocked', { status: 403, headers: cors });
 
     const P = self.origin;
@@ -99,8 +115,13 @@ export default {
     const abs = v => { try { return v && !SKIP.test(v.trim()) ? new URL(v.trim(), target).href : null; } catch { return null; } };
     const rw = v => { const a = abs(v); return a ? px(a) : v; };
 
+    const ck = tagOf(target.hostname);
     const h = { 'user-agent': req.headers.get('user-agent') || 'Mozilla/5.0', accept: req.headers.get('accept') || '*/*',
       'accept-language': req.headers.get('accept-language') || 'en', referer: target.origin + '/' };
+    // Only this site's cookies go back to this site.
+    const cookieIn = (req.headers.get('cookie') || '').split(';').map(c => c.trim())
+      .filter(c => c.startsWith(ck)).map(c => c.slice(ck.length)).join('; ');
+    if (cookieIn) h.cookie = cookieIn;
     if (req.headers.get('range')) h.range = req.headers.get('range');
     const hasBody = !['GET', 'HEAD'].includes(req.method);
     if (hasBody && req.headers.get('content-type')) h['content-type'] = req.headers.get('content-type');
@@ -108,8 +129,19 @@ export default {
     try { up = await fetch(target, { method: req.method, body: hasBody ? req.body : undefined, headers: h, redirect: 'manual' }); }
     catch (e) { return new Response('could not reach ' + target.host, { status: 502, headers: cors }); }
 
+    const setCookies = typeof up.headers.getSetCookie === 'function' ? up.headers.getSetCookie() : [];
     const out = new Headers(up.headers);
     DROP.forEach(k => out.delete(k));
+    // Hand the site its own cookies back under a per-site name, on this origin, for an iframe -
+    // without them a consent wall or a session check never passes and the page reloads itself.
+    for (const sc of setCookies) {
+      const semi = sc.indexOf(';'), pair = semi === -1 ? sc : sc.slice(0, semi), eq = pair.indexOf('=');
+      if (eq <= 0) continue;
+      const name = pair.slice(0, eq).trim();
+      const keep = (semi === -1 ? '' : sc.slice(semi)).split(';').map(a => a.trim())
+        .filter(a => a && !/^(domain|path|samesite)=/i.test(a));
+      out.append('set-cookie', ck + name + '=' + pair.slice(eq + 1) + (keep.length ? '; ' + keep.join('; ') : '') + '; Path=/; SameSite=None; Secure');
+    }
     out.set('access-control-allow-origin', '*');
     out.set('cross-origin-resource-policy', 'cross-origin');
     const loc = up.headers.get('location');
@@ -140,7 +172,7 @@ export default {
     const srcset = { element(el) { const v = el.getAttribute('srcset'); if (v) el.setAttribute('srcset', v.split(',').map(p => { const [u, ...r] = p.trim().split(/\s+/); return [rw(u), ...r].join(' '); }).join(', ')); } };
     const strip = names => ({ element(el) { names.forEach(n => el.removeAttribute(n)); } });
 
-    const inject = `<script>(()=>{const P=${JSON.stringify(P)},T=${JSON.stringify(target.href)},K=${JSON.stringify(pk)},SX=K?'&pk='+encodeURIComponent(K):'';
+    const inject = `<script>(()=>{const P=${JSON.stringify(P)},T=${JSON.stringify(target.href)},K=${JSON.stringify(pk)},CK=${JSON.stringify(tagOf(target.hostname))},SX=K?'&pk='+encodeURIComponent(K):'';
 document.addEventListener('keydown',e=>{if(K&&e.key===K&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();parent.postMessage({copperPanic:1},'*')}},true);
 const R=u=>{try{if(typeof u!=='string')u=String(u);const a=new URL(u,T);if(a.origin===P||!/^https?:/.test(a.protocol))return u;return P+'/?url='+encodeURIComponent(a.href)+SX}catch{return u}};
 const f=window.fetch;window.fetch=(i,o)=>f(i instanceof Request?new Request(R(i.url),i):R(i),o);
@@ -151,8 +183,15 @@ const say=()=>{if(parent!==window)parent.postMessage({copperPage:{u:T,t:document
 document.addEventListener('DOMContentLoaded',say);addEventListener('load',say);
 const ifd=Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype,'src');if(ifd&&ifd.set)Object.defineProperty(HTMLIFrameElement.prototype,'src',{get:ifd.get,set(v){ifd.set.call(this,v?R(v):v)},configurable:true});
 const sa=Element.prototype.setAttribute;Element.prototype.setAttribute=function(n,v){return sa.call(this,n,this instanceof HTMLIFrameElement&&n==='src'&&v?R(v):v)};
-['pushState','replaceState'].forEach(k=>{const o=history[k];history[k]=function(...a){try{return o.apply(this,a)}catch{}}});
-const go=u=>location.href=R(u);
+['pushState','replaceState'].forEach(k=>{const o=history[k];history[k]=function(...a){try{return o.apply(this,a)}catch{}}});const go=u=>location.href=R(u);
+const dc=Object.getOwnPropertyDescriptor(Document.prototype,'cookie');
+if(dc&&dc.get&&dc.set)try{Object.defineProperty(document,'cookie',{configurable:true,
+  get(){return (dc.get.call(document)||'').split(';').map(s=>s.trim()).filter(s=>s.startsWith(CK)).map(s=>s.slice(CK.length)).join('; ')},
+  set(v){const i=v.indexOf('=');if(i>0)dc.set.call(document,CK+v.slice(0,i).trim()+v.slice(i))}})}catch{}
+const WS=window.WebSocket;
+if(WS){const W2=function(u,p){let q=u;try{const a=new URL(u,T);if(a.origin!==P)q=P.replace(/^http/,'ws')+'/?url='+encodeURIComponent(a.protocol.replace('http','ws')+'//'+a.host+a.pathname+a.search)+SX}catch{}
+  return p===undefined?new WS(q):new WS(q,p)};
+  ['CONNECTING','OPEN','CLOSING','CLOSED'].forEach(k=>W2[k]=WS[k]);W2.prototype=WS.prototype;window.WebSocket=W2}
 document.addEventListener('submit',e=>{const fm=e.target;if((fm.method||'get').toLowerCase()!=='get')return;e.preventDefault();let u=new URL(fm.getAttribute('action')||T,T);if(u.origin===P&&u.searchParams.get('url'))u=new URL(u.searchParams.get('url'));new FormData(fm).forEach((v,k)=>u.searchParams.set(k,v));go(u.href)},true);
 })()</script>`;
 

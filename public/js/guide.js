@@ -5,7 +5,7 @@ const STEPS=[
   {s:'#tiles',t:'your shortcuts',x:'Press + to add one, or hover a tile and hit × to remove it. Sites you open show up under the shortcuts, and double-clicking a tab pins it.'},
   {s:'#golem',t:'this is the golem',x:'It slowly oxidizes the longer you use Copper. Click it to change its copper stage and keep it there.'},
   {s:'#streak',t:'your streak',x:'Visit every day to keep the flame lit. It changes color at 3, 10, 30, 100 and 200 days, ending in purple. Tap it to see the ladder.'},
-  {s:'.top',t:'more pages',x:'Games, manga, movies and settings live up here.'},
+  {s:'.top',t:'more pages',x:'Games, manga, movies, sounds and settings live up here.'},
   {s:'#open-set',t:'set up cloak and panic',x:'Settings has seven sections. Cloaking disguises the tab title and icon, and panic jumps to a page of your choice. Worth setting up now.'}
 ];
 let gi=-1,gEl=null;

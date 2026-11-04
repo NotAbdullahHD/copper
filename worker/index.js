@@ -6,7 +6,7 @@ const PRIVATE = /^(localhost|.*\.local|.*\.internal|127\.|10\.|192\.168\.|169\.2
 const DROP = ['x-frame-options','content-security-policy','content-security-policy-report-only','set-cookie','cross-origin-opener-policy','cross-origin-embedder-policy','content-length','content-encoding','strict-transport-security','referrer-policy'];
 // Only these sites may use this proxy. Add your own domain here when you get one (no trailing slash).
 const ALLOWED = ['https://copper.gghh.workers.dev', 'https://copper-p08m.onrender.com'];
-const VERSION = 5; // bump when the browser side needs something new; Copper warns if your deployed copy is older
+const VERSION = 6; // bump when the browser side needs something new; Copper warns if your deployed copy is older
 const SKIP = /^(data:|javascript:|#|mailto:|tel:|blob:|about:)/i;
 
 // Every proxied site shares this worker's origin, so their cookies would land in one jar and
@@ -159,6 +159,12 @@ export default {
     }
 
     const type = up.headers.get('content-type') || '';
+    // A page that asked for JSON (the manga and movie lists) but got a web page back - a block page,
+    // a challenge, a 404 from the wrong host - gets a JSON error it can show, not HTML it can't parse.
+    if ((req.headers.get('accept') || '').includes('application/json') && !/json|javascript|text\/plain/.test(type)) {
+      return new Response(JSON.stringify({ error: 'the site answered with a web page instead of data', status: up.status, host: target.host }),
+        { status: 502, headers: { ...cors, 'content-type': 'application/json' } });
+    }
     if (type.includes('text/css')) {
       let css = await up.text();
       css = css.replace(/url\(\s*(['"]?)([^'")]+)\1\s*\)/g, (m, q, u) => (abs(u) ? `url(${q}${rw(u)}${q})` : m))

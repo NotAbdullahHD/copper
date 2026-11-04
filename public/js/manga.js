@@ -4,9 +4,15 @@ const mg=$('#mg'),mgb=$('#mgbody'),MD='https://api.mangadex.org',RATE='&contentR
 const lite=u=>window.COPPER_LITE.replace(/\/$/,'')+'/?url='+encodeURIComponent(u);
 async function api(p){
   if(!window.COPPER_LITE)throw new Error('set COPPER_LITE in js/config.js');
-  const r=await fetch(lite(MD+p));
-  if(!r.ok)throw new Error(r.status===429?'MangaDex is rate limiting, wait a few seconds':'MangaDex error '+r.status);
-  return r.json();
+  let r;try{r=await fetch(lite(MD+p),{headers:{accept:'application/json'}})}catch{throw new Error("couldn't reach the Lite Worker · check your connection")}
+  const text=await r.text();let d=null;try{d=JSON.parse(text)}catch{}
+  if(r.ok&&d&&!d.error)return d;
+  if(r.status===429)throw new Error('MangaDex is rate limiting, wait a few seconds');
+  if(r.status===403&&/only works inside Copper/i.test(text))throw new Error('the Lite Worker blocked this site · add its address to ALLOWED in the worker file');
+  if(d&&d.error)throw new Error(d.error+' (status '+(d.status||r.status)+(d.host?' from '+d.host:'')+')');
+  if(d&&d.errors&&d.errors[0])throw new Error('MangaDex: '+(d.errors[0].detail||d.errors[0].title||r.status));
+  if(/^\s*</.test(text))throw new Error('got a web page instead of manga data (status '+r.status+') · is the Lite Worker deployed and up to date?');
+  throw new Error('MangaDex error '+r.status);
 }
 const h=(t,p={},...k)=>{const e=document.createElement(t);
   for(const[a,v]of Object.entries(p)){if(a==='class')e.className=v;else if(a.startsWith('on'))e[a]=v;else e.setAttribute(a,v)}

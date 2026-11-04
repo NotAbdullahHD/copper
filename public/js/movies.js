@@ -5,12 +5,14 @@ let mq='',mback=closeMovies;
 const mNote=(t,retry)=>mvb.replaceChildren(empty(t,retry,t==='loading…'));
 function closeMovies(){mv.classList.remove('on')}
 async function tmdb(path){
-  const r=await fetch(TM+path+(path.includes('?')?'&':'?')+'api_key='+encodeURIComponent(KEY));
+  let r;try{r=await fetch(TM+path+(path.includes('?')?'&':'?')+'api_key='+encodeURIComponent(KEY),{headers:{accept:'application/json'}})}catch{throw new Error("couldn't reach TMDB · check your connection")}
   if(r.status===401)throw new Error('TMDB rejected the key in config.js');
-  if(!r.ok)throw new Error('TMDB error '+r.status);return r.json();
+  const t=await r.text();let d=null;try{d=JSON.parse(t)}catch{}
+  if(!r.ok||!d)throw new Error(r.ok?'TMDB sent something unexpected':'TMDB error '+r.status);
+  return d;
 }
 function embed(src){const f=h('iframe',{class:'mv-frame',allow:'autoplay; fullscreen; picture-in-picture',title:'player'});
-  if(window.crossOriginIsolated)f.setAttribute('credentialless','');f.src=src;return f}
+  f.setAttribute('allowfullscreen','');if(window.crossOriginIsolated)f.setAttribute('credentialless','');f.src=src;return f}
 const mCard=(img,title,sub,fn)=>h('button',{class:'mg-card',onclick:fn},h('img',{src:img||'',loading:'lazy',alt:''}),h('span',{},title+(sub?' · '+sub:'')));
 
 $('#open-movies').onclick=()=>{mv.classList.add('on');if(!mvb.childElementCount)mList()};
@@ -18,14 +20,25 @@ $('#mv-back').onclick=()=>mback();
 let mqt;$('#mv-q').oninput=e=>{clearTimeout(mqt);mqt=setTimeout(()=>{mq=e.target.value.trim();mList()},450)};
 addEventListener('keydown',e=>{if(e.key==='Escape'&&mv.classList.contains('on')&&!/INPUT/.test(document.activeElement.tagName))mback()});
 
+function mRow(title,items){
+  const sc=h('div',{class:'mrow-scroll'},...items.filter(m=>m.poster_path).map(m=>mCard(TI+'w342'+m.poster_path,m.title,(m.release_date||'').slice(0,4),()=>mDetail(m.id))));
+  const go=d=>()=>sc.scrollBy({left:d*sc.clientWidth*.8,behavior:'smooth'});
+  return h('section',{class:'mrow'},h('div',{class:'mrow-head'},h('h4',{},title),
+    h('span',{},h('button',{class:'mrow-nav',onclick:go(-1),'aria-label':'scroll left'},'‹'),h('button',{class:'mrow-nav',onclick:go(1),'aria-label':'scroll right'},'›'))),sc);
+}
 async function mList(){
   mback=closeMovies;mNote('loading…');
   try{
     if(!KEY)return mNote('add a free TMDB key in js/config.js to browse movies');
-    const d=await tmdb(mq?'/search/movie?include_adult=false&query='+encodeURIComponent(mq):'/trending/movie/week');
-    const res=d.results.filter(m=>m.poster_path);if(!res.length)return mNote('no results');
-    mvb.replaceChildren(h('div',{class:'mg-grid'},...res.map(m=>mCard(TI+'w342'+m.poster_path,m.title,(m.release_date||'').slice(0,4),()=>mDetail(m.id)))),
-      h('p',{class:'mg-credit'},'This product uses the TMDB API but is not endorsed or certified by TMDB.'));
+    const credit=h('p',{class:'mg-credit'},'This product uses the TMDB API but is not endorsed or certified by TMDB.');
+    if(mq){
+      const d=await tmdb('/search/movie?include_adult=false&query='+encodeURIComponent(mq));
+      const res=d.results.filter(m=>m.poster_path);if(!res.length)return mNote('no results');
+      return mvb.replaceChildren(h('div',{class:'mg-grid'},...res.map(m=>mCard(TI+'w342'+m.poster_path,m.title,(m.release_date||'').slice(0,4),()=>mDetail(m.id)))),credit);
+    }
+    const [tr,po,tp,up]=await Promise.all(['/trending/movie/week','/movie/popular','/movie/top_rated','/movie/upcoming'].map(p=>tmdb(p)));
+    const seen=store.get('mvrecent',[]);
+    mvb.replaceChildren(...[seen.length?mRow('recently viewed',seen):null,mRow('trending this week',tr.results),mRow('popular',po.results),mRow('top rated',tp.results),mRow('coming soon',up.results)].filter(Boolean),credit);
   }catch(e){mNote(e.message,mList)}
 }
 async function wmSources(id,region){ // where-to-watch links via the Lite worker (it holds the Watchmode key); null means use TMDB's data
@@ -40,6 +53,7 @@ async function mDetail(id){
   try{
     const region=userRegion();
     const [d,wm]=await Promise.all([tmdb(`/movie/${id}?append_to_response=videos,watch/providers`),wmSources(id,region)]);
+    {const r=store.get('mvrecent',[]).filter(x=>x.id!==id);r.unshift({id,title:d.title,poster_path:d.poster_path,release_date:d.release_date});store.set('mvrecent',r.slice(0,12))}
     const all=(d['watch/providers']||{}).results||{},w=all[region]||all.US||null,reg=all[region]?region:'US';
     const vids=((d.videos||{}).results||[]).filter(v=>v.site==='YouTube'),tr=vids.find(v=>v.type==='Trailer')||vids[0];
     const T={sub:'stream',free:'free',rent:'rent',buy:'buy'};

@@ -12,7 +12,7 @@
 <canvas id="wall"></canvas>
 <canvas id="dots"></canvas>
 <div id="streak" title="your streak"></div>
-<div class="top"><button id="open-games">games</button><button id="open-manga">manga</button><button id="open-movies">movies</button><button id="open-set">settings</button></div>
+<div class="top"><button id="open-games">games</button><button id="open-manga">manga</button><button id="open-movies">movies</button><button id="open-sounds">sounds</button><button id="open-set">settings</button></div>
 <main id="home">
   <h1 class="brand">copper</h1>
   <p class="tag" id="tag"></p>
@@ -78,7 +78,7 @@
   <p>Pages opened through a proxy are fetched for you, so the proxy host (Cloudflare) and the site itself see normal request data. Don't enter passwords or card numbers into proxied sites.</p>
   <p id="cr-an">Copper counts visits with Google Analytics. It never receives the sites you open or what you search. You can turn it off in data.</p>
   <h4>thanks to</h4>
-  <p>games · OnlineGames.io<br>manga · MangaDex<br>movies · TMDB, Watchmode, JustWatch<br>proxies · Scramjet and Ultraviolet (Mercury Workshop, Titanium Network)<br>fonts · Pixelify Sans and DM Mono (SIL Open Font License)<br>site icons · Google</p>
+  <p>games · OnlineGames.io<br>manga · MangaDex<br>movies · TMDB, Watchmode, JustWatch<br>sounds · Openverse (each sound shows its creator and license)<br>proxies · Scramjet and Ultraviolet (Mercury Workshop, Titanium Network)<br>fonts · Pixelify Sans and DM Mono (SIL Open Font License)<br>site icons · Google</p>
   <p class="tm">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
   <p class="tm">The golem is inspired by the Minecraft copper golem. Copper is not affiliated with Mojang or Microsoft.</p></div></div>
   </div></div></dialog>
@@ -96,6 +96,10 @@
   <input id="mg-q" placeholder="search manga" spellcheck="false"></div><div id="mgbody"></div></section>
 <section id="mv"><div class="mg-bar"><button class="ib" id="mv-back" title="Back (Esc)">←</button><h3>movies</h3>
   <input id="mv-q" placeholder="search movies" spellcheck="false"></div><div id="mvbody"></div></section>
+<section id="sb"><div class="mg-bar"><button class="ib" id="sb-back" title="Back (Esc)">←</button><h3>sounds</h3><input id="sb-q" placeholder="filter, or press enter to search free sound effects" spellcheck="false"></div>
+  <div id="sbbody"></div>
+  <div class="sb-vol"><span>vol</span><input id="sb-vol" type="range" min="0" max="100" value="80" aria-label="volume"><button class="mg-btn" id="sb-stop">stop all</button></div>
+  <input type="file" id="sb-file" accept="audio/*" multiple hidden></section>
 <dialog id="bd" class="wide"><div class="dh"><h3>badges</h3><button class="ib" id="bdx">×</button></div><div id="bdl"></div></dialog>
 <div id="toast"></div>
 <dialog id="dlg"><form method="dialog" id="df"><h3>new shortcut</h3>
@@ -103,6 +107,7 @@
   <div class="row"><button type="button" id="dc">Cancel</button><button class="ok">Add</button></div></form></dialog>
 
 <script src="js/config.js"></script>
+<script src="js/config.local.js"></script>
 <script src="js/app.js"></script>
 <script src="js/proxy.js"></script>
 <script src="js/tabs.js"></script>
@@ -117,6 +122,7 @@
 <script src="js/manga.js"></script>
 <script src="js/movies.js"></script>
 <script src="js/settings.js"></script>
+<script src="js/sounds.js"></script>
 <script src="js/guide.js"></script>
 </body>
 </html>

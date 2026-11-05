@@ -6,7 +6,7 @@ const PRIVATE = /^(localhost|.*\.local|.*\.internal|127\.|10\.|192\.168\.|169\.2
 const DROP = ['x-frame-options','content-security-policy','content-security-policy-report-only','set-cookie','cross-origin-opener-policy','cross-origin-embedder-policy','content-length','content-encoding','strict-transport-security','referrer-policy'];
 // Only these sites may use this proxy. Add your own domain here when you get one (no trailing slash).
 const ALLOWED = ['https://copper.gghh.workers.dev', 'https://copper-p08m.onrender.com'];
-const VERSION = 6; // bump when the browser side needs something new; Copper warns if your deployed copy is older
+const VERSION = 7; // bump when the browser side needs something new; Copper warns if your deployed copy is older
 const SKIP = /^(data:|javascript:|#|mailto:|tel:|blob:|about:)/i;
 
 // Every proxied site shares this worker's origin, so their cookies would land in one jar and
@@ -37,6 +37,38 @@ function permitted(req, self) {
   let ref = '';
   try { ref = new URL(req.headers.get('referer')).origin; } catch {}
   return [origin, ref].some(o => o === self.origin || ALLOWED.includes(o));
+}
+
+// Sound-effect search through Freesound. The API key lives in the worker (secret FREESOUND_KEY), never in the page.
+// Only CC0 and CC BY sounds are returned (not the non-commercial ones), each with its creator and source page.
+async function sounds(self, req, env, ctx) {
+  const hdr = { 'access-control-allow-origin': '*', 'content-type': 'application/json' };
+  const out = (o, status = 200, extra = {}) => new Response(JSON.stringify(o), { status, headers: { ...hdr, ...extra } });
+  if (!permitted(req, self)) return out({ error: 'blocked' }, 403);
+  if (!env.FREESOUND_KEY) return out({ error: 'not configured' }, 501);
+  const q = (self.searchParams.get('q') || '').replace(/[^\p{L}\p{N}\s'-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 60);
+  if (!q) return out({ error: 'missing query' }, 400);
+  const cache = caches.default, ck = new Request('https://sounds.cache/' + encodeURIComponent(q.toLowerCase()));
+  const hit = await cache.match(ck);
+  if (hit) return new Response(hit.body, { headers: hdr });
+  const base = env.FREESOUND_BASE || 'https://freesound.org/apiv2';
+  const url = `${base}/search/text/?query=${encodeURIComponent(q)}&token=${encodeURIComponent(env.FREESOUND_KEY)}` +
+    `&fields=id,name,username,license,duration,previews,url&filter=${encodeURIComponent('duration:[0 TO 15]')}&sort=rating_desc&page_size=45`;
+  const r = await fetch(url);
+  if (r.status === 429) return out({ error: 'Freesound is rate limiting' }, 429);
+  if (!r.ok) return out({ error: 'freesound ' + r.status }, 502);
+  let d; try { d = await r.json(); } catch { return out({ error: 'freesound sent something unexpected' }, 502); }
+  const results = [];
+  for (const s of d.results || []) {
+    const lic = String(s.license || '');
+    const tag = /publicdomain\/zero|\/zero\//.test(lic) ? 'CC0' : /\/licenses\/by\/\d/.test(lic) ? 'CC BY' : null;
+    const pv = s.previews && (s.previews['preview-hq-mp3'] || s.previews['preview-lq-mp3']);
+    if (!tag || !pv) continue;
+    results.push({ id: s.id, name: s.name, by: s.username, license: tag, dur: Math.round(s.duration * 10) / 10, url: pv, page: s.url });
+  }
+  const res = out({ results }, 200, { 'cache-control': 'public, max-age=21600' });
+  ctx.waitUntil(cache.put(ck, res.clone()));
+  return res;
 }
 
 async function watchmode(self, req, env, ctx) {
@@ -78,6 +110,7 @@ export default {
     const cors = { 'access-control-allow-origin': '*', 'cross-origin-resource-policy': 'cross-origin' };
     const raw = self.searchParams.get('url');
     if (self.pathname === '/wm') return watchmode(self, req, env || {}, ctx);
+    if (self.pathname === '/snd') return sounds(self, req, env || {}, ctx);
     if (!raw) {
       // Nav inside a page: rebuild the site address from the referer instead of answering with
       // plain text, which used to throw the page away and look like the site vanished.

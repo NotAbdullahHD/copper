@@ -239,3 +239,5 @@ body.viewing #streak{display:none}
 .snd.add{border-style:dashed;color:var(--muted)}
 .sb-vol{flex:none;display:flex;align-items:center;gap:14px;padding:12px 20px;border-top:1px solid var(--line);font:12px var(--mono);color:var(--muted)}
 #sb-vol{flex:1;accent-color:var(--accent)}
+.snd .lnk{position:absolute;top:4px;left:7px;color:var(--muted);font-size:12px;opacity:0}.snd:hover .lnk,.snd .lnk:focus{opacity:1}.snd .lnk:hover{color:var(--accent)}
+.chips{max-width:1100px;margin:0 auto 22px;justify-content:flex-start}

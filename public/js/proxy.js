@@ -1,5 +1,5 @@
 /* proxy engines: Scramjet v2, Ultraviolet, direct. Service workers need https (or localhost). */
-const wispUrl=(location.protocol==='https:'?'wss://':'ws://')+location.host+'/wisp/';
+const wispUrl=window.COPPER_WISP||((location.protocol==='https:'?'wss://':'ws://')+location.host+'/wisp/'); // settings > proxy can override it
 const loadScript=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error('missing '+src));document.head.append(s)});
 const withTimeout=(p,ms,what)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error(what+' timed out after '+ms+'ms')),ms))]);
 

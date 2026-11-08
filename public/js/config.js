@@ -12,3 +12,6 @@ window.COPPER_TMDB = '0c22ee2775077bb20cf5675d3c3795be';
 window.COPPER_GA_COOKIELESS = false;
 // Shown in settings > credit. Example: 'contact: you@example.com'
 window.COPPER_CONTACT = '';
+// Chat (Supabase). Put your own values in config.local.js, not here:
+// window.COPPER_SUPABASE = { url: 'https://YOUR-PROJECT.supabase.co', key: 'YOUR-ANON-OR-PUBLISHABLE-KEY' };
+// Use the anon / publishable key only. NEVER the service_role / secret key.

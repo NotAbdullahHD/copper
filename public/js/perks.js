@@ -4,7 +4,7 @@ const BADGES={
   'hop50':['hop 50','Score 50 in Golem Hop'],'gamer':['gamer','Play 5 different games'],
   'oxidized':['green at last','Reach the oxidized stage'],'streak3':['three days','Visit 3 days in a row'],
   'streak7':['a whole week','Visit 7 days in a row'],'owl':['night owl','Visit between midnight and 5'],
-  'ready':['ready','Set your own panic key'],'streak14':['two weeks','Visit 14 days in a row'],'streak30':['a full month','Visit 30 days in a row'],
+  'ready':['ready','Set your own panic key'],'hello':['hello','Send your first chat message'],'streak14':['two weeks','Visit 14 days in a row'],'streak30':['a full month','Visit 30 days in a row'],
   'hop150':['hop 150','Score 150 in Golem Hop'],'gamer15':['arcade regular','Play 15 different games'],'tabs100':['hundred sites','Open 100 sites'],'reader':['reader','Open a manga'],'cinema':['movie night','Open a movie']
 };
 function badge(id){const b=store.get('badges',[]);if(b.includes(id)||!BADGES[id])return;b.push(id);store.set('badges',b);toast('badge · '+BADGES[id][0])}

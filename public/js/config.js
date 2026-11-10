@@ -14,4 +14,5 @@ window.COPPER_GA_COOKIELESS = false;
 window.COPPER_CONTACT = '';
 // Chat (Supabase). Put your own values in config.local.js, not here:
 // window.COPPER_SUPABASE = { url: 'https://YOUR-PROJECT.supabase.co', key: 'YOUR-ANON-OR-PUBLISHABLE-KEY' };
+// (optional) emailDomain: 'members.copper-chat.app' is the default hidden login domain. Only change it together with the 'email_domain' row in bot_config, and before anyone signs up.
 // Use the anon / publishable key only. NEVER the service_role / secret key.

@@ -80,7 +80,7 @@
   <h4>about your data</h4>
   <p>Shortcuts, notes, settings and saved manga stay in this browser. There are no accounts.</p>
   <p>Pages opened through a proxy are fetched for you, so the proxy host (Cloudflare) and the site itself see normal request data. Don't enter passwords or card numbers into proxied sites.</p>
-  <p>If you use chat, your nickname, profile and messages are stored on Supabase until you delete them (chat → your profile → delete my chat data).</p>
+  <p>If you use chat, your username, an optional recovery email, a hashed password, your profile, friends, DMs and messages are stored on Supabase until you delete them (chat → ⚙ → delete my account and chat data).</p>
   <p id="cr-an">Copper counts visits with Google Analytics. It never receives the sites you open or what you search. You can turn it off in data.</p>
   <h4>thanks to</h4>
   <p>games · OnlineGames.io<br>manga · MangaDex<br>movies · TMDB, Watchmode, JustWatch<br>sounds · Freesound and Openverse (each sound shows its creator and license)<br>chat · Supabase<br>proxies · Scramjet and Ultraviolet (Mercury Workshop, Titanium Network)<br>fonts · Pixelify Sans and DM Mono (SIL Open Font License)<br>site icons · Google</p>
@@ -105,7 +105,7 @@
   <div id="sbbody"></div>
   <div class="sb-vol"><span>vol</span><input id="sb-vol" type="range" min="0" max="100" value="80" aria-label="volume"><button class="mg-btn" id="sb-stop">stop all</button></div>
   <input type="file" id="sb-file" accept="audio/*" multiple hidden></section>
-<section id="ch"><div class="mg-bar"><button class="ib" id="ch-back" title="Back (Esc)">←</button><h3>chat</h3><span id="ch-counts" class="status"></span><button class="mg-btn" id="ch-members">members</button></div><div id="chbody"></div></section>
+<section id="ch"><div class="mg-bar"><button class="ib" id="ch-back" title="Back (Esc)">←</button><button class="mg-btn" id="ch-menu" title="Channels and DMs">menu</button><h3>chat</h3><span id="ch-counts" class="status"></span><button class="mg-btn" id="ch-members">members</button></div><div id="chbody"></div></section>
 <dialog id="bd" class="wide"><div class="dh"><h3>badges</h3><button class="ib" id="bdx">×</button></div><div id="bdl"></div></dialog>
 <div id="toast"></div>
 <dialog id="dlg"><form method="dialog" id="df"><h3>new shortcut</h3>

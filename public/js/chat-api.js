@@ -29,8 +29,8 @@ const fail=e=>{
   throw new Error(m||'something went wrong');
 };
 const ok=async p=>{const r=await p;if(r.error)fail(r.error);return r.data};
-const PUB='id,username,display_name,color,avatar,bio,role,created_at';
-const MSG='id,channel_id,dm_id,user_id,content,reply_to,deleted,edited_at,created_at,reactions(user_id,emoji),reply:messages!reply_to(id,user_id,content,deleted)';
+const PUB='id,username,display_name,color,avatar,avatar_url,banner_url,pronouns,bio,role,created_at';
+const MSG='id,channel_id,dm_id,user_id,content,gif_url,reply_to,deleted,edited_at,created_at,reactions(user_id,emoji),reply:messages!reply_to(id,user_id,content,deleted,gif_url)';
 const col=s=>s.dm?'dm_id':'channel_id',val=s=>s.dm||s.channel;
 const clean=r=>{ // reactions come back as a list of {user_id,emoji} (only the active ones)
   r.reactions=r.reactions||[];return r};
@@ -69,8 +69,18 @@ window.ChatAPI={
   async setRecoveryEmail(e){await ok(sb.rpc('set_recovery_email',{e:e||''}))},
   async myBan(){const d=await ok(sb.from('bans').select('until,reason').eq('user_id',uid).maybeSingle());
     return d&&(!d.until||new Date(d.until)>new Date())?d:null},
-  async deleteMe(){await ok(sb.rpc('delete_me'));await sb.auth.signOut();uid=null},
-  updateProfile:p=>ok(sb.from('profiles').update({display_name:p.display_name,color:p.color,avatar:p.avatar,bio:p.bio||''}).eq('id',uid).select(PUB).single()),
+  async deleteMe(){
+    for(const b of ['avatars','banners']){ // remove uploaded images first (best effort), then the account
+      try{const l=await sb.storage.from(b).list(uid);if(l.data&&l.data.length)await sb.storage.from(b).remove(l.data.map(f=>uid+'/'+f.name))}catch{}}
+    await ok(sb.rpc('delete_me'));await sb.auth.signOut();uid=null},
+  updateProfile:p=>ok(sb.from('profiles').update({display_name:p.display_name,pronouns:p.pronouns||'',color:p.color,avatar:p.avatar,bio:p.bio||'',avatar_url:p.avatar_url||null,banner_url:p.banner_url||null}).eq('id',uid).select(PUB).single()),
+  async uploadImage(bucket,blob){ // bucket: 'avatars' | 'banners'. Files live in a folder named after you.
+    const ext=blob.type==='image/webp'?'webp':blob.type==='image/png'?'png':'jpg',path=uid+'/'+Date.now()+'.'+ext;
+    const r=await sb.storage.from(bucket).upload(path,blob,{contentType:blob.type,cacheControl:'31536000'});
+    if(r.error)fail(r.error);
+    return sb.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+  },
+  async removeImage(url){const m=/\/storage\/v1\/object\/public\/(avatars|banners)\/(.+)$/.exec(url||'');if(m)await sb.storage.from(m[1]).remove([decodeURIComponent(m[2])])},
 
   /* ----- structure + people ----- */
   categories:()=>ok(sb.from('categories').select('id,name,position').order('position')),
@@ -85,8 +95,8 @@ window.ChatAPI={
     return d.reverse().map(clean);
   },
   async message(id){const d=await ok(sb.from('messages').select(MSG).eq('id',id).eq('reactions.active',true).maybeSingle());return d&&clean(d)},
-  async send(scope,content,replyTo){
-    const row={user_id:uid,content,[col(scope)]:val(scope)};if(replyTo)row.reply_to=replyTo;
+  async send(scope,content,replyTo,gifUrl){
+    const row={user_id:uid,content,[col(scope)]:val(scope)};if(replyTo)row.reply_to=replyTo;if(gifUrl)row.gif_url=gifUrl;
     const d=await ok(sb.from('messages').insert(row).select('id').single());
     return this.message(d.id);
   },
@@ -118,6 +128,22 @@ window.ChatAPI={
   openDm:other=>ok(sb.rpc('open_dm',{other})),
   async markDmRead(id){await ok(sb.rpc('mark_dm_read',{did:id}))},
   onDms(cb){const c=sb.channel('my-dms').on('postgres_changes',{event:'*',schema:'public',table:'dms'},p=>{if(p.new&&p.new.id)cb(p.new)}).subscribe();return()=>sb.removeChannel(c)},
+
+  /* ----- GIFs (Klipy). The key comes from config.local.js as klipyKey ----- */
+  gifsOn:!!cfg.klipyKey,
+  async gifs(q,page){
+    if(!cfg.klipyKey)throw new Error('gifs are not switched on yet (add klipyKey to config.local.js)');
+    const qs=new URLSearchParams({page:page||1,per_page:24,rating:cfg.klipyRating||'pg',customer_id:uid||'anon'});if(q)qs.set('q',q);
+    let r;try{r=await fetch('https://api.klipy.com/api/v1/'+encodeURIComponent(cfg.klipyKey)+'/gifs/'+(q?'search':'trending')+'?'+qs)}catch{throw new Error("couldn't reach the gif service")}
+    if(r.status===401||r.status===403)throw new Error('the gif key was rejected');
+    if(r.status===429)throw new Error('too many gif searches, wait a bit');
+    if(!r.ok)throw new Error('gif search failed ('+r.status+')');
+    const j=await r.json(),page_=j&&j.data;if(!j||!j.result||!page_)throw new Error('gif search failed');
+    const pick=(f,order)=>{for(const k of order){const g=f&&f[k]&&f[k].gif;if(g&&/^https:\/\//.test(g.url||''))return g}return null};
+    const items=(page_.data||[]).filter(g=>g&&g.type!=='ad'&&g.file).map(g=>{const pv=pick(g.file,['sm','xs','md','hd']),big=pick(g.file,['md','sm','hd','xs']);
+      return pv&&big?{slug:g.slug,title:g.title||'gif',preview:pv.url,url:big.url,w:big.width||pv.width||0,h:big.height||pv.height||0}:null}).filter(Boolean);
+    return{items,hasNext:!!page_.has_next};
+  },
 
   /* ----- moderation ----- */
   async ban(id,minutes){await ok(sb.rpc('ban_user',{target:id,minutes:minutes||null,why:''}))},

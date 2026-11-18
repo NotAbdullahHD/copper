@@ -50,3 +50,21 @@ const GAMES=[["Stack Fire Ball", "w", "2021/unity/stack-fire-ball/index.html", "
 ["Super Car Driving", "c", "2024/unity2/super-car-driving/index-og.html", "854/responsive/supercardriving-2-xs.jpg", "racing"],
 ["Nuts and Bolts Puzzle", "c", "2025/unity/nuts-and-bolts-puzzle/index-og.html", "965/responsive/nuts-and-bolts-puzzle-xs.jpg", "puzzle"]
 ];
+
+/* extra games: loose HTML on GitHub (community web ports). [title, url, category]
+   Served through raw.githack.com, not jsDelivr: jsDelivr sends .html as text/plain with nosniff,
+   so an iframe pointed at it shows the game's source code instead of running it. */
+const GAMES_EXTRA=[
+["FNAF 1", "https://rawcdn.githack.com/freebuisness/html/main/38-fix2.html", "action"],
+["FNAF 2", "https://rawcdn.githack.com/freebuisness/html/main/39-fix2.html", "action"],
+["FNAF 3", "https://rawcdn.githack.com/freebuisness/html/main/40-fix2.html", "action"],
+["FNAF 4", "https://rawcdn.githack.com/freebuisness/html/main/41-fix2.html", "action"],
+["FNAF: Sister Location", "https://rawcdn.githack.com/freebuisness/html/main/185-fix2.html", "action"],
+["FNAF World", "https://rawcdn.githack.com/freebuisness/html/main/190-fix2.html", "sandbox"],
+["FNAF: Pizzeria Sim", "https://rawcdn.githack.com/freebuisness/html/main/191-fix2.html", "action"],
+["FNAF: Custom Night", "https://rawcdn.githack.com/freebuisness/html/main/192-fix2.html", "action"],
+["Geometry Dash", "https://rawcdn.githack.com/freebuisness/html/main/868-F3.html", "arcade"],
+["That's Not My Neighbor", "https://rawcdn.githack.com/freebuisness/html/main/216-fix2.html", "puzzle"],
+["Team Fortress 2", "https://rawcdn.githack.com/freebuisness/html/main/866.html", "action"],
+["Knights Battle Arena 3D", "https://rawcdn.githack.com/freebuisness/html/main/284-fix2.html", "action"]
+];

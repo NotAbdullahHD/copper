@@ -12,7 +12,33 @@
 <canvas id="wall"></canvas>
 <canvas id="dots"></canvas>
 <div id="streak" title="your streak"></div>
-<div class="top"><button id="open-games">games</button><button id="open-manga">manga</button><button id="open-movies">movies</button><button id="open-sounds">sounds</button><button id="open-chat">chat</button><button id="open-set">settings</button></div>
+<svg id="i-sprite" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11.2 12 4l8 7.2"/><path d="M6.2 10.4V20h11.6v-9.6"/><path d="M10 20v-4.6h4V20"/></symbol>
+  <symbol id="i-games" viewBox="0 0 24 24"><rect x="2.6" y="7.6" width="18.8" height="10.4" rx="5.2"/><path d="M7.4 11.2v3.6M5.6 13h3.6"/><circle cx="16" cy="12" r="1"/><circle cx="18.2" cy="14.6" r="1"/></symbol>
+  <symbol id="i-manga" viewBox="0 0 24 24"><path d="M12 6.6c-1.9-1.5-4.1-2.1-7.2-2.1v12.1c3.1 0 5.3.6 7.2 2.1 1.9-1.5 4.1-2.1 7.2-2.1V4.5c-3.1 0-5.3.6-7.2 2.1Z"/><path d="M12 6.6v12.1"/></symbol>
+  <symbol id="i-movies" viewBox="0 0 24 24"><rect x="3" y="5.4" width="18" height="13.2" rx="2.4"/><path d="M3.4 9.4h17.2M8 5.6v3.8M16 5.6v3.8"/></symbol>
+  <symbol id="i-sounds" viewBox="0 0 24 24"><path d="M4 9.6h3.1L11.6 6v12L7.1 14.4H4Z"/><path d="M15.4 9.4a3.8 3.8 0 0 1 0 5.2M18 6.8a7.4 7.4 0 0 1 0 10.4"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20.2 14.6a2.4 2.4 0 0 1-2.4 2.4H8.6L4.2 20V6.4A2.4 2.4 0 0 1 6.6 4h11.2a2.4 2.4 0 0 1 2.4 2.4Z"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M3.6 7.4h9.2M17.6 7.4h2.8M3.6 12h3.6M12 12h8.4M3.6 16.6h9.2M17.6 16.6h2.8"/><circle cx="15" cy="7.4" r="2.1"/><circle cx="9.4" cy="12" r="2.1"/><circle cx="15" cy="16.6" r="2.1"/></symbol>
+</svg>
+<nav class="dock" id="dock" aria-label="Pages">
+  <div class="dk-left">
+    <span class="dk-brand">copper</span>
+    <span class="dk-meta"><b id="stage">fresh</b></span>
+    <button class="dk-txt" id="open-notes">notes</button>
+    <button class="dk-txt" id="back" hidden></button>
+  </div>
+  <div class="dk-mid">
+    <button class="dk on" id="open-home" data-route="/home" title="Home" aria-label="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-home"></use></svg><span>home</span></button>
+    <button class="dk" id="open-games" data-route="/games" title="Games" aria-label="Games"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-games"></use></svg><span>games</span></button>
+    <button class="dk" id="open-manga" data-route="/manga" title="Manga" aria-label="Manga"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-manga"></use></svg><span>manga</span></button>
+    <button class="dk" id="open-movies" data-route="/movies" title="Movies" aria-label="Movies"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-movies"></use></svg><span>movies</span></button>
+    <button class="dk" id="open-sounds" data-route="/sounds" title="Sounds" aria-label="Sounds"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-sounds"></use></svg><span>sounds</span></button>
+    <button class="dk" id="open-chat" data-route="/chat" title="Chat" aria-label="Chat"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chat"></use></svg><span>chat</span></button>
+    <button class="dk" id="open-set" data-route="/settings" title="Settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-settings"></use></svg><span>settings</span></button>
+  </div>
+  <div class="dk-right"><span id="clock"></span></div>
+</nav>
 <main id="home">
   <h1 class="brand">copper</h1>
   <p class="tag" id="tag"></p>
@@ -28,7 +54,6 @@
   <div class="recent" id="recent"></div>
 </main>
 
-<div class="foot"><span>copper · v1.0 · <b id="stage">fresh</b> · <button id="open-notes">notes</button></span><button id="back" hidden></button><span id="clock"></span></div>
 
 <section id="view">
   <div class="tabs" id="tabs"></div>
@@ -49,7 +74,7 @@
   <canvas id="gc" width="520" height="190"></canvas>
   <p class="hs">golem hop · space or tap to jump · best <b id="best">0</b></p>
 </dialog>
-<dialog id="st" class="wide"><div class="dh"><h3>settings</h3><button class="ib" id="sx">×</button></div>
+<dialog id="st" class="wide"><div class="dh"><h3><svg class="hico" aria-hidden="true"><use href="#i-settings"></use></svg>settings</h3><button class="ib" id="sx">×</button></div>
   <div class="sbody"><nav class="stabs" id="stabs"><button data-p="appearance" class="on">appearance</button><button data-p="search">search</button><button data-p="proxy">proxy</button><button data-p="cloaking">cloaking</button><button data-p="panic">panic</button><button data-p="data">data</button><button data-p="credit">credit</button></nav>
   <div class="spanels">
   <div class="sp on" data-p="appearance"><div class="set"><span>copper</span><span class="seg" id="s-pat"><button data-s="auto">auto</button><button data-s="0">fresh</button><button data-s="1">exposed</button><button data-s="2">weathered</button><button data-s="3">oxidized</button></span></div>
@@ -89,23 +114,21 @@
   </div></div></dialog>
 <dialog id="nt" class="wide"><div class="dh"><h3>notes</h3><button class="ib" id="nx">×</button></div>
   <textarea id="nta" placeholder="Jot something down…" spellcheck="false"></textarea><p class="hs">saved in this browser</p></dialog>
-<section id="gp"><div class="mg-bar lbar"><button class="ib" id="gp-back" title="Back (Esc)">←</button><h3>games</h3><input id="gp-q" placeholder="search games" spellcheck="false"></div>
+<section id="gp"><div class="mg-bar lbar"><button class="ib" id="gp-back" title="Back (Esc)">←</button><h3><svg class="hico" aria-hidden="true"><use href="#i-games"></use></svg>games</h3><input id="gp-q" placeholder="search games" spellcheck="false"></div>
   <div id="gpbody"><div class="seg gp-cats" id="gp-cats"></div><div class="mg-grid g-grid" id="gl"></div>
-   <div class="set"><span>Your games</span><span id="glist"></span></div>
-   <form id="ga" class="addrow"><input id="gn" placeholder="name"><input id="gu" placeholder="https://..."><button class="ok">Add</button></form>
-   <p class="mg-credit">game catalog from OnlineGames.io</p></div>
+   <p class="mg-credit">game catalog from OnlineGames.io · extra games from community web ports</p></div>
   <div id="gplay"><div class="mg-bar pbar"><button class="ib" id="gpl-back" title="Back (Esc)">←</button><h3 id="gpl-t"></h3>
    <span class="seg" style="margin-left:auto"><button id="gpl-fs">fullscreen</button><button id="gpl-ext">new tab ↗</button></span></div><div id="gslot"></div></div></section>
-<section id="mg"><div class="mg-bar"><button class="ib" id="mg-back" title="Back (Esc)">←</button><h3>manga</h3>
+<section id="mg"><div class="mg-bar"><button class="ib" id="mg-back" title="Back (Esc)">←</button><h3><svg class="hico" aria-hidden="true"><use href="#i-manga"></use></svg>manga</h3>
   <span class="seg" id="mg-tabs"><button data-t="popular" class="on">popular</button><button data-t="latest">latest</button><button data-t="library">saved</button></span>
   <input id="mg-q" placeholder="search manga" spellcheck="false"></div><div id="mgbody"></div></section>
-<section id="mv"><div class="mg-bar"><button class="ib" id="mv-back" title="Back (Esc)">←</button><h3>movies</h3>
+<section id="mv"><div class="mg-bar"><button class="ib" id="mv-back" title="Back (Esc)">←</button><h3><svg class="hico" aria-hidden="true"><use href="#i-movies"></use></svg>movies</h3>
   <input id="mv-q" placeholder="search movies" spellcheck="false"></div><div id="mvbody"></div></section>
-<section id="sb"><div class="mg-bar"><button class="ib" id="sb-back" title="Back (Esc)">←</button><h3>sound effects</h3><input id="sb-q" placeholder="search sound effects (press enter)" spellcheck="false"></div>
+<section id="sb"><div class="mg-bar"><button class="ib" id="sb-back" title="Back (Esc)">←</button><h3><svg class="hico" aria-hidden="true"><use href="#i-sounds"></use></svg>sound effects</h3><input id="sb-q" placeholder="search sound effects (press enter)" spellcheck="false"></div>
   <div id="sbbody"></div>
   <div class="sb-vol"><span>vol</span><input id="sb-vol" type="range" min="0" max="100" value="80" aria-label="volume"><button class="mg-btn" id="sb-stop">stop all</button></div>
   <input type="file" id="sb-file" accept="audio/*" multiple hidden></section>
-<section id="ch"><div class="mg-bar"><button class="ib" id="ch-back" title="Back (Esc)">←</button><button class="mg-btn" id="ch-menu" title="Channels and DMs">menu</button><h3>chat</h3><span id="ch-counts" class="status"></span><button class="mg-btn" id="ch-members">members</button></div><div id="chbody"></div></section>
+<section id="ch"><div class="mg-bar"><button class="ib" id="ch-back" title="Back (Esc)">←</button><button class="mg-btn" id="ch-menu" title="Channels and DMs">menu</button><h3><svg class="hico" aria-hidden="true"><use href="#i-chat"></use></svg>chat</h3><span id="ch-counts" class="status"></span><button class="mg-btn" id="ch-members">members</button></div><div id="chbody"></div></section>
 <dialog id="bd" class="wide"><div class="dh"><h3>badges</h3><button class="ib" id="bdx">×</button></div><div id="bdl"></div></dialog>
 <div id="toast"></div>
 <dialog id="dlg"><form method="dialog" id="df"><h3>new shortcut</h3>
@@ -133,6 +156,7 @@
 <script src="vendor/supabase.js"></script>
 <script src="js/chat-api.js"></script>
 <script src="js/chat.js"></script>
+<script src="js/router.js"></script>
 <script src="js/guide.js"></script>
 </body>
 </html>

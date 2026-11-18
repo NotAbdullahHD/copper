@@ -17,19 +17,6 @@ $('#s-reset').onclick=()=>{links=DEFAULTS.map(([n,u])=>({n,u}));store.set('links
 $('#s-clear').onclick=()=>{if(confirm('Clear all Copper data in this browser?')){
   Object.keys(localStorage).filter(k=>k.startsWith('copper.')).forEach(k=>localStorage.removeItem(k));location.reload()}};
 
-/* your games: open in a tab, loaded directly (games need to run natively) */
-let games=store.get('games',[]);
-function drawGames(){
-  const el=$('#glist');el.textContent='';
-  if(!games.length){el.textContent='none yet';return}
-  games.forEach((g,i)=>{const b=document.createElement('button');b.className='g';b.textContent=g.n;
-    const x=document.createElement('i');x.textContent='×';
-    x.onclick=e=>{e.stopPropagation();games.splice(i,1);store.set('games',games);drawGames()};
-    b.append(x);b.onclick=()=>playGame(g.n,g.u);el.append(b)});
-}
-$('#ga').onsubmit=e=>{e.preventDefault();const u=normalize($('#gu').value),n=$('#gn').value.trim()||(u&&host(u));
-  if(!u){toast('enter a valid link');return}games.push({n,u});store.set('games',games);$('#gn').value=$('#gu').value='';drawGames()};
-
 /* golem hop */
 const cv=$('#gc'),cx=cv.getContext('2d'),spr=$('#golem'),GY=160;
 let run=false,raf,s;

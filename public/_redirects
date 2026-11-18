@@ -1,0 +1,8 @@
+/games /index.html 200
+/manga /index.html 200
+/movies /index.html 200
+/sounds /index.html 200
+/chat /index.html 200
+/home /index.html 200
+/settings /index.html 200
+/settings/* /index.html 200

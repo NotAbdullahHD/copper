@@ -3,10 +3,12 @@ const gp=$('#gp'),gl=$('#gl');let gcat='all',gq='';
 const GH={w:'https://www.onlinegames.io/games/',c:'https://cloud.onlinegames.io/games/'},GI='https://www.onlinegames.io/media/posts/';
 const CATS=['all','racing','arcade','puzzle','sports','action','sandbox','classic'];
 
+function fallbackArt(n){const f=document.createElement('div');f.className='gart init';f.textContent=n.split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();return f}
 function card(g){
   const b=document.createElement('button');b.className='gcard';let art;
   if(g.own){art=document.createElement('div');art.className='gart';const i=new Image();i.src=$('#golem').src;i.alt='';art.append(i)}
-  else{art=new Image();art.src=g.img;art.alt='';art.loading='lazy';art.onerror=()=>{const f=document.createElement('div');f.className='gart init';f.textContent=g.n.split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();art.replaceWith(f)}}
+  else if(!g.img)art=fallbackArt(g.n); // extra games have no thumbnail on the CDN
+  else{art=new Image();art.src=g.img;art.alt='';art.loading='lazy';art.onerror=()=>art.replaceWith(fallbackArt(g.n))}
   const t=document.createElement('b');t.textContent=g.n;
   const s=document.createElement('small');s.textContent=g.own?'built in · by Copper':g.today?'game of the day · '+g.cat:g.cat;if(g.today)b.classList.add('today');
   b.append(art,t,s);b.onclick=()=>{track('game_play',{game:g.n});const pl=new Set(store.get('played',[]));pl.add(g.n);store.set('played',[...pl]);if(pl.size>=5)badge('gamer');if(pl.size>=15)badge('gamer15');g.run?g.run():playGame(g.n,g.u)};return b;
@@ -14,7 +16,8 @@ function card(g){
 function drawLib(){
   const di=Math.floor(Date.now()/864e5)%GAMES.length;
   const list=GAMES.map(([n,h,p,i,c],k)=>({n,cat:c,u:GH[h]+p,img:GI+i,today:k===di}));
-  const all=[{n:'Golem Hop',cat:'arcade',own:true,run:startHop}].concat(list.filter(x=>x.today),list.filter(x=>!x.today));
+  const extra=GAMES_EXTRA.map(([n,u,c])=>({n,cat:c,u}));
+  const all=[{n:'Golem Hop',cat:'arcade',own:true,run:startHop}].concat(list.filter(x=>x.today),extra,list.filter(x=>!x.today));
   gl.replaceChildren(...all.filter(g=>(gcat==='all'||g.cat===gcat)&&g.n.toLowerCase().includes(gq)).map(card));
   $('#gp-cats').replaceChildren(...CATS.map(c=>{const b=document.createElement('button');b.textContent=c;b.className=c===gcat?'on':'';
     b.onclick=()=>{gcat=c;drawLib()};return b}));
@@ -29,7 +32,7 @@ function playGame(name,u){
 }
 function stopGame(){gp.classList.remove('playing');$('#gslot').replaceChildren();curGame=null}
 
-$('#open-games').onclick=()=>{drawLib();drawGames();gp.classList.add('on')};
+$('#open-games').onclick=()=>{drawLib();gp.classList.add('on')};
 $('#gp-back').onclick=()=>gp.classList.remove('on');
 $('#gpl-back').onclick=stopGame;
 $('#gpl-fs').onclick=()=>{const f=$('#gslot iframe');f&&f.requestFullscreen&&f.requestFullscreen()};

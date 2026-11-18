@@ -428,12 +428,13 @@ kbd{font-size:11px;padding:2px 7px;border-radius:6px}
 .dk:hover{background:#ffffff0f;color:var(--text)}
 .dk.on{color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
 .dk.on::after{content:"";position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:14px;height:2px;border-radius:2px;background:var(--accent)}
-body.viewing .dock,body:has(#ch.on) .dock,body:has(#gp.playing) .dock{display:none}
+/* the bar belongs to the home page only; every other page has its own back arrow */
+body.viewing .dock,body:has(#gp.on) .dock,body:has(#mg.on) .dock,body:has(#mv.on) .dock,body:has(#sb.on) .dock,body:has(#ch.on) .dock,body:has(dialog[open]) .dock{display:none}
 
 /* pages */
 #mg.on,#gp.on,#mv.on,#sb.on,#ch.on{animation:pageIn .18s ease both}
 @keyframes pageIn{from{opacity:0}}
-#gpbody,#mgbody,#mvbody,#sbbody{padding:22px 16px calc(var(--bar) + 26px)}
+#gpbody,#mgbody,#mvbody,#sbbody{padding:20px 14px 28px}
 .mg-bar{height:52px;padding:0 14px;gap:10px;border-bottom:1px solid var(--line);background:none}
 .mg-bar h3{display:flex;align-items:center;gap:8px;font:600 19px var(--serif)}
 .hico{width:18px;height:18px;flex:none;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -488,11 +489,79 @@ dialog h3{font-size:22px;margin-bottom:10px}
   .dk svg{width:18px;height:18px}
   .dk-left .dk-meta,.dk-left .dk-brand{display:none}
   .brand{font-size:clamp(38px,12vw,52px)}
-  #gpbody,#mgbody,#mvbody,#sbbody{padding:16px 12px calc(var(--bar) + 20px)}
+  #gpbody,#mgbody,#mvbody,#sbbody{padding:16px 12px 24px}
   .mg-bar{height:auto;min-height:52px;padding:8px 12px;flex-wrap:wrap}
   .mg-bar input{margin-left:0;width:100%;order:9}
 }
+@keyframes liftFade{from{opacity:0}}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001s!important;transition-duration:.001s!important}
   .tile:hover,.gcard:hover,.snd:hover,.mg-card:hover img{transform:none}
+  /* no travel, but still a short fade so the page does not snap in */
+  #home.in .brand,#home.in .tag,#home.in .searchwrap,#home.in .tile,#home.in .recent{animation:liftFade .18s ease both!important}
+}
+/* small fly-up when home comes back: 7px, a third of a second, easy to miss */
+@keyframes liftIn{from{opacity:0;transform:translateY(7px)}}
+#home{overflow-y:auto;overflow-x:hidden}
+#home.in .brand{animation:liftIn .38s ease both}
+#home.in .tag{animation:liftIn .38s .03s ease both}
+#home.in .searchwrap{animation:liftIn .38s .06s ease both}
+#home.in .tile{animation:liftIn .3s ease both}
+#home.in .recent{animation:liftIn .3s .12s ease both}
+
+/* one frame on every page, so a page reads as copper and not as its own app */
+.mg-bar{height:52px;padding:0 14px;gap:10px}
+.mg-bar h3{font:600 18px var(--serif);gap:8px}
+.hico{width:17px;height:17px}
+.mg-bar .ib{width:32px;height:32px;border-radius:var(--r-sm)}
+.mg-grid{max-width:1080px}
+.mg-note,.mg-empty,.cm-empty,.pop-note{font-size:12.5px;color:var(--muted)}
+.mg-note{margin-top:70px}
+.mg-detail{max-width:900px;gap:24px}
+.mg-detail h2,.setup h2{font-size:20px}
+
+/* chat sits in the same frame as the other pages */
+.cl-head{min-height:52px;padding:0 14px}
+.cl-head b{font:600 17px var(--serif)}
+.cl-tab,.chn,.cp{border-radius:6px;font-size:12.5px}
+.cl-tab{padding:7px 9px}
+.chn{padding:5px 9px}
+.cmsgs{padding:12px 14px}
+.cl-left{width:224px}
+.cl-bar{padding:10px 14px 12px;gap:6px}
+.cl-bar textarea,.fq input,.pf input,.pf textarea,.cm-edit,.pop-search{border-radius:var(--r-sm);font-size:12.5px}
+.cb{height:34px;min-width:34px;border-radius:var(--r-sm)}
+.cb.sendb{height:34px}
+.cl-right{width:208px;padding:8px}
+.cm-t{font-size:13px}
+.fq{margin:8px 2px 2px}
+
+/* settings keeps the same type scale and block shapes */
+dialog#st{width:min(680px,94vw)}
+dialog.set{width:min(760px,94vw);height:min(580px,90vh)}
+.set-nav{width:188px;padding:18px 8px}
+.sn{padding:7px 9px;border-radius:6px;font-size:12.5px}
+.set-body{padding:20px 24px 24px}
+.set-body h2{font-size:20px;margin:0 0 14px}
+.set-cols{grid-template-columns:minmax(0,1fr) 270px;gap:24px}
+.sbody{grid-template-columns:132px 1fr;gap:20px;min-height:0}
+.stabs button{padding:7px 10px;font-size:12.5px}
+.cr p{font-size:12.5px}
+.hint,.hs,.status{font-size:11.5px}
+
+/* short or narrow screens: keep the home block inside the window */
+@media(max-height:640px){
+  #home{padding-top:48px}
+  .brand{font-size:clamp(34px,5vw,48px)}
+  .tag{display:none}
+}
+/* narrow: the bar keeps only what it needs */
+@media(max-width:600px){
+  .dk-left{display:none}
+  .dk-mid{gap:0}
+  .dk{width:36px;height:34px}
+  .dk svg{width:18px;height:18px}
+}
+@media(max-width:360px){
+  .dk-right{display:none}
 }

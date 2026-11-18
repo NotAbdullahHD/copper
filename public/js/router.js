@@ -21,11 +21,25 @@ function paintDock(p) {
   document.querySelectorAll('#dock .dk').forEach(b => b.classList.toggle('on', b.dataset.route === root));
 }
 
+/* replay the quiet fly-up whenever home comes back */
+function pulseHome() {
+  const h = $('#home');
+  if (!h) return;
+  h.classList.remove('in');
+  void h.offsetWidth;
+  h.classList.add('in');
+}
+
 /* the pages toggle their own class, so watch that instead of rewriting each page */
 let syncT;
 function sync() {
   clearTimeout(syncT);
-  syncT = setTimeout(() => { const p = routeNow(); setPath(p, true); paintDock(p); }, 0);
+  syncT = setTimeout(() => {
+    const p = routeNow();
+    setPath(p, true);
+    paintDock(p);
+    if (p === HOME) pulseHome();
+  }, 0);
 }
 
 /* open whatever the address points at, using the page's own open handler */
@@ -83,4 +97,5 @@ addEventListener('popstate', () => openPath(location.pathname, false));
   const p = (location.pathname || '/').replace(/\/+$/, '') || '/';
   if (/^\/(home|games|manga|movies|sounds|chat|settings)(\/|$)/.test(p)) openPath(p, false);
   else { setPath(HOME, false); paintDock(HOME); }
+  if (routeNow() === HOME) pulseHome();
 })();

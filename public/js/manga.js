@@ -4,7 +4,7 @@ const mg=$('#mg'),mgb=$('#mgbody'),MD='https://api.mangadex.org',RATE='&contentR
 const lite=u=>window.COPPER_LITE.replace(/\/$/,'')+'/?url='+encodeURIComponent(u);
 async function api(p){
   if(!window.COPPER_LITE)throw new Error('set COPPER_LITE in js/config.js');
-  let r;try{r=await fetch(lite(MD+p),{headers:{accept:'application/json'}})}catch{throw new Error("couldn't reach the Lite Worker · check your connection")}
+  let r;try{r=await fetch(lite(MD+p),{headers:{accept:'application/json'}})}catch{throw new Error('the proxy hit a snag — the Lite worker may be asleep.')}
   const text=await r.text();let d=null;try{d=JSON.parse(text)}catch{}
   if(r.ok&&d&&!d.error)return d;
   if(r.status===429)throw new Error('MangaDex is rate limiting, wait a few seconds');
@@ -42,12 +42,12 @@ async function showList(){
   const lib=store.get('lib',[]);
   let path;
   if(query)path=`/manga?limit=30&title=${encodeURIComponent(query)}&order[relevance]=desc&hasAvailableChapters=true`;
-  else if(tab==='library'){if(!lib.length)return note('nothing saved yet · open a manga and press save');
+  else if(tab==='library'){if(!lib.length)return note('nothing saved yet. open one and hit save.');
     path='/manga?limit=100&'+lib.slice(0,100).map(i=>'ids[]='+i).join('&')}
   else path='/manga?limit=30&order['+(tab==='latest'?'latestUploadedChapter':'followedCount')+']=desc&hasAvailableChapters=true&availableTranslatedLanguage[]=en';
   try{
     const d=await api(path+'&includes[]=cover_art'+RATE);
-    if(!d.data.length)return note('no results');
+    if(!d.data.length)return note('nothing matched. try another spelling.');
     mgb.replaceChildren(h('div',{class:'mg-grid'},...d.data.map(m=>h('button',{class:'mg-card',onclick:()=>openManga(m)},
       h('img',{src:cover(m),loading:'lazy',alt:''}),h('span',{},mTitle(m))))),credit());
   }catch(e){note(e.message,showList)}

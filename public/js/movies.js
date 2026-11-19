@@ -5,7 +5,7 @@ let mq='',mback=closeMovies;
 const mNote=(t,retry)=>mvb.replaceChildren(empty(t,retry,t==='loading…'));
 function closeMovies(){mv.classList.remove('on')}
 async function tmdb(path){
-  let r;try{r=await fetch(TM+path+(path.includes('?')?'&':'?')+'api_key='+encodeURIComponent(KEY),{headers:{accept:'application/json'}})}catch{throw new Error("couldn't reach TMDB · check your connection")}
+  let r;try{r=await fetch(TM+path+(path.includes('?')?'&':'?')+'api_key='+encodeURIComponent(KEY),{headers:{accept:'application/json'}})}catch{throw new Error('TMDB did not answer. the key or the connection.')}
   if(r.status===401)throw new Error('TMDB rejected the key in config.js');
   const t=await r.text();let d=null;try{d=JSON.parse(t)}catch{}
   if(!r.ok||!d)throw new Error(r.ok?'TMDB sent something unexpected':'TMDB error '+r.status);
@@ -29,11 +29,11 @@ function mRow(title,items){
 async function mList(){
   mback=closeMovies;mNote('loading…');
   try{
-    if(!KEY)return mNote('add a free TMDB key in js/config.js to browse movies');
+    if(!KEY)return mNote('no TMDB key yet — put one in js/config.js and the posters appear');
     const credit=h('p',{class:'mg-credit'},'This product uses the TMDB API but is not endorsed or certified by TMDB.');
     if(mq){
       const d=await tmdb('/search/movie?include_adult=false&query='+encodeURIComponent(mq));
-      const res=d.results.filter(m=>m.poster_path);if(!res.length)return mNote('no results');
+      const res=d.results.filter(m=>m.poster_path);if(!res.length)return mNote('nothing found. the catalogue is thinner than it looks.');
       return mvb.replaceChildren(h('div',{class:'mg-grid'},...res.map(m=>mCard(TI+'w342'+m.poster_path,m.title,(m.release_date||'').slice(0,4),()=>mDetail(m.id)))),credit);
     }
     const [tr,po,tp,up]=await Promise.all(['/trending/movie/week','/movie/popular','/movie/top_rated','/movie/upcoming'].map(p=>tmdb(p)));

@@ -42,7 +42,7 @@ async function liteCheck(){
   if(liteState)return liteState;
   try{const t=await(await fetch(COPPER_LITE.replace(/\/$/,'')+'/')).text(),m=/ v(\d+)/.exec(t);liteState={ok:!!m&&+m[1]>=LITE_NEEDED,v:m?+m[1]:1}}
   catch{liteState={ok:false,down:true}}
-  if(!liteState.ok&&!liteState.none&&!liteState.down)toast('Your Lite Worker is out of date · redeploy copper-lite-worker.js',6000);
+  if(!liteState.ok&&!liteState.none&&!liteState.down)toast('the Lite worker is old — redeploy copper-lite-worker.js',6000);
   return liteState;
 }
 let fullDead=false;

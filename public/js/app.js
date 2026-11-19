@@ -46,6 +46,12 @@ $('#dc').onclick=()=>$('#dlg').close();
 $('#df').onsubmit=()=>{const u=normalize($('#dn').value);if(u){links.push({n:host(u).split('.')[0].replace(/^./,c=>c.toUpperCase()),u});store.set('links',links);render()}};
 render();
 
+/* the light that follows the pointer on home: home::before reads these two vars */
+const homeEl=$('#home');let glowX=0,glowY=0,glowQueued=0;
+addEventListener('pointermove',e=>{glowX=e.clientX;glowY=e.clientY;
+  if(!glowQueued)glowQueued=requestAnimationFrame(()=>{glowQueued=0;
+    if(homeEl){homeEl.style.setProperty('--px',glowX+'px');homeEl.style.setProperty('--py',glowY+'px')}})},{passive:true});
+
 /* clock */
 const tick=()=>$('#clock').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 tick();setInterval(tick,1000);

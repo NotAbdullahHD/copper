@@ -3,7 +3,7 @@
 @font-face{font-family:"DM Mono";font-weight:400;font-display:swap;src:url(../fonts/dm-mono-latin-400-normal.woff2) format("woff2")}
 @font-face{font-family:"DM Mono";font-weight:500;font-display:swap;src:url(../fonts/dm-mono-latin-500-normal.woff2) format("woff2")}
 :root{
-  --bg:#0c0b0a; --surface:#151311; --line:#27221d; --text:#f0e9e1; --muted:#8c8279;
+  --bg:#000; --surface:#151311; --line:#27221d; --text:#f0e9e1; --muted:#8c8279;
   --accent:#ff7b2e; --golem:none; --w:588px;
   --serif:"Pixelify Sans","Courier New",monospace; --mono:"DM Mono",ui-monospace,monospace;
 }
@@ -165,7 +165,6 @@ body.viewing #wall{display:none!important}
 #an{position:fixed;left:20px;bottom:56px;max-width:360px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:5px;font:12px/1.5 var(--mono);color:var(--muted);z-index:30}
 #an button{padding:5px 10px;border:1px solid var(--line);border-radius:4px;color:var(--text)}
 #an #an-y{background:var(--accent);color:#120a04;border-color:var(--accent);font-weight:600}body.viewing #an{display:none}
-#dots{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}body.viewing #dots{display:none}
 [hidden]{display:none!important}
 dialog.wide{max-height:88vh;overflow:auto}
 .set input{flex:1;min-width:0;height:34px;border-radius:5px;border:1px solid var(--line);background:var(--bg);color:var(--text);padding:0 10px;font:12px var(--mono);outline:0}
@@ -387,9 +386,17 @@ dialog.set[open]{display:flex;align-items:stretch;justify-content:flex-start}dia
 body{background:var(--bg)}
 
 /* home */
-#home{padding-top:clamp(64px,22vh,200px);padding-bottom:calc(var(--bar) + 12px)}
+/* the home block sits in the middle of the window; auto margins centre it and collapse
+   on short screens instead of clipping the top of the page */
+#home{padding-top:0;padding-bottom:calc(var(--bar) + 12px)}
+#home>.brand{margin-top:auto}
+#home>.recent{margin-bottom:auto}
+/* a light that follows the pointer: 6% of the accent, enough to feel alive, not to notice */
+#home::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(360px 260px at var(--px,50%) var(--py,34%),color-mix(in srgb,var(--accent) 6%,transparent),transparent 70%)}
 .brand{font:600 clamp(40px,6.2vw,64px)/1.06 var(--serif);letter-spacing:-.01em;color:var(--text);
-  background:none;-webkit-text-fill-color:currentColor;filter:none;animation:none}
+  background:none;-webkit-text-fill-color:currentColor;filter:none;animation:none;
+  text-shadow:0 0 30px color-mix(in srgb,var(--accent) 22%,transparent)}
 .tag{font-size:12.5px;margin-bottom:14px;height:normal}
 #sf{height:52px;border:1px solid var(--line);border-radius:var(--r);padding:0 6px 0 18px;gap:10px;
   background:var(--surface);transition:border-color var(--step)}
@@ -551,9 +558,8 @@ dialog.set{width:min(760px,94vw);height:min(580px,90vh)}
 
 /* short or narrow screens: keep the home block inside the window */
 @media(max-height:640px){
-  #home{padding-top:48px}
+  #home{padding-top:0}
   .brand{font-size:clamp(34px,5vw,48px)}
-  .tag{display:none}
 }
 /* narrow: the bar keeps only what it needs */
 @media(max-width:600px){

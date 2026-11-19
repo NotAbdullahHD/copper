@@ -33,7 +33,6 @@ function syncStealth(){
   $('#s-cloak').value=c.k||'off';$('#cloak-custom').hidden=c.k!=='custom';$('#cc-t').value=c.t||'';$('#cc-i').value=c.i||'';
   document.querySelectorAll('#s-cmode button').forEach(b=>b.classList.toggle('on',b.dataset.v===store.get('cmode','always')));
   $('#pk-set').textContent=recording?'press a key…':keyLabel(store.get('pkey','`'));$('#pk-url').value=store.get('purl','https://classroom.google.com');
-  document.querySelectorAll('#s-dots button').forEach(b=>b.classList.toggle('on',b.dataset.v===(store.get('dots',true)?'1':'0')));
 }
 $('#open-set').addEventListener('click',syncStealth);
 $('#s-cloak').onchange=e=>{store.set('cloak',{...store.get('cloak',{}),k:e.target.value});syncStealth();cloakNow()};

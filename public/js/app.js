@@ -46,6 +46,30 @@ $('#dc').onclick=()=>$('#dlg').close();
 $('#df').onsubmit=()=>{const u=normalize($('#dn').value);if(u){links.push({n:host(u).split('.')[0].replace(/^./,c=>c.toUpperCase()),u});store.set('links',links);render()}};
 render();
 
+/* url or search? say which before enter is pressed */
+const qmode=$('#qmode');
+const isUrl=v=>/^https?:\/\//i.test(v)||/^(localhost|[\w-]+(\.[\w-]+)+)(:\d+)?(\/.*)?$/i.test(v);
+function paintMode(){
+  const v=q.value.trim();if(!v){qmode.hidden=true;return}
+  const u=isUrl(v);qmode.hidden=false;qmode.textContent=u?'URL':'SEARCH';qmode.dataset.k=u?'url':'search'}
+q.addEventListener('input',paintMode);q.addEventListener('change',paintMode);
+
+/* proxy status: how long the Lite worker takes to answer, red when it stops answering */
+const pingEl=$('#ping'),pingNum=pingEl.querySelector('b');let pingBusy=false;
+async function pingProxy(){
+  if(pingBusy)return;pingBusy=true;
+  if(!window.COPPER_LITE){pingEl.dataset.state='off';pingNum.textContent='local';pingBusy=false;return}
+  const t0=performance.now(),ac=new AbortController(),to=setTimeout(()=>ac.abort(),6000);
+  try{
+    const r=await fetch(window.COPPER_LITE.replace(/\/$/,'')+'/',{cache:'no-store',signal:ac.signal});
+    const t=await r.text();clearTimeout(to);
+    if(!r.ok||!/copper lite/i.test(t))throw 0;
+    pingEl.dataset.state='ok';pingNum.textContent=Math.round(performance.now()-t0)+'ms';
+  }catch{clearTimeout(to);pingEl.dataset.state='down';pingNum.textContent='down'}
+  pingBusy=false;
+}
+pingProxy();setInterval(()=>{if(!document.hidden)pingProxy()},20000);addEventListener('online',pingProxy);
+
 /* the light that follows the pointer on home: home::before reads these two vars */
 const homeEl=$('#home');let glowX=0,glowY=0,glowQueued=0;
 addEventListener('pointermove',e=>{glowX=e.clientX;glowY=e.clientY;

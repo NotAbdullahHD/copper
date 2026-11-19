@@ -1,10 +1,14 @@
 {
   "name": "copper",
-  "version": "0.2.0",
+  "version": "1.0.5",
   "private": true,
   "type": "module",
-  "scripts": { "start": "node node/server.js" },
-  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node node/server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@mercuryworkshop/bare-mux": "^2.1.9",
     "@mercuryworkshop/libcurl-transport": "^2.0.6",

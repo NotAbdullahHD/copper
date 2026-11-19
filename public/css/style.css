@@ -21,7 +21,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .brand{position:relative;font:600 clamp(56px,8vw,84px)/1 var(--serif);letter-spacing:.01em;margin-bottom:12px}
 
 .searchwrap{position:relative;width:min(var(--w),92vw)}
-#golem{position:absolute;left:22px;bottom:calc(100% - 1px);width:36px;height:48px;image-rendering:pixelated;
+#golem{position:absolute;left:22px;bottom:100%;width:36px;height:48px;image-rendering:pixelated;
   filter:var(--golem);cursor:pointer;transform-origin:50% 100%;z-index:2;transition:filter .6s}
 #golem.hop{animation:hop .42s cubic-bezier(.3,.7,.4,1)}
 @keyframes hop{35%{transform:translateY(-12px) scaleY(1.06)}70%{transform:translateY(0) scaleY(.92)}100%{transform:none}}
@@ -43,7 +43,8 @@ kbd{font:500 12px var(--mono);color:var(--muted);border:1px solid var(--line);bo
 .tile img{width:28px;height:28px;border-radius:7px}
 .tile .fb{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;background:var(--line);color:var(--text);font-weight:600}
 .tile span{max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tile.add{background:none;border-style:dashed;font-size:22px}
+.tile.add{background:none;font-size:22px;color:var(--muted)}
+.tile.add:hover{color:#d97742}
 .tile .x{position:absolute;top:5px;right:5px;width:20px;height:20px;border-radius:6px;font-size:13px;line-height:20px;
   color:var(--muted);opacity:0;transition:opacity .15s}
 .tile:hover .x{opacity:1}.tile .x:hover{background:var(--line);color:var(--text)}
@@ -404,9 +405,9 @@ body{background:var(--bg)}
 kbd{font-size:11px;padding:2px 7px;border-radius:6px}
 #go{height:36px;padding:0 16px;border-radius:var(--r-sm);font-size:13px}
 .tiles{gap:12px;margin-top:16px}
-.tile{gap:8px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);font-size:12px;
+.tile{gap:8px;border:1px solid #222;border-radius:var(--r);background:var(--surface);font-size:12px;
   transition:border-color var(--step),transform var(--step),color var(--step)}
-.tile:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:none;color:var(--text)}
+.tile:hover{transform:translateY(-2px);border-color:#d97742;box-shadow:none;color:var(--text)}
 .tile img,.tile .fb{width:26px;height:26px;border-radius:6px}
 .tile.add{font-size:20px}
 .recent{margin-top:16px}
@@ -423,14 +424,19 @@ kbd{font-size:11px;padding:2px 7px;border-radius:6px}
 .dk-meta b{color:var(--accent);font-weight:500}
 .dk-txt{height:26px;padding:0 8px;border-radius:6px;color:var(--muted);font:11.5px var(--mono);white-space:nowrap}
 .dk-txt:hover{background:#ffffff0f;color:var(--text)}
-.dk-mid{display:flex;align-items:center;gap:2px;justify-self:center}
+.dk-mid{display:flex;align-items:center;gap:5px;justify-self:center}
 .dk-right{justify-self:end;padding-right:4px}
 #clock{color:var(--text);font-variant-numeric:tabular-nums}
-.dk{position:relative;width:42px;height:38px;min-width:0;padding:0;border-radius:6px;display:grid;place-items:center;
-  color:var(--muted);background:none;transition:background var(--step),color var(--step)}
-.dk svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.dk span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-.dk:hover{background:#ffffff0f;color:var(--text)}
+.dk{position:relative;display:grid;place-items:center;width:38px;height:36px;padding:0;border-radius:7px;
+  color:var(--muted);background:none;transition:background var(--step),color var(--step),box-shadow var(--step)}
+.dk svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+/* the icon label doubles as its tooltip: same markup, no extra nodes */
+.dk span{position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%) translateY(2px);
+  padding:4px 7px;border:1px solid var(--line);border-radius:5px;background:#0b0a09;
+  font:11px/1 var(--mono);color:var(--text);white-space:nowrap;opacity:0;pointer-events:none;
+  transition:opacity .1s ease,transform .1s ease}
+.dk:hover span,.dk:focus-visible span{opacity:1;transform:translateX(-50%)}
+.dk:hover{background:#ffffff10;color:var(--text);box-shadow:inset 0 0 0 1px var(--line-2)}
 .dk.on{color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
 .dk.on::after{content:"";position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:14px;height:2px;border-radius:2px;background:var(--accent)}
 /* the bar belongs to the home page only; every other page has its own back arrow */
@@ -569,3 +575,20 @@ dialog.set{width:min(760px,94vw);height:min(580px,90vh)}
 @media(max-width:360px){
   .dk-right{display:none}
 }
+/* ---------- status dot, top right: proxy latency ---------- */
+#ping{position:fixed;right:20px;top:16px;z-index:3;display:flex;align-items:center;gap:7px;
+  padding:5px 10px;border:1px solid var(--line);border-radius:5px;
+  font:11.5px/1 var(--mono);color:var(--muted);background:#000000b3;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#ping i{width:6px;height:6px;border-radius:50%;background:var(--muted);
+  transition:background var(--step),box-shadow var(--step)}
+#ping b{font-weight:500;font-variant-numeric:tabular-nums}
+#ping[data-state=ok] i{background:#49c47a;box-shadow:0 0 7px #49c47a}
+#ping[data-state=down]{border-color:color-mix(in srgb,#e0523f 45%,var(--line));color:#e29b8f}
+#ping[data-state=down] i{background:#e0523f;box-shadow:0 0 7px #e0523f}
+body.viewing #ping{display:none}
+
+/* ---------- url or search, before enter ---------- */
+#qmode{flex:none;font:500 10.5px/1 var(--mono);letter-spacing:.06em;padding:4px 7px;border-radius:5px;
+  border:1px solid var(--line);color:var(--muted)}
+#qmode[data-k=url]{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}

@@ -1,0 +1,7 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "copper",
+  "compatibility_date": "2026-11-18",
+  "observability": { "enabled": true },
+  "assets": { "directory": "public", "not_found_handling": "single-page-application" }
+}

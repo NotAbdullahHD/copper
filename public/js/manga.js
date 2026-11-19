@@ -2,17 +2,22 @@
    (MangaDex sends no CORS headers to other sites and asks that images be proxied). */
 const mg=$('#mg'),mgb=$('#mgbody'),MD='https://api.mangadex.org',RATE='&contentRating[]=safe&contentRating[]=suggestive';
 const lite=u=>window.COPPER_LITE.replace(/\/$/,'')+'/?url='+encodeURIComponent(u);
-async function api(p){
+async function api(p,tries=2){
   if(!window.COPPER_LITE)throw new Error('set COPPER_LITE in js/config.js');
+  for(let attempt=0;;attempt++){
   let r;try{r=await fetch(lite(MD+p),{headers:{accept:'application/json'}})}catch{throw new Error('the proxy hit a snag — the Lite worker may be asleep.')}
   const text=await r.text();let d=null;try{d=JSON.parse(text)}catch{}
   if(r.ok&&d&&!d.error)return d;
+  // MangaDex challenges the worker's address every so often and answers with a web page;
+  // the same request usually goes through a moment later.
+  if(r.ok&&!d&&/^\s*</.test(text)&&attempt<tries){await new Promise(x=>setTimeout(x,400));continue}
   if(r.status===429)throw new Error('MangaDex is rate limiting, wait a few seconds');
   if(r.status===403&&/only works inside Copper/i.test(text))throw new Error('the Lite Worker blocked this site · add its address to ALLOWED in the worker file');
   if(d&&d.error)throw new Error(d.error+' (status '+(d.status||r.status)+(d.host?' from '+d.host:'')+')');
   if(d&&d.errors&&d.errors[0])throw new Error('MangaDex: '+(d.errors[0].detail||d.errors[0].title||r.status));
-  if(/^\s*</.test(text))throw new Error('got a web page instead of manga data (status '+r.status+') · is the Lite Worker deployed and up to date?');
+  if(/^\s*</.test(text))throw new Error('MangaDex is putting up a challenge — try again in a moment.');
   throw new Error('MangaDex error '+r.status);
+  }
 }
 const h=(t,p={},...k)=>{const e=document.createElement(t);
   for(const[a,v]of Object.entries(p)){if(a==='class')e.className=v;else if(a.startsWith('on'))e[a]=v;else e.setAttribute(a,v)}

@@ -1,5 +1,5 @@
-/* movies page. TMDB for browsing and trailers; Watchmode (through the Lite worker) for where-to-watch links.
-   No pirated streams: Copper shows what's trending and sends you to the legal services that carry it. */
+/* movies page. TMDB for browsing, trailers and the JustWatch where-to-watch data.
+   No pirated streams: Copper shows what's trending and sends you to the services that carry it. */
 const mv=$('#mv'),mvb=$('#mvbody'),TM='https://api.themoviedb.org/3',TI='https://image.tmdb.org/t/p/',KEY=window.COPPER_TMDB||'';
 let mq='',mback=closeMovies;
 const mNote=(t,retry)=>mvb.replaceChildren(empty(t,retry,t==='loading…'));
@@ -41,10 +41,6 @@ async function mList(){
     mvb.replaceChildren(...[seen.length?mRow('recently viewed',seen):null,mRow('trending this week',tr.results),mRow('popular',po.results),mRow('top rated',tp.results),mRow('coming soon',up.results)].filter(Boolean),credit);
   }catch(e){mNote(e.message,mList)}
 }
-async function wmSources(id,region){ // where-to-watch links via the Lite worker (it holds the Watchmode key); null means use TMDB's data
-  if(!window.COPPER_LITE)return null;
-  try{const r=await fetch(COPPER_LITE.replace(/\/$/,'')+'/wm?tmdb='+id+'&region='+region);if(!r.ok)return null;const d=await r.json();return d.sources&&d.sources.length?d.sources:null}catch{return null}
-}
 function userRegion(){ // 'sv' -> SE, 'en' -> US, 'zh-Hans-CN' -> CN
   try{return new Intl.Locale(navigator.language||'en-US').maximize().region||'US'}catch{return 'US'}
 }
@@ -52,17 +48,20 @@ async function mDetail(id){
   mback=mList;mNote('loading…');badge('cinema');
   try{
     const region=userRegion();
-    const [d,wm]=await Promise.all([tmdb(`/movie/${id}?append_to_response=videos,watch/providers`),wmSources(id,region)]);
+    const d=await tmdb(`/movie/${id}?append_to_response=videos,watch/providers`);
     {const r=store.get('mvrecent',[]).filter(x=>x.id!==id);r.unshift({id,title:d.title,poster_path:d.poster_path,release_date:d.release_date});store.set('mvrecent',r.slice(0,12))}
     const all=(d['watch/providers']||{}).results||{},w=all[region]||all.US||null,reg=all[region]?region:'US';
     const vids=((d.videos||{}).results||[]).filter(v=>v.site==='YouTube'),tr=vids.find(v=>v.type==='Trailer')||vids[0];
-    const T={sub:'stream',free:'free',rent:'rent',buy:'buy'};
-    const groups=wm?Object.entries(T).map(([k,l])=>[l,wm.filter(s=>s.type===k)]).filter(g=>g[1].length)
-      :w?[['stream',w.flatrate],['free with ads',w.ads],['rent',w.rent],['buy',w.buy]].filter(g=>g[1]&&g[1].length):[];
-    const chip=p=>p.url?h('a',{class:'mv-chip',href:p.url,target:'_blank',rel:'noopener'},p.name):h('span',{class:'mv-chip'},p.provider_name||p.name);
+    const groups=w?[['stream',w.flatrate],['free with ads',w.ads],['rent',w.rent],['buy',w.buy]].filter(g=>g[1]&&g[1].length):[];
+    // TMDB has no per-service deep link, only the JustWatch page for the title, so every
+    // provider chip opens that. Honest about it instead of pretending to be a player.
+    const chip=p=>h('a',{class:'mv-chip',href:(w&&w.link)||'#',target:'_blank',rel:'noopener',title:p.provider_name},
+      p.logo_path?h('img',{src:TI+'w92'+p.logo_path,alt:'',loading:'lazy'}):null,p.provider_name);
     const slot=h('div');
-    const prov=h('div',{class:'mv-prov'},h('p',{class:'mg-note',style:'margin:0;text-align:left'},groups.length?'available in '+(wm?region:reg):'no streaming info for your region'),
-      ...groups.map(([k,list])=>h('div',{class:'mv-row'},h('small',{},k),...list.map(chip))));
+    const prov=h('div',{class:'mv-prov'},h('p',{class:'mg-note',style:'margin:0;text-align:left'},
+        groups.length?'where to watch in '+reg:'nothing streaming in '+reg+' right now'),
+      ...groups.map(([k,list])=>h('div',{class:'mv-row'},h('small',{},k),...list.map(chip))),
+      groups.length?h('p',{class:'mg-note',style:'margin:8px 0 0;text-align:left'},'copper does not host films. these open the service that carries it.'):null);
     mvb.replaceChildren(slot,
       h('div',{class:'mg-detail'},h('img',{class:'mg-cover',src:d.poster_path?TI+'w500'+d.poster_path:'',alt:''}),h('div',{},
         h('h2',{},d.title),
@@ -70,8 +69,8 @@ async function mDetail(id){
         h('p',{class:'mg-desc'},(d.overview||'').slice(0,500)),
         h('div',{class:'mg-actions'},
           tr?h('button',{class:'mg-btn pri',onclick:()=>slot.replaceChildren(embed('https://www.youtube-nocookie.com/embed/'+tr.key+'?autoplay=1'))},'watch trailer'):null,
-          !wm&&w&&w.link?h('a',{class:'mg-btn',href:w.link,target:'_blank',rel:'noopener'},'where to watch ↗'):null),
+          w&&w.link?h('a',{class:'mg-btn',href:w.link,target:'_blank',rel:'noopener'},'where to watch ↗'):null),
         prov)),
-      h('p',{class:'mg-credit'},'This product uses the TMDB API but is not endorsed or certified by TMDB. '+(wm?'Streaming links by Watchmode.':'Streaming data by JustWatch.')));
+      h('p',{class:'mg-credit'},'This product uses the TMDB API but is not endorsed or certified by TMDB. Streaming data by JustWatch.'));
   }catch(e){mNote(e.message,()=>mDetail(id))}
 }

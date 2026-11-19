@@ -6,7 +6,7 @@ window.COPPER_GA = '';
 
 // Free TMDB API key (themoviedb.org/settings/api) for the movies page. Leave empty to show only the free classics.
 window.COPPER_TMDB = '0c22ee2775077bb20cf5675d3c3795be';
-// Where-to-watch links on the movies page: add a secret named WATCHMODE_KEY to the Lite Worker (never put the key in this file).
+// Where-to-watch on the movies page comes from TMDB's JustWatch data, so it needs no extra key.
 // Analytics counts every visit automatically (visitors can switch it off in settings > data).
 // Set to true to count visits without cookies (less detail, friendlier to EU privacy rules).
 window.COPPER_GA_COOKIELESS = false;

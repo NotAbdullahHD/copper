@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>copper</title>
-<meta name="description" content="A black-and-copper start page: search, shortcuts, tabs, games, manga, movies, sounds and chat, plus a small proxy that opens sites in a frame.">
+<meta name="description" content="A black-and-copper start page: search, shortcuts, tabs, games, manga, movies and chat, plus a small proxy that opens sites in a frame.">
 <meta name="theme-color" content="#000">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="copper">
@@ -31,17 +31,15 @@
 </svg>
 <nav class="dock" id="dock" aria-label="Pages">
   <div class="dk-left">
-    <span class="dk-brand">copper</span>
+    <button class="dk-brand" id="open-home" title="Home">copper</button>
     <span class="dk-meta"><b id="stage">fresh</b></span>
     <button class="dk-txt" id="open-notes">notes</button>
     <button class="dk-txt" id="back" hidden></button>
   </div>
   <div class="dk-mid">
-    <button class="dk on" id="open-home" data-route="/home" title="Home" aria-label="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-home"></use></svg><span>home</span></button>
     <button class="dk" id="open-games" data-route="/games" title="Games" aria-label="Games"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-games"></use></svg><span>games</span></button>
     <button class="dk" id="open-manga" data-route="/manga" title="Manga" aria-label="Manga"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-manga"></use></svg><span>manga</span></button>
     <button class="dk" id="open-movies" data-route="/movies" title="Movies" aria-label="Movies"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-movies"></use></svg><span>movies</span></button>
-    <button class="dk" id="open-sounds" data-route="/sounds" title="Sounds" aria-label="Sounds"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-sounds"></use></svg><span>sounds</span></button>
     <button class="dk" id="open-chat" data-route="/chat" title="Chat" aria-label="Chat"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chat"></use></svg><span>chat</span></button>
     <button class="dk" id="open-set" data-route="/settings" title="Settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-settings"></use></svg><span>settings</span></button>
   </div>
@@ -118,27 +116,23 @@
   <p>If you use chat, your username, an optional recovery email, a hashed password, your profile, friends, DMs and messages are stored on Supabase until you delete them (chat → ⚙ → delete my account and chat data).</p>
   <p id="cr-an">Copper counts visits with Google Analytics. It never receives the sites you open or what you search. You can turn it off in data.</p>
   <h4>thanks to</h4>
-  <p>games · OnlineGames.io<br>manga · MangaDex<br>movies · TMDB, Watchmode, JustWatch<br>sounds · Freesound and Openverse (each sound shows its creator and license)<br>chat · Supabase<br>proxies · Scramjet and Ultraviolet (Mercury Workshop, Titanium Network)<br>fonts · Pixelify Sans and DM Mono (SIL Open Font License)<br>site icons · Google</p>
+  <p>games · OnlineGames.io<br>manga · MangaDex<br>movies · TMDB and JustWatch<br>chat · Supabase<br>proxies · Scramjet and Ultraviolet (Mercury Workshop, Titanium Network)<br>fonts · Pixelify Sans and DM Mono (SIL Open Font License)<br>site icons · Google</p>
   <p class="tm">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
   <p class="tm">The golem is inspired by the Minecraft copper golem. Copper is not affiliated with Mojang or Microsoft.</p></div></div>
   </div></div></dialog>
 <dialog id="nt" class="wide"><div class="dh"><h3>notes</h3><button class="ib" id="nx">×</button></div>
   <textarea id="nta" placeholder="Jot something down…" spellcheck="false"></textarea><p class="hs">saved in this browser</p></dialog>
-<section id="gp"><div class="mg-bar lbar"><button class="ib" id="gp-back" title="Back (Esc)">←</button><h3><svg class="hico" aria-hidden="true"><use href="#i-games"></use></svg>games</h3><input id="gp-q" placeholder="search games" spellcheck="false"></div>
+<section id="gp"><div class="mg-bar lbar"><button class="ib" id="gp-back" title="Back (Esc)">←</button><h3>games</h3><input id="gp-q" placeholder="search games" spellcheck="false"></div>
   <div id="gpbody"><div class="seg gp-cats" id="gp-cats"></div><div class="mg-grid g-grid" id="gl"></div>
    <p class="mg-credit">game catalog from OnlineGames.io · extra games from community web ports</p></div>
   <div id="gplay"><div class="mg-bar pbar"><button class="ib" id="gpl-back" title="Back (Esc)">←</button><h3 id="gpl-t"></h3>
    <span class="seg" style="margin-left:auto"><button id="gpl-fs">fullscreen</button><button id="gpl-ext">new tab ↗</button></span></div><div id="gslot"></div></div></section>
-<section id="mg"><div class="mg-bar"><button class="ib" id="mg-back" title="Back (Esc)">←</button><h3><svg class="hico" aria-hidden="true"><use href="#i-manga"></use></svg>manga</h3>
+<section id="mg"><div class="mg-bar"><button class="ib" id="mg-back" title="Back (Esc)">←</button><h3>manga</h3>
   <span class="seg" id="mg-tabs"><button data-t="popular" class="on">popular</button><button data-t="latest">latest</button><button data-t="library">saved</button></span>
   <input id="mg-q" placeholder="search manga" spellcheck="false"></div><div id="mgbody"></div></section>
-<section id="mv"><div class="mg-bar"><button class="ib" id="mv-back" title="Back (Esc)">←</button><h3><svg class="hico" aria-hidden="true"><use href="#i-movies"></use></svg>movies</h3>
+<section id="mv"><div class="mg-bar"><button class="ib" id="mv-back" title="Back (Esc)">←</button><h3>movies</h3>
   <input id="mv-q" placeholder="search movies" spellcheck="false"></div><div id="mvbody"></div></section>
-<section id="sb"><div class="mg-bar"><button class="ib" id="sb-back" title="Back (Esc)">←</button><h3><svg class="hico" aria-hidden="true"><use href="#i-sounds"></use></svg>sound effects</h3><input id="sb-q" placeholder="search sound effects (press enter)" spellcheck="false"></div>
-  <div id="sbbody"></div>
-  <div class="sb-vol"><span>vol</span><input id="sb-vol" type="range" min="0" max="100" value="80" aria-label="volume"><button class="mg-btn" id="sb-stop">stop all</button></div>
-  <input type="file" id="sb-file" accept="audio/*" multiple hidden></section>
-<section id="ch"><div class="mg-bar"><button class="ib" id="ch-back" title="Back (Esc)">←</button><button class="mg-btn" id="ch-menu" title="Channels and DMs">menu</button><h3><svg class="hico" aria-hidden="true"><use href="#i-chat"></use></svg>chat</h3><span id="ch-counts" class="status"></span><button class="mg-btn" id="ch-members">members</button></div><div id="chbody"></div></section>
+<section id="ch"><div class="mg-bar"><button class="ib" id="ch-back" title="Back (Esc)">←</button><button class="mg-btn" id="ch-menu" title="Channels and DMs">menu</button><h3>chat</h3><span id="ch-counts" class="status"></span><button class="mg-btn" id="ch-members">members</button></div><div id="chbody"></div></section>
 <dialog id="bd" class="wide"><div class="dh"><h3>badges</h3><button class="ib" id="bdx">×</button></div><div id="bdl"></div></dialog>
 <div id="toast"></div>
 <dialog id="dlg"><form method="dialog" id="df"><h3>new shortcut</h3>
@@ -161,7 +155,6 @@
 <script src="js/manga.js"></script>
 <script src="js/movies.js"></script>
 <script src="js/settings.js"></script>
-<script src="js/sounds.js"></script>
 <script src="vendor/supabase.js"></script>
 <script src="js/chat-api.js"></script>
 <script src="js/chat.js"></script>

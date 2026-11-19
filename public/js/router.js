@@ -1,7 +1,7 @@
 /* addresses: every page has its own path, so a page can be linked to and the back button works.
    The pages already open themselves; this mirrors that into the address bar and back again. */
 const HOME = '/home';
-const SEC = { games: '#gp', manga: '#mg', movies: '#mv', sounds: '#sb', chat: '#ch' };
+const SEC = { games: '#gp', manga: '#mg', movies: '#mv', chat: '#ch' };
 const PANEL = { general: 'appearance', appearance: 'appearance', search: 'search', proxy: 'proxy', cloaking: 'cloaking', panic: 'panic', data: 'data', credit: 'credit' };
 const secEls = () => Object.keys(SEC).map(n => $(SEC[n]));
 const openSec = () => Object.keys(SEC).find(n => $(SEC[n]).classList.contains('on'));
@@ -71,7 +71,7 @@ mo.observe($('#st'), { attributes: true, attributeFilter: ['open'] });
 
 /* the dock is one page at a time: clear the rest before a button opens its own page */
 $('#dock').addEventListener('click', e => {
-  const b = e.target.closest('.dk');
+  const b = e.target.closest('.dk, #open-home');
   if (!b) return;
   e.preventDefault();
   if (b.id === 'open-home') {
@@ -95,7 +95,7 @@ addEventListener('popstate', () => openPath(location.pathname, false));
 
 (function boot() {
   const p = (location.pathname || '/').replace(/\/+$/, '') || '/';
-  if (/^\/(home|games|manga|movies|sounds|chat|settings)(\/|$)/.test(p)) openPath(p, false);
+  if (/^\/(home|games|manga|movies|chat|settings)(\/|$)/.test(p)) openPath(p, false);
   else { setPath(HOME, false); paintDock(HOME); }
   if (routeNow() === HOME) pulseHome();
 })();

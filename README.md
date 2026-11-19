@@ -20,8 +20,8 @@ stylesheet, and a handful of scripts with no build step.
   remove, the + to add.
 - **Tabs** with four ways to load a site: the Lite worker, Scramjet,
   Ultraviolet, or plain direct embedding.
-- **Pages** for games, manga (MangaDex), movies (TMDB), sound effects and chat
-  (Supabase). All optional — an empty key just hides the feature.
+- **Pages** for games, manga (MangaDex), movies (TMDB) and chat (Supabase).
+  All optional — an empty key just hides the feature.
 - **Oxidation.** The accent moves from fresh copper to green over the first ten
   days. Click the golem to wax it back; shift-click to let it age again.
 - Real addresses: `/games`, `/manga`, `/settings/general`, with back and forward
@@ -103,8 +103,8 @@ Wisp will not work over plain HTTP from an HTTPS page.
 | `COPPER_GA` | GA4 measurement id; leave empty for no analytics |
 | `COPPER_CONTACT` | shown under settings → credit |
 
-Secrets stay in the worker, not in this file: `WATCHMODE_KEY` (where-to-watch
-links) and `FREESOUND_KEY` (sound search) are read from the worker's environment.
+The worker keeps its own secrets; nothing on these pages needs a key from you
+beyond `COPPER_TMDB` and the address of your Lite worker.
 
 ## what it does not do
 
@@ -117,5 +117,5 @@ links) and `FREESOUND_KEY` (sound search) are read from the worker's environment
 ## credit
 
 Games catalogue from OnlineGames.io, extra games are community web ports. Manga
-data from MangaDex, movie data from TMDB, sound previews from Freesound. The
+data from MangaDex, movie data from TMDB and JustWatch (where to watch). The
 golem, the fonts and everything else are in this repo.

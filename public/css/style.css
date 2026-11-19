@@ -420,7 +420,8 @@ kbd{font-size:11px;padding:2px 7px;border-radius:6px}
   backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   font:11.5px/1 var(--mono);color:var(--muted);animation:none;box-shadow:none}
 .dk-left{display:flex;align-items:center;gap:4px;min-width:0;overflow:hidden}
-.dk-brand{color:var(--text);font-weight:500;margin-right:2px}
+.dk-brand{height:26px;padding:0 6px;margin-right:2px;border-radius:3px;color:var(--text);font-weight:500;transition:background var(--step)}
+.dk-brand:hover{background:#ffffff10}
 .dk-meta b{color:var(--accent);font-weight:500}
 .dk-txt{height:26px;padding:0 8px;border-radius:6px;color:var(--muted);font:11.5px var(--mono);white-space:nowrap}
 .dk-txt:hover{background:#ffffff0f;color:var(--text)}
@@ -603,3 +604,7 @@ body.viewing #ping{display:none}
 /* ten idle minutes pull the accent a step towards the weathered green */
 :root[data-idle]{--accent:color-mix(in srgb,var(--accent) 78%,#7fb095)}
 :root[data-idle] #golem{opacity:.94;transition:filter .6s,transform .18s ease,opacity 2.5s}
+
+/* where-to-watch chips carry the service logo */
+.mv-chip{display:inline-flex;align-items:center;gap:6px}
+.mv-chip img{height:15px;width:auto;border-radius:2px}

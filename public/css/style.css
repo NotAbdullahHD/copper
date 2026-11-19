@@ -386,11 +386,9 @@ dialog.set[open]{display:flex;align-items:stretch;justify-content:flex-start}dia
 body{background:var(--bg)}
 
 /* home */
-/* the home block sits in the middle of the window; auto margins centre it and collapse
-   on short screens instead of clipping the top of the page */
-#home{padding-top:0;padding-bottom:calc(var(--bar) + 12px)}
-#home>.brand{margin-top:auto}
-#home>.recent{margin-bottom:auto}
+/* the home block sits in the middle of the window; `safe` drops back to top-aligned
+   when the window is too short, so the top is never clipped */
+#home{padding-top:0;padding-bottom:calc(var(--bar) + 12px);justify-content:center;justify-content:safe center}
 /* a light that follows the pointer: 6% of the accent, enough to feel alive, not to notice */
 #home::before{content:"";position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(360px 260px at var(--px,50%) var(--py,34%),color-mix(in srgb,var(--accent) 6%,transparent),transparent 70%)}

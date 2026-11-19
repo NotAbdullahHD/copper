@@ -3,8 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Copper</title>
-<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAABACAYAAABcIPRGAAACi0lEQVR4nO1aPWsVQRTdj1mD+TIKFq/SIgY/OokIQYJobBTS2AVtJIHYRlBsLOzyD8Qilf4AMSatWKidjaApgs0ziahE39u3ydt9O2N9zoMdHi5cBuZ0d2b2zpy9987cO7thUDOePbljqvqXn74I65wvqlOZBDwBaai6FV5sjNetshLOW8ATkEbtMfDh63bdKivhvAU8AWlY85LPa/chtxlLMGyyVhvkJCSVJBalBjmi/la3B/KllZeVa3TeAp6ANKznwIhCjkcVuuRO8yc+YNDHkygGOS9LkIcU91eWE31w3gKegDSsMdD88g3kGF08mFndgKB4OHcBnHjh8mkYP726CeMf3cDxt6dP2ZYEcN4CnoA0rDGgC97X8Rx4cP0c+PDZxjHoLzTu6yvXzmNDLwfx/VbTtiSA8xbwBKRhjQFO7xPKXRZnp0DuFpjrdCm3uXdlEuSP5PP7hxgTNjhvAU9AGuHbxzfBSYcT5KRo3x8fxbtPbUnfueY1VCRrjedMO21hf4ATZAXKzlvAE5CGSn+l0KApBjiXKSZwn4/IyY0xJOOEmhsI7b8ZLjBG/VlO90qV2hyAJyANRSVuQFeXQWiq920eH1h8/tP2Lg6n/jMnj4Mc0Tvm6Zy3gCcgDZUeHECDOYIlAu/ao2YI5O+/MXeJqYBonMDcqaS705LqhSzvgpzE+I7THL8fOG8BT0Aaan2vAw0x18CU69ydGAPZUK7UoXOiQzWyivCd9TT2v9rBb250DPWdO85bwBOQxsD/r71ZvopOTz5/6/m7Sp2vl2bhefbxecvzDOct4AlIY+D/hf608dzgu1Mb+nKvQRdAcN4CnoA0Bo6BzR//FwMb9LzlmsgK5y3gCUjjH2dCw1yGxO66AAAAAElFTkSuQmCC">
+<title>copper — a start page with a proxy in it</title>
+<meta name="description" content="A black-and-copper start page: search, shortcuts, tabs, games, manga, movies, sounds and chat, plus a small proxy that opens sites in a frame.">
+<meta name="theme-color" content="#000">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="copper">
+<meta property="og:title" content="copper">
+<meta property="og:description" content="A start page with a small proxy. Black, copper, one bar at the bottom.">
+<meta property="og:url" content="https://copper.gghh.workers.dev/">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect width='8' height='8' fill='%23000'/%3E%3Crect x='1' y='1' width='6' height='6' fill='%23c77849'/%3E%3Crect x='2' y='3' width='1' height='1' fill='%23000'/%3E%3Crect x='5' y='3' width='1' height='1' fill='%23000'/%3E%3Crect x='2' y='7' width='1' height='1' fill='%23c77849'/%3E%3Crect x='5' y='7' width='1' height='1' fill='%23c77849'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -44,6 +52,7 @@
   <p class="tag" id="tag"></p>
   <div class="searchwrap">
     <img id="golem" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAACACAYAAAD03Gy6AAADiUlEQVR4nO2dO4+MYRiG5/CNDXbXkiimokAcOlmRiGzEoSHR6IRGSFa7EqJR6PYfiELFDxDstqJAp5Gg2GjGIgjmtOb0ff7B/UTenVybuK/2+d73e2eueZL3POXSBufenUtFSvn5uw/L69WWcVChG/C/YwEwFgBjATAWAGMBMBYAk9ENiDhcn6abMFacATAWAGMBMBYAYwEwFgBjATAbfhzw6v0K3YSx4gyAsQAYC4CxABgLgLEAGAuASd4z8/bBdblvZ6qmhxrdZkvGa+WgiUF4MMplvBKUb/aGMn5k4VHSd+gMgLEAGAuAsQAYC4CxABgLgEleD9iaaYebM91NXm180y8odD++VqnKeH80kvGJLCqfdDwhxBkAYwEwFgBjATAWAGMBMBYAkzwOaLz7KONV3Y0vHVtckgOFm6cPyY74xaO7Zf2zi8uy/ltndP0XZnfJ+lNxBsBYAIwFwFgAjAXAWACMBcAkjwPyQTRfr9cDbpw6IPvh++vbZPlBrufrF04e1A8M+zL88kNDxlNxBsBYAIwFwFgAjAXAWACMBcAkjwOi7fu1YN/N1bl9Mt4b6H09vWDfzpXje2T8ddDP//lHjxNScQbAWACMBcBYAIwFwFgAjAXAlJ/fPis70ltq2lEWzPdPT+p7P4Pp/JDonG8RHCTOc72e0Wo3dfmS/gDdgY47A2AsAMYCYCwAxgJgLADGAmCy9ve2fCAPxgHRvpzBjJ7PrwQd+aLQ9QfhUh49END63ZXxrKrb3+0H9xX9c4vMumIBMBYAYwEwFgBjATAWAJMFx3hLwbWbpXKRNt8e1R9Mt4f9/Dcrn3X1Qfm9O7fLeCX4DUcfzxkAYwEwFgBjATAWAGMBMBYAk7XX1uQDxSZ9hCCabZ8sJmT80w+976YaHECo79D7jkbBvaOj4HxBt9+T8VpV/4bbff3/A84AGAuAsQAYC4CxABgLgLEAmOzpl458INj2Et4HdHlmSsaLYF9RJ1hP6ATniLOK/o0Nc13+8ar+n7NgOSRc73AGwFgAjAXAWACMBcBYAIwFwCT/n3DEs/kTuqMf9PPP3X+R1MYn1+bk+6N+/PnE90c4A2AsAMYCYCwAxgJgLADGAmCS7w2N+NXS6w3RvaOphPuexvv6EGcAjAXAWACMBcBYAIwFwFgAzNjHActf2XHAUvD+xOuEknEGwFgAjAXAWACMBcBYAIwFwPwFYL7D3D3oXiwAAAAASUVORK5CYII=" alt="Copper golem" title="Click me">
+    <div id="golem-eyes" aria-hidden="true"><i></i><i></i></div>
     <form id="sf" autocomplete="off">
       <input id="q" placeholder="Search or type a link" spellcheck="false" aria-label="Search">
       <kbd>/</kbd>
@@ -68,7 +77,7 @@
   </div>
   <div id="load"></div>
   <div id="frames"></div>
-  <div id="hint">Blank page? Many sites block embedding.<a id="hint-ext">Open in new tab ↗</a></div>
+  <div id="hint">Blank page? That site won't be framed — it opens better as a tab.<a id="hint-ext">Open in new tab ↗</a></div>
 </section>
 
 <dialog id="gm" class="wide"><div class="dh"><h3>golem hop</h3><button class="ib" id="gx">×</button></div>

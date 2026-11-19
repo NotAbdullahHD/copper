@@ -2,7 +2,7 @@ const $=s=>document.querySelector(s), root=document.documentElement;
 const store={get:(k,d)=>{try{return JSON.parse(localStorage.getItem('copper.'+k))??d}catch{return d}},
              set:(k,v)=>{try{localStorage.setItem('copper.'+k,JSON.stringify(v))}catch{}}};
 
-/* patina: copper slowly oxidizes the longer you've had it; click the golem to wax it at a stage */
+/* patina: the accent oxidizes with age; clicking the golem waxes it a stage further */
 const STAGES=['fresh','exposed','weathered','oxidized'];
 if(!store.get('first'))store.set('first',Date.now());
 function stageIdx(){
@@ -10,21 +10,38 @@ function stageIdx(){
   const d=(Date.now()-store.get('first'))/864e5;
   return d<2?0:d<5?1:d<10?2:3;
 }
-function paint(){const s=STAGES[stageIdx()];root.dataset.stage=s;$('#stage').textContent=s+(store.get('wax',null)!==null?' · waxed':'')}
+function paintPatina(){const s=STAGES[stageIdx()];root.dataset.stage=s;$('#stage').textContent=s+(store.get('wax',null)!==null?' · waxed':'')}
 let toastT;function toast(m,ms=1800){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),ms)}
 $('#golem').addEventListener('click',e=>{
-  if(e.shiftKey){store.set('wax',null);paint();toast('unwaxed · oxidizing naturally');return}
-  const n=(stageIdx()+1)%4;store.set('wax',n);paint();toast('waxed · '+STAGES[n]+' (shift+click to unwax)');
+  if(e.shiftKey){store.set('wax',null);paintPatina();toast('unwaxed · oxidizing naturally');return}
+  const n=(stageIdx()+1)%4;store.set('wax',n);paintPatina();toast('waxed · '+STAGES[n]+' (shift+click to unwax)');
 });
-paint();
+paintPatina();
 
-/* golem hops while you type */
 const q=$('#q'),g=$('#golem');
-function hop(){g.classList.remove('hop');void g.offsetWidth;g.classList.add('hop')}
-q.addEventListener('input',()=>{if(!g.classList.contains('hop'))hop()});
+function hopGolem(){g.classList.remove('hop');void g.offsetWidth;g.classList.add('hop')}
+q.addEventListener('input',()=>{if(!g.classList.contains('hop'))hopGolem()});
 g.addEventListener('animationend',()=>g.classList.remove('hop'));
 
-/* shortcuts */
+/* the sprite has two transparent 8x8 eye cut-outs, so blinking is just filling them in */
+const blink=()=>{g.classList.add('blink');setTimeout(()=>g.classList.remove('blink'),110)};
+(function scheduleBlink(){
+  setTimeout(()=>{
+    if(!document.hidden&&!document.body.classList.contains('viewing'))blink();
+    scheduleBlink();
+  },2400+Math.random()*4200);
+})();
+
+/* ten minutes of nothing and it oxidizes a notch; any input resets the timer */
+let idleT;
+function resetIdle(){
+  root.removeAttribute('data-idle');
+  clearTimeout(idleT);
+  idleT=setTimeout(()=>root.setAttribute('data-idle',''),6e5);
+}
+['pointerdown','keydown','wheel','focusin'].forEach(e=>addEventListener(e,resetIdle,{passive:true}));
+resetIdle();
+
 const DEFAULTS=[['YouTube','https://www.youtube.com'],['Discord','https://discord.com/app'],['GitHub','https://github.com'],['Wikipedia','https://en.wikipedia.org'],['Twitch','https://www.twitch.tv']];
 let links=store.get('links',DEFAULTS.map(([n,u])=>({n,u})));
 const host=u=>{try{return new URL(u).hostname.replace(/^www\./,'')}catch{return u}};
@@ -46,17 +63,21 @@ $('#dc').onclick=()=>$('#dlg').close();
 $('#df').onsubmit=()=>{const u=normalize($('#dn').value);if(u){links.push({n:host(u).split('.')[0].replace(/^./,c=>c.toUpperCase()),u});store.set('links',links);render()}};
 render();
 
-/* url or search? say which before enter is pressed */
+/* url or search happens on enter; say which one before it does */
 const qmode=$('#qmode');
 const isUrl=v=>/^https?:\/\//i.test(v)||/^(localhost|[\w-]+(\.[\w-]+)+)(:\d+)?(\/.*)?$/i.test(v);
-function paintMode(){
-  const v=q.value.trim();if(!v){qmode.hidden=true;return}
-  const u=isUrl(v);qmode.hidden=false;qmode.textContent=u?'URL':'SEARCH';qmode.dataset.k=u?'url':'search'}
-q.addEventListener('input',paintMode);q.addEventListener('change',paintMode);
+function syncUrlBadge(){
+  const v=q.value.trim();
+  if(!v){qmode.hidden=true;return}
+  const u=isUrl(v);
+  qmode.hidden=false;qmode.textContent=u?'URL':'SEARCH';qmode.dataset.k=u?'url':'search';
+}
+q.addEventListener('input',syncUrlBadge);q.addEventListener('change',syncUrlBadge);
 
-/* proxy status: how long the Lite worker takes to answer, red when it stops answering */
-const pingEl=$('#ping'),pingNum=pingEl.querySelector('b');let pingBusy=false;
-async function pingProxy(){
+/* round trip to the Lite worker, so a dead proxy shows up before a page hangs */
+const pingEl=$('#ping'),pingNum=pingEl.querySelector('b');
+let pingBusy=false;
+async function checkProxy(){
   if(pingBusy)return;pingBusy=true;
   if(!window.COPPER_LITE){pingEl.dataset.state='off';pingNum.textContent='local';pingBusy=false;return}
   const t0=performance.now(),ac=new AbortController(),to=setTimeout(()=>ac.abort(),6000);
@@ -68,7 +89,7 @@ async function pingProxy(){
   }catch{clearTimeout(to);pingEl.dataset.state='down';pingNum.textContent='down'}
   pingBusy=false;
 }
-pingProxy();setInterval(()=>{if(!document.hidden)pingProxy()},20000);addEventListener('online',pingProxy);
+checkProxy();setInterval(()=>{if(!document.hidden)checkProxy()},20000);addEventListener('online',checkProxy);
 
 /* the light that follows the pointer on home: home::before reads these two vars */
 const homeEl=$('#home');let glowX=0,glowY=0,glowQueued=0;
@@ -76,6 +97,5 @@ addEventListener('pointermove',e=>{glowX=e.clientX;glowY=e.clientY;
   if(!glowQueued)glowQueued=requestAnimationFrame(()=>{glowQueued=0;
     if(homeEl){homeEl.style.setProperty('--px',glowX+'px');homeEl.style.setProperty('--py',glowY+'px')}})},{passive:true});
 
-/* clock */
 const tick=()=>$('#clock').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 tick();setInterval(tick,1000);

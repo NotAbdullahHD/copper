@@ -12,7 +12,7 @@ $('#open-set').onclick=()=>{syncSettings();st.showModal()};
 $('#s-eng').onchange=e=>{store.set('engine',e.target.value);$('#eng').value=e.target.value};
 $('#s-se').onchange=e=>store.set('search',e.target.value);
 $('#s-pat').onclick=e=>{const b=e.target.closest('button');if(!b)return;
-  store.set('wax',b.dataset.s==='auto'?null:+b.dataset.s);paint();syncSettings()};
+  store.set('wax',b.dataset.s==='auto'?null:+b.dataset.s);paintPatina();syncSettings()};
 $('#s-reset').onclick=()=>{links=DEFAULTS.map(([n,u])=>({n,u}));store.set('links',links);render();toast('shortcuts reset')};
 $('#s-clear').onclick=()=>{if(confirm('Clear all Copper data in this browser?')){
   Object.keys(localStorage).filter(k=>k.startsWith('copper.')).forEach(k=>localStorage.removeItem(k));location.reload()}};

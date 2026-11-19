@@ -22,7 +22,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 .searchwrap{position:relative;width:min(var(--w),92vw)}
 #golem{position:absolute;left:22px;bottom:100%;width:36px;height:48px;image-rendering:pixelated;
-  filter:var(--golem);cursor:pointer;transform-origin:50% 100%;z-index:2;transition:filter .6s}
+  filter:var(--golem);cursor:pointer;transform-origin:50% 100%;z-index:2;transition:filter .6s,transform .18s ease}
 #golem.hop{animation:hop .42s cubic-bezier(.3,.7,.4,1)}
 @keyframes hop{35%{transform:translateY(-12px) scaleY(1.06)}70%{transform:translateY(0) scaleY(.92)}100%{transform:none}}
 #sf{position:relative;display:flex;align-items:center;height:58px;padding:0 8px 0 20px;gap:12px;
@@ -30,7 +30,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #sf:focus-within{border-color:var(--accent);box-shadow:4px 4px 0 color-mix(in srgb,var(--accent) 55%,transparent)}
 #q{flex:1;min-width:0;height:100%;background:none;border:0;outline:0;color:var(--text);font:inherit;font-size:16px;caret-color:var(--accent)}
 #q::placeholder{color:var(--muted)}
-kbd{font:500 12px var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:7px;padding:3px 8px}
+kbd{font:500 12px var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:3px;padding:3px 8px}
 #sf:focus-within kbd{display:none}
 #go{display:none;height:42px;padding:0 18px;border-radius:5px;background:var(--accent);color:#120a04;font-weight:600}
 #sf:focus-within #go{display:block}
@@ -427,12 +427,12 @@ kbd{font-size:11px;padding:2px 7px;border-radius:6px}
 .dk-mid{display:flex;align-items:center;gap:5px;justify-self:center}
 .dk-right{justify-self:end;padding-right:4px}
 #clock{color:var(--text);font-variant-numeric:tabular-nums}
-.dk{position:relative;display:grid;place-items:center;width:38px;height:36px;padding:0;border-radius:7px;
+.dk{position:relative;display:grid;place-items:center;width:38px;height:36px;padding:0;border-radius:3px;
   color:var(--muted);background:none;transition:background var(--step),color var(--step),box-shadow var(--step)}
 .dk svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 /* the icon label doubles as its tooltip: same markup, no extra nodes */
 .dk span{position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%) translateY(2px);
-  padding:4px 7px;border:1px solid var(--line);border-radius:5px;background:#0b0a09;
+  padding:4px 7px;border:1px solid var(--line);border-radius:3px;background:#0b0a09;
   font:11px/1 var(--mono);color:var(--text);white-space:nowrap;opacity:0;pointer-events:none;
   transition:opacity .1s ease,transform .1s ease}
 .dk:hover span,.dk:focus-visible span{opacity:1;transform:translateX(-50%)}
@@ -577,9 +577,8 @@ dialog.set{width:min(760px,94vw);height:min(580px,90vh)}
 }
 /* ---------- status dot, top right: proxy latency ---------- */
 #ping{position:fixed;right:20px;top:16px;z-index:3;display:flex;align-items:center;gap:7px;
-  padding:5px 10px;border:1px solid var(--line);border-radius:5px;
-  font:11.5px/1 var(--mono);color:var(--muted);background:#000000b3;
-  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  padding:5px 10px;border:1px solid var(--line);border-radius:3px;
+  font:11.5px/1 var(--mono);color:var(--muted);background:#000}
 #ping i{width:6px;height:6px;border-radius:50%;background:var(--muted);
   transition:background var(--step),box-shadow var(--step)}
 #ping b{font-weight:500;font-variant-numeric:tabular-nums}
@@ -589,6 +588,18 @@ dialog.set{width:min(760px,94vw);height:min(580px,90vh)}
 body.viewing #ping{display:none}
 
 /* ---------- url or search, before enter ---------- */
-#qmode{flex:none;font:500 10.5px/1 var(--mono);letter-spacing:.06em;padding:4px 7px;border-radius:5px;
+#qmode{flex:none;font:500 10.5px/1 var(--mono);letter-spacing:.06em;padding:4px 7px;border-radius:3px;
   border:1px solid var(--line);color:var(--muted)}
 #qmode[data-k=url]{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+/* ---------- golem states ---------- */
+.searchwrap:focus-within #golem{transform:translateY(3px)}
+/* the lids cover the sprite's own 8x8 eye cut-outs at (32,40) and (56,40) of 96x128 */
+#golem-eyes{position:absolute;left:22px;bottom:100%;width:36px;height:48px;pointer-events:none;z-index:3}
+#golem-eyes i{position:absolute;top:31.25%;width:8.33%;height:6.25%;background:#c77849;
+  filter:var(--golem);opacity:0;transition:opacity .04s}
+#golem-eyes i:first-child{left:33.33%}
+#golem-eyes i:last-child{left:58.33%}
+#golem.blink+#golem-eyes i{opacity:1}
+/* ten idle minutes pull the accent a step towards the weathered green */
+:root[data-idle]{--accent:color-mix(in srgb,var(--accent) 78%,#7fb095)}
+:root[data-idle] #golem{opacity:.94;transition:filter .6s,transform .18s ease,opacity 2.5s}

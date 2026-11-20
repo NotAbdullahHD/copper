@@ -669,5 +669,5 @@ dialog#st::backdrop{background:#000;backdrop-filter:none;-webkit-backdrop-filter
 #mvp-t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 13px var(--mono);color:#f0e9e1}
 #mvp-sel{margin-left:auto;height:28px;padding:0 8px;border-radius:4px;border:1px solid #2b2622;background:#141210;color:#e7e0d8;font:11.5px var(--mono);outline:0}
 #mvp-sel:hover{border-color:#4a423a}
-.mvp-box{flex:1;min-height:0;display:flex;background:#000}
+#mvp-box{flex:1;min-height:0;width:100%;display:flex;background:#000}
 .mvp-frame{flex:1;width:100%;height:100%;border:0;background:#000;display:block}

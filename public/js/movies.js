@@ -1,11 +1,22 @@
 /* movies page. TMDB for the catalogue, an embed player for watching.
    two addresses: /movies for the shelves, /movies/movie/<id> for one film. */
-const mv=$('#mv'),mvb=$('#mvbody'),TM='https://api.themoviedb.org/3',TI='https://image.tmdb.org/t/p/',KEY=window.COPPER_TMDB||'';
+const mv=$('#mv'),mvb=$('#mvbody'),TM='https://api.themoviedb.org/3',TI='https://image.tmdb.org/t/p/',KEY=window.COPPER_TMDB||'',API=(window.COPPER_MOVIES_API||'').replace(/\/+$/,'');
 let mq='',mback=closeMovies,mcurId=null,mPlayId=null;
 const mNote=(t,retry)=>mvb.replaceChildren(empty(t,retry,t==='loading…'));
 function closeMovies(){mv.classList.remove('on')}
 window.mvPath=()=>mcurId?'/movies/movie/'+mcurId:'/movies';
 async function tmdb(path){
+  /* our own movies-api leads: same paths, and the catalogue key stays on its server */
+  if(API){
+    try{
+      const r=await fetch(API+'/api'+path,{headers:{accept:'application/json'}});
+      const d=await r.json().catch(()=>null);
+      if(r.ok&&d&&!d.error)return d;
+      throw new Error(d&&d.error?d.error:'movies api '+r.status);
+    }catch(e){
+      if(!KEY)throw new Error('your movies api did not answer — '+e.message);
+    }
+  }
   let r;try{r=await fetch(TM+path+(path.includes('?')?'&':'?')+'api_key='+encodeURIComponent(KEY),{headers:{accept:'application/json'}})}catch{throw new Error('TMDB did not answer. the key or the connection.')}
   if(r.status===401)throw new Error('TMDB rejected the key in config.js');
   const t=await r.text();let d=null;try{d=JSON.parse(t)}catch{}
@@ -71,7 +82,7 @@ async function mList(push=true){
   mcurId=null;mv.classList.remove('detail');mvb.classList.remove('dt');
   mback=closeMovies;mNote('loading…');
   try{
-    if(!KEY)return mNote('no TMDB key yet — put one in js/config.js and the posters appear');
+    if(!KEY&&!API)return mNote('no TMDB key yet — put one in js/config.js and the posters appear');
     const credit=h('p',{class:'mg-credit'},'This product uses the TMDB API but is not endorsed or certified by TMDB.');
     if(mq){
       const d=await tmdb('/search/movie?include_adult=false&query='+encodeURIComponent(mq));

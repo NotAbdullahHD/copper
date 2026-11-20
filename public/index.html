@@ -15,7 +15,7 @@
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAABACAYAAABcIPRGAAACi0lEQVR4nO1aPWsVQRTdj1mD+TIKFq/SIgY/OokIQYJobBTS2AVtJIHYRlBsLOzyD8Qilf4AMSatWKidjaApgs0ziahE39u3ydt9O2N9zoMdHi5cBuZ0d2b2zpy9987cO7thUDOePbljqvqXn74I65wvqlOZBDwBaai6FV5sjNetshLOW8ATkEbtMfDh63bdKivhvAU8AWlY85LPa/chtxlLMGyyVhvkJCSVJBalBjmi/la3B/KllZeVa3TeAp6ANKznwIhCjkcVuuRO8yc+YNDHkygGOS9LkIcU91eWE31w3gKegDSsMdD88g3kGF08mFndgKB4OHcBnHjh8mkYP726CeMf3cDxt6dP2ZYEcN4CnoA0rDGgC97X8Rx4cP0c+PDZxjHoLzTu6yvXzmNDLwfx/VbTtiSA8xbwBKRhjQFO7xPKXRZnp0DuFpjrdCm3uXdlEuSP5PP7hxgTNjhvAU9AGuHbxzfBSYcT5KRo3x8fxbtPbUnfueY1VCRrjedMO21hf4ATZAXKzlvAE5CGSn+l0KApBjiXKSZwn4/IyY0xJOOEmhsI7b8ZLjBG/VlO90qV2hyAJyANRSVuQFeXQWiq920eH1h8/tP2Lg6n/jMnj4Mc0Tvm6Zy3gCcgDZUeHECDOYIlAu/ao2YI5O+/MXeJqYBonMDcqaS705LqhSzvgpzE+I7THL8fOG8BT0Aaan2vAw0x18CU69ydGAPZUK7UoXOiQzWyivCd9TT2v9rBb250DPWdO85bwBOQxsD/r71ZvopOTz5/6/m7Sp2vl2bhefbxecvzDOct4AlIY+D/hf608dzgu1Mb+nKvQRdAcN4CnoA0Bo6BzR//FwMb9LzlmsgK5y3gCUjjH2dCw1yGxO66AAAAAElFTkSuQmCC">
 <link rel="stylesheet" href="css/style.css">
-<script>try{const r=document.documentElement,g=k=>JSON.parse(localStorage.getItem('copper.'+k)),a=g('accent'),t=g('theme')||'system';r.dataset.theme=t==='system'?(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t;if(a)r.style.setProperty('--accent',a)}catch(e){}</script>
+<script>try{const r=document.documentElement,g=k=>JSON.parse(localStorage.getItem('copper.'+k)),a=g('accent'),t=g('theme')||'dark';r.dataset.theme=t==='system'?(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t;if(a)r.style.setProperty('--accent',a)}catch(e){}</script>
 </head>
 <body>
 
@@ -113,7 +113,7 @@
   <div class="set"><span>panic goes to</span><input id="pk-url" placeholder="https://classroom.google.com"></div>
   <p class="hint">Press the key anywhere in Copper (or inside a proxied page) to jump away at once. Use a symbol, not a letter. It can't work inside embedded games.</p></div>
   <div class="sp" data-p="credit"><div class="cr">
-  <p>games · OnlineGames.io<br>manga · MangaDex<br>movies · TMDB and JustWatch<br>chat · Supabase<br>proxies · Scramjet and Ultraviolet (Mercury Workshop, Titanium Network)<br>fonts · Pixelify Sans and DM Mono (SIL Open Font License)<br>icons · Lucide<br>site icons · Google</p>
+  <p>games · OnlineGames.io<br>manga · MangaDex<br>movies · TMDB<br>players · VidLink, CineSrc, VidFast, VidSrc, VidLux, 2Embed<br>chat · Supabase<br>proxies · Scramjet and Ultraviolet (Mercury Workshop, Titanium Network)<br>fonts · Pixelify Sans and DM Mono (SIL Open Font License)<br>icons · Lucide<br>site icons · Google</p>
   <p class="tm">This product uses the TMDB API but is not endorsed or certified by TMDB.</p></div></div>
   </div></div></dialog>
 <dialog id="nt" class="wide"><div class="dh"><h3>notes</h3><button class="ib" id="nx">×</button></div>
@@ -127,7 +127,7 @@
   <span class="seg" id="mg-tabs"><button data-t="popular" class="on">popular</button><button data-t="latest">latest</button><button data-t="library">saved</button></span>
   <input id="mg-q" placeholder="search manga" spellcheck="false"></div><div id="mgbody"></div></section>
 <section id="mv"><div class="mg-bar"><button class="ib" id="mv-back" title="Back (Esc)">←</button><h3>movies</h3>
-  <input id="mv-q" placeholder="search movies" spellcheck="false"></div><div id="mvbody"></div></section>
+  <input id="mv-q" placeholder="search movies" spellcheck="false"></div><div id="mvbody"></div><div id="mvp"><div class="mvp-bar"><button id="mvp-x" title="Close (Esc)" aria-label="Close player">✕</button><b id="mvp-t"></b><select id="mvp-sel" aria-label="Source"></select></div><div id="mvp-box"></div></div></section>
 <section id="ch"><div class="mg-bar"><button class="ib" id="ch-back" title="Back (Esc)">←</button><button class="mg-btn" id="ch-menu" title="Channels and DMs">menu</button><h3>chat</h3><span id="ch-counts" class="status"></span><button class="mg-btn" id="ch-members">members</button></div><div id="chbody"></div></section>
 <dialog id="bd" class="wide"><div class="dh"><h3>badges</h3><button class="ib" id="bdx">×</button></div><div id="bdl"></div></dialog>
 <div id="toast"></div>

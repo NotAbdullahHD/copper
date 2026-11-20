@@ -17,7 +17,7 @@ $('#s-pat').onclick=e=>{const b=e.target.closest('button');if(!b)return;
 
 /* appearance: light, dark or the device, and the accent every active item uses */
 const ACC={slate:'#a9b6ca',ember:'#e6b58c',moss:'#a9c8a5',rose:'#f2a8c2',violet:'#bda6f2',ocean:'#9ad6dc',midnight:'#94a0f5',crimson:'#f394a4'};
-function paintTheme(){const t=store.get('theme','system');
+function paintTheme(){const t=store.get('theme','dark');
   document.documentElement.dataset.theme=t==='system'?(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t;
   document.querySelectorAll('#s-theme button').forEach(b=>b.classList.toggle('on',b.dataset.v===t))}
 function paintAccent(){const a=store.get('accent',null),r=document.documentElement;
@@ -31,7 +31,7 @@ $('#s-theme').onclick=e=>{const b=e.target.closest('button');if(!b)return;store.
 $('#s-acc').onclick=e=>{const b=e.target.closest('.acc');if(!b||b.dataset.v==='custom')return;
   store.set('accent',b.dataset.v==='default'?null:ACC[b.dataset.v]);paintAccent()};
 $('#s-acc-custom').oninput=e=>{store.set('accent',e.target.value);paintAccent()};
-matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>{if(store.get('theme','system')==='system')paintTheme()});
+matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>{if(store.get('theme','dark')==='system')paintTheme()});
 paintTheme();paintAccent();
 $('#s-reset').onclick=()=>{links=DEFAULTS.map(([n,u])=>({n,u}));store.set('links',links);render();toast('shortcuts reset')};
 $('#s-clear').onclick=()=>{if(confirm('Clear all Copper data in this browser?')){

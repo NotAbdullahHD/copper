@@ -8,7 +8,7 @@ const openSec = () => Object.keys(SEC).find(n => $(SEC[n]).classList.contains('o
 
 function routeNow() {
   const s = openSec();
-  if (s) return '/' + s;
+  if (s) return s === 'movies' && window.mvPath ? window.mvPath() : '/' + s;
   if ($('#st').open) return '/settings/' + spanel;
   return HOME;
 }
@@ -55,8 +55,15 @@ function openPath(p, push) {
     out = '/settings/' + (PANEL[sub] ? sub : 'general');
   } else if (SEC[name]) {
     if (document.body.classList.contains('viewing')) goHome();
-    $('#open-' + name).click();
-    out = '/' + name;
+    if (name === 'movies' && window.mvPath) {
+      /* one film has its own address inside the movies page */
+      $('#mv').classList.add('on');
+      if (sub === 'movie' && /^\d+$/.test(parts[3] || '')) { mDetail(parts[3], false); out = '/movies/movie/' + parts[3]; }
+      else { if (mcurId || !$('#mvbody').childElementCount) mList(false); out = '/movies'; }
+    } else {
+      $('#open-' + name).click();
+      out = '/' + name;
+    }
   } else if (name !== 'home') {
     out = HOME;
   }

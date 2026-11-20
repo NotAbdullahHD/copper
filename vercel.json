@@ -4,6 +4,7 @@
     { "source": "/games", "destination": "/index.html" },
     { "source": "/manga", "destination": "/index.html" },
     { "source": "/movies", "destination": "/index.html" },
+    { "source": "/movies/movie/:id", "destination": "/index.html" },
     { "source": "/sounds", "destination": "/index.html" },
     { "source": "/chat", "destination": "/index.html" },
     { "source": "/settings", "destination": "/index.html" },

@@ -117,5 +117,6 @@ beyond `COPPER_TMDB` and the address of your Lite worker.
 ## credit
 
 Games catalogue from OnlineGames.io, extra games are community web ports. Manga
-data from MangaDex, movie data from TMDB and JustWatch (where to watch). The
+data from MangaDex, movie data from TMDB, and films play through third-party
+embeds (VidLink, CineSrc, VidSrc and others), each credited on the credit page. The
 golem, the fonts and everything else are in this repo.

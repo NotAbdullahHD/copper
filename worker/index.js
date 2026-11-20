@@ -6,7 +6,7 @@ const PRIVATE = /^(localhost|.*\.local|.*\.internal|127\.|10\.|192\.168\.|169\.2
 const DROP = ['x-frame-options','content-security-policy','content-security-policy-report-only','set-cookie','cross-origin-opener-policy','cross-origin-embedder-policy','content-length','content-encoding','strict-transport-security','referrer-policy'];
 // Only these sites may use this proxy. Add your own domain here when you get one (no trailing slash).
 const ALLOWED = ['https://copper.gghh.workers.dev', 'https://copper-p08m.onrender.com'];
-const VERSION = 7; // bump when the browser side needs something new; Copper warns if your deployed copy is older
+const VERSION = 8; // bump when the browser side needs something new; Copper warns if your deployed copy is older
 const SKIP = /^(data:|javascript:|#|mailto:|tel:|blob:|about:)/i;
 
 // Every proxied site shares this worker's origin, so their cookies would land in one jar and
@@ -149,7 +149,10 @@ export default {
     const rw = v => { const a = abs(v); return a ? px(a) : v; };
 
     const ck = tagOf(target.hostname);
-    const h = { 'user-agent': req.headers.get('user-agent') || 'Mozilla/5.0', accept: req.headers.get('accept') || '*/*',
+    // Data APIs (the manga lists) challenge anything that looks like a browser coming from a
+    // datacenter, so those calls go out as our own client rather than with the visitor's user-agent.
+    const json = (req.headers.get('accept') || '').includes('application/json');
+    const h = { 'user-agent': json ? 'copper-lite/' + VERSION : (req.headers.get('user-agent') || 'Mozilla/5.0'), accept: req.headers.get('accept') || '*/*',
       'accept-language': req.headers.get('accept-language') || 'en', referer: target.origin + '/' };
     // Only this site's cookies go back to this site.
     const cookieIn = (req.headers.get('cookie') || '').split(';').map(c => c.trim())

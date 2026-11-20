@@ -7,12 +7,32 @@ function syncSettings(){
   $('#s-eng').value=store.get('engine',DEFAULT_ENGINE);$('#s-se').value=store.get('search','ddg');
   const w=store.get('wax',null);
   document.querySelectorAll('#s-pat button').forEach(b=>b.classList.toggle('on',b.dataset.s===(w===null?'auto':String(w))));
+  paintTheme();paintAccent();
 }
 $('#open-set').onclick=()=>{syncSettings();st.showModal()};
 $('#s-eng').onchange=e=>{store.set('engine',e.target.value);$('#eng').value=e.target.value};
 $('#s-se').onchange=e=>store.set('search',e.target.value);
 $('#s-pat').onclick=e=>{const b=e.target.closest('button');if(!b)return;
   store.set('wax',b.dataset.s==='auto'?null:+b.dataset.s);paintPatina();syncSettings()};
+
+/* appearance: light, dark or the device, and the accent every active item uses */
+const ACC={slate:'#a9b6ca',ember:'#e6b58c',moss:'#a9c8a5',rose:'#f2a8c2',violet:'#bda6f2',ocean:'#9ad6dc',midnight:'#94a0f5',crimson:'#f394a4'};
+function paintTheme(){const t=store.get('theme','system');
+  document.documentElement.dataset.theme=t==='system'?(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t;
+  document.querySelectorAll('#s-theme button').forEach(b=>b.classList.toggle('on',b.dataset.v===t))}
+function paintAccent(){const a=store.get('accent',null),r=document.documentElement;
+  if(a)r.style.setProperty('--accent',a);else r.style.removeProperty('--accent');
+  const custom=!!a&&!Object.values(ACC).includes(a);
+  document.querySelectorAll('#s-acc .acc').forEach(b=>{const v=b.dataset.v;
+    if(v==='custom'&&custom)b.style.setProperty('--c',a);
+    b.classList.toggle('on',v==='default'?!a:v==='custom'?custom:ACC[v]===a)});
+  const cu=$('#s-acc-custom');if(cu&&a)cu.value=a}
+$('#s-theme').onclick=e=>{const b=e.target.closest('button');if(!b)return;store.set('theme',b.dataset.v);paintTheme()};
+$('#s-acc').onclick=e=>{const b=e.target.closest('.acc');if(!b||b.dataset.v==='custom')return;
+  store.set('accent',b.dataset.v==='default'?null:ACC[b.dataset.v]);paintAccent()};
+$('#s-acc-custom').oninput=e=>{store.set('accent',e.target.value);paintAccent()};
+matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>{if(store.get('theme','system')==='system')paintTheme()});
+paintTheme();paintAccent();
 $('#s-reset').onclick=()=>{links=DEFAULTS.map(([n,u])=>({n,u}));store.set('links',links);render();toast('shortcuts reset')};
 $('#s-clear').onclick=()=>{if(confirm('Clear all Copper data in this browser?')){
   Object.keys(localStorage).filter(k=>k.startsWith('copper.')).forEach(k=>localStorage.removeItem(k));location.reload()}};

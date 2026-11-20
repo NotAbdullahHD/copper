@@ -8,7 +8,7 @@ window.COPPER_GA = '';
 // origin, e.g. 'https://movies-api.example.workers.dev', and the shelf, its rows, search
 // and a single film all come from there — the TMDB key below only answers when it is down.
 // Leave empty to use TMDB directly, as before.
-window.COPPER_MOVIES_API = '';
+window.COPPER_MOVIES_API = 'https://movies-api.gghh.workers.dev';
 
 // Free TMDB API key (themoviedb.org/settings/api) for the movies page. Leave empty to show only the free classics.
 window.COPPER_TMDB = '0c22ee2775077bb20cf5675d3c3795be';

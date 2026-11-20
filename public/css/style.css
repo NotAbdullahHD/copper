@@ -609,57 +609,15 @@ body.viewing #ping{display:none}
 .mv-chip{display:inline-flex;align-items:center;gap:6px}
 .mv-chip img{height:15px;width:auto;border-radius:2px}
 
-/* ---------- settings, rebuilt to the reference layout ---------- */
-dialog#st{position:relative;width:min(800px,94vw);height:min(552px,88vh);max-width:none;max-height:none;padding:0;border:1px solid #1a1a1a;border-radius:14px;background:#0a0a0a;overflow:hidden}
-dialog#st[open]{display:flex}
+/* settings: a black room, a larger frame, icons in the tabs */
+dialog#st{width:min(800px,94vw);max-height:88vh}
 dialog#st::backdrop{background:#000;backdrop-filter:none;-webkit-backdrop-filter:none}
-#st .sbody{display:grid;grid-template-columns:206px minmax(0,1fr);height:100%;min-height:0}
-#st .stabs{display:flex;flex-direction:column;flex-wrap:nowrap;gap:2px;align-items:stretch;align-self:stretch;padding:18px 12px;margin:0;background:#0c0c0c;border-right:1px solid #171717;overflow:auto}
-#st .stabs button{display:flex;align-items:center;gap:10px;height:34px;padding:0 10px;border-radius:7px;background:none;box-shadow:none;color:#8b8b8b;font-size:13px;text-align:left;transition:background .15s,color .15s}
-#st .stabs button svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-#st .stabs button:focus{outline:0}
-#st .stabs button:hover{background:#151515;color:#dcdcdc}
-#st .stabs button.on{background:#f4f4f4;box-shadow:none;color:#0a0a0a}
-#st .spanels{min-width:0;overflow:auto;padding:28px 34px 30px;background:#0a0a0a}
-#st .spx{position:absolute;right:12px;top:10px;z-index:3;color:#7c7c7c;font-size:19px;line-height:1}
-#st .spx:hover{background:#161616;color:#fff}
-#st .sp{display:none}
-#st .sp.on{display:block}
-#st .sp h4{font:500 15px var(--mono);letter-spacing:.1px;color:#fff;margin:0 0 20px}
-#st .ssub{font:400 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#6b6b6b;margin:24px 0 2px}
-#st .set{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:13px 0;border:0;color:#8b8b8b;font-size:12.5px}
-#st .set-t{flex:1 1 auto;min-width:0}
-#st .set-t>span{display:block;margin-bottom:3px;color:#ececec;font-size:13px;font-weight:500}
-#st .set-t>p{margin:0;max-width:40ch;color:#7a7a7a;font-size:12px;line-height:1.55}
-#st .set select{flex:none;height:32px;border-radius:7px;border:1px solid #242424;background:#141414;color:#e8e8e8;padding:0 10px;font:12px var(--mono);outline:0}
-#st .set select:focus{border-color:#3a3a3a}
-#st .set input{flex:0 1 230px;min-width:0;height:32px;border-radius:7px;border:1px solid #242424;background:#141414;color:#e8e8e8;padding:0 10px;font:12px var(--mono);outline:0}
-#st .set input:focus{border-color:#3a3a3a}
-#st .cloak-in{display:flex;flex:none;flex-direction:column;gap:6px;width:230px}
-#st .cloak-in input{flex:none;width:100%}
-#st .seg{flex:none;justify-content:flex-end;gap:4px}
-#st .seg button{height:30px;padding:0 9px;border-radius:7px;border:1px solid #242424;background:#141414;color:#d8d8d8;font-size:11.5px}
-#st .seg button:hover{border-color:#3a3a3a}
-#st .seg button.on{background:#f4f4f4;border-color:#f4f4f4;color:#0a0a0a;box-shadow:none}
-#st .status{flex:none;color:#8b8b8b;font:12px var(--mono)}
-#st .cr p{margin:0 0 16px;color:#8b8b8b;font-size:12.5px;line-height:1.95}
-#st .cr b{color:#ececec}
-#st .cr .tm{color:#5e5e5e;font-size:11px;line-height:1.7}
-@media (max-width:700px){
-  dialog#st{width:94vw;height:86vh}
-  #st .sbody{grid-template-columns:1fr;grid-template-rows:auto 1fr}
-  #st .stabs{flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1px solid #171717;padding:10px}
-  #st .spanels{padding:20px 16px 24px}
-  #st .set{flex-direction:column;align-items:flex-start;gap:10px}
-  #st .seg{justify-content:flex-start}
-}
-/* home: a quiet vertical grid behind everything */
-#home::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;
-  background-image:repeating-linear-gradient(90deg,#ffffff0a 0 1px,transparent 1px 96px);
-  background-position:center top;
-  mask-image:linear-gradient(180deg,transparent,#000 18%,#000 78%,transparent);
-  -webkit-mask-image:linear-gradient(180deg,transparent,#000 18%,#000 78%,transparent)}
-/* streak: the number rolls over when the page finishes loading */
+#st .sbody{grid-template-columns:172px 1fr;gap:22px;min-height:470px}
+#st .stabs{flex-direction:column;flex-wrap:nowrap}
+#st .stabs button{display:flex;align-items:center;gap:9px}
+#st .stabs button svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+#st .set[hidden]{display:none!important}
+/* streak: the number rolls over when the page has loaded */
 #streak .sk-n{position:relative;display:inline-block;overflow:hidden;line-height:1.15em;height:1.15em}
 #streak .sk-n b{display:block;font:inherit;color:inherit;line-height:1.15em}
 #streak .sk-prev{position:absolute;left:0;top:0;right:0}
@@ -667,4 +625,3 @@ dialog#st::backdrop{background:#000;backdrop-filter:none;-webkit-backdrop-filter
 #streak.roll .sk-now{animation:skIn .55s cubic-bezier(.2,.85,.25,1) both}
 @keyframes skOut{from{transform:translateY(0);opacity:1}to{transform:translateY(-105%);opacity:0}}
 @keyframes skIn{from{transform:translateY(105%);opacity:0}to{transform:translateY(0);opacity:1}}
-#st .set[hidden]{display:none!important}

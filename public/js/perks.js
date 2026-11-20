@@ -20,7 +20,11 @@ function flameSvg(c){
   return `<svg viewBox="0 0 9 11" width="18" height="22" shape-rendering="crispEdges" aria-hidden="true">${px(FLAME,c)}${px(FLAME_IN,lighten(c,.55))}</svg>`;
 }
 function drawStreak(s){
-  const t=tierOf(s),el=$('#streak');el.style.setProperty('--sc',t[1]);el.innerHTML=flameSvg(t[1])+'<span>'+s+'</span>';
+  const t=tierOf(s),el=$('#streak'),prev=Math.max(0,s-1);el.style.setProperty('--sc',t[1]);
+  el.innerHTML=flameSvg(t[1])+'<span class="sk-n"><b class="sk-prev">'+prev+'</b><b class="sk-now">'+s+'</b></span>';
+  // the number rolls over once the page has settled, so it reads as a new day arriving
+  const roll=()=>{el.classList.remove('roll');void el.offsetWidth;el.classList.add('roll')};
+  if(document.readyState==='complete')setTimeout(roll,120);else addEventListener('load',()=>setTimeout(roll,120),{once:true});
   const next=TIERS.find(x=>x[0]>s);
   el.title=s+'-day streak'+(next?' · '+(next[0]-s)+' more day'+(next[0]-s>1?'s':'')+' for '+next[2]:' · top color reached');
   el.onclick=()=>streakInfo(s);

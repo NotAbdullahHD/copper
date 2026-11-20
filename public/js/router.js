@@ -2,14 +2,14 @@
    The pages already open themselves; this mirrors that into the address bar and back again. */
 const HOME = '/home';
 const SEC = { games: '#gp', manga: '#mg', movies: '#mv', chat: '#ch' };
-const PANEL = { general: 'appearance', appearance: 'appearance', search: 'search', proxy: 'proxy', cloaking: 'cloaking', panic: 'panic', data: 'data', credit: 'credit' };
+const PANEL = { general: 'general', appearance: 'appearance', proxy: 'proxy', cloaking: 'cloaking', panic: 'panic', credit: 'credit' };
 const secEls = () => Object.keys(SEC).map(n => $(SEC[n]));
 const openSec = () => Object.keys(SEC).find(n => $(SEC[n]).classList.contains('on'));
 
 function routeNow() {
   const s = openSec();
   if (s) return '/' + s;
-  if ($('#st').open) return '/settings/' + (spanel === 'appearance' ? 'general' : spanel);
+  if ($('#st').open) return '/settings/' + spanel;
   return HOME;
 }
 function setPath(p, push) {
@@ -88,7 +88,7 @@ $('#dock').addEventListener('click', e => {
 /* settings sections keep their own address too */
 $('#stabs').addEventListener('click', e => {
   const b = e.target.closest('button');
-  if (b) setPath('/settings/' + (b.dataset.p === 'appearance' ? 'general' : b.dataset.p), true);
+  if (b) setPath('/settings/' + b.dataset.p, true);
 });
 
 addEventListener('popstate', () => openPath(location.pathname, false));

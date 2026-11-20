@@ -1,4 +1,6 @@
-/* movies page. TMDB for the catalogue, an embed player for watching.
+/* movies page. TMDB (through our own movie api) for the catalogue, and our own
+   player for watching: streams come from the api, the bytes through its relay,
+   so there is no embed page, no provider chrome and no ads.
    two addresses: /movies for the shelves, /movies/movie/<id> for one film. */
 const mv=$('#mv'),mvb=$('#mvbody'),TM='https://api.themoviedb.org/3',TI='https://image.tmdb.org/t/p/',KEY=window.COPPER_TMDB||'',API=(window.COPPER_MOVIES_API||'').replace(/\/+$/,'');
 let mq='',mback=closeMovies,mcurId=null,mPlayId=null;
@@ -23,40 +25,129 @@ async function tmdb(path){
   if(!r.ok||!d)throw new Error(r.ok?'TMDB sent something unexpected':'TMDB error '+r.status);
   return d;
 }
-/* players. each one takes a TMDB id and answers with a page that can be framed. */
-function accentHex(){
-  const v=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),m=/^#?([0-9a-f]{6})$/i.exec(v);
-  return m?m[1]:'ff7b2e';
+
+/* ---- the player ---------------------------------------------------------
+   one <video>, one hls.js instance, and controls we drew ourselves. */
+const mvp=$('#mvp'),mvpSel=$('#mvp-sel'),mvpTitle=$('#mvp-t'),mvpV=$('#mvp-v'),mvpMsg=$('#mvp-msg'),
+  mvpPlay=$('#mvp-play'),mvpSeek=$('#mvp-seek'),mvpCur=$('#mvp-cur'),mvpDur=$('#mvp-dur'),
+  mvpMute=$('#mvp-mute'),mvpVol=$('#mvp-vol'),mvpCC=$('#mvp-cc'),mvpCCL=$('#mvp-ccl'),
+  mvpFS=$('#mvp-fs'),mvpPip=$('#mvp-pip');
+let mStreams=[],mLabels=[],mHls=null,mSub=-1;
+
+const clock=s=>{s=Math.max(0,Math.round(s||0));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=String(s%60).padStart(2,'0');return h?h+':'+String(m).padStart(2,'0')+':'+x:m+':'+x};
+/* playback goes through the relay: these hosts answer without CORS and check the
+   referer, and the playlist has to be rewritten under our origin to be playable. */
+const relay=s=>API+'/api/proxy?url='+encodeURIComponent(s.url)+(s.headers?'&headers='+encodeURIComponent(JSON.stringify(s.headers)):'');
+const say=t=>{mvpMsg.textContent=t||'';mvpMsg.hidden=!t};
+
+function unload(){
+  if(mHls){mHls.destroy();mHls=null}
+  mvpV.removeAttribute('src');mvpV.load();
+  mSub=-1;mvpCC.setAttribute('aria-pressed','false');mvpCCL.hidden=true;
 }
-const SRC=[
-  ['vidlink',id=>'https://vidlink.pro/movie/'+id+'?autoplay=true&primaryColor='+accentHex()],
-  ['cinesrc',id=>'https://cinesrc.st/embed/movie/'+id+'?autoplay=true&color=%23'+accentHex()],
-  ['vidfast',id=>'https://vidfast.pro/movie/'+id+'?autoPlay=true'],
-  ['vidsrc',id=>'https://vidsrc.to/embed/movie/'+id],
-  ['vidlux',id=>'https://vidlux.xyz/embed/movie/'+id],
-  ['2embed',id=>'https://www.2embed.cc/embed/'+id],
-  ['moviesapi',id=>'https://moviesapi.to/movie/'+id],
-  ['embedbandit',id=>'https://embedbandit.com/embed/movie?tmdb='+id]
-];
-const mvp=$('#mvp'),mvpBox=$('#mvp-box'),mvpSel=$('#mvp-sel'),mvpTitle=$('#mvp-t');
-function mountPlayer(){
-  if(!mPlayId)return;
-  const [,url]=(SRC.find(s=>s[0]===mvpSel.value)||SRC[0]);
-  const f=h('iframe',{class:'mvp-frame',title:'player',allow:'autoplay; fullscreen; picture-in-picture; encrypted-media'});
-  f.setAttribute('allowfullscreen','');f.setAttribute('referrerpolicy','origin');
-  if(window.crossOriginIsolated)f.setAttribute('credentialless','');
-  f.src=url(mPlayId);mvpBox.replaceChildren(f);
+async function playerStreams(id){
+  if(!API)throw new Error('no movies api set — put its address in js/config.js');
+  const r=await fetch(API+'/api/stream/movie/'+id,{headers:{accept:'application/json'}});
+  const d=await r.json().catch(()=>null);
+  if(!r.ok||!d||d.error)throw new Error((d&&d.error)||'streams answered '+r.status);
+  return d.streams||[];
 }
-function playMovie(id,title){
-  mPlayId=id;mvpTitle.textContent=title||'';
-  if(mvpSel.options.length!==SRC.length)mvpSel.replaceChildren(...SRC.map(s=>new Option(s[0],s[0])));
-  const want=store.get('mvsrc','vidlink');
-  mvpSel.value=SRC.some(s=>s[0]===want)?want:SRC[0][0];
-  mountPlayer();mvp.classList.add('on');
+function buildSubs(){
+  const tracks=(mHls&&mHls.subtitleTracks)||[];
+  const rows=[{i:-1,label:'off'}].concat(tracks.map((t,i)=>({i,label:t.name||t.lang||'subtitle '+(i+1)})));
+  mvpCCL.replaceChildren(...rows.map(o=>h('button',{'aria-selected':String(o.i===mSub),onclick:()=>{
+    mSub=o.i;
+    if(mHls){mHls.subtitleDisplay=o.i>-1;mHls.subtitleTrack=o.i}
+    mvpCC.setAttribute('aria-pressed',String(o.i>-1));mvpCCL.hidden=true;buildSubs();
+  }},o.label)));
 }
-function closePlayer(){mvp.classList.remove('on');mvpBox.replaceChildren();mPlayId=null}
-mvpSel.onchange=()=>{store.set('mvsrc',mvpSel.value);mountPlayer()};
+/* one provider can answer with several servers, and three rows called "2Embed" is
+   not a choice — number the repeats instead. */
+function labelStreams(list){
+  const seen={};
+  mLabels=list.map(s=>{const n=s.providerName||s.provider||'server';seen[n]=(seen[n]||0)+1;return seen[n]>1?n+' '+seen[n]:n});
+}
+function play(stream,at=0){
+  unload();
+  if(!stream)return say('no server answered for this film');
+  mvpSel.value=String(mStreams.indexOf(stream));
+  mSub=-1;buildSubs();
+  say('loading '+stream.providerName+'…');
+  const url=relay(stream);
+  const start=()=>{if(at>0&&Number.isFinite(at))mvpV.currentTime=at;mvpV.play().catch(()=>{})};
+  if(window.Hls&&Hls.isSupported()){
+    mHls=new Hls({enableWorker:true,maxBufferLength:30,maxMaxBufferLength:60});
+    mHls.on(Hls.Events.MANIFEST_PARSED,()=>{say('');buildSubs();start()});
+    mHls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED,buildSubs);
+    mHls.on(Hls.Events.ERROR,(_e,d)=>{
+      if(d&&d.fatal)say((d.details==='manifestLoadError'?'this server did not answer — ':'')+'try another server');
+    });
+    mHls.loadSource(url);mHls.attachMedia(mvpV);
+  }else if(mvpV.canPlayType('application/vnd.apple.mpegurl')){
+    mvpV.src=url;
+    mvpV.addEventListener('loadedmetadata',start,{once:true});
+    mvpV.addEventListener('error',()=>say('try another server'),{once:true});
+  }else say('this browser cannot play hls');
+}
+async function playMovie(id,title){
+  mPlayId=id;mvpTitle.textContent=title||'';mvp.classList.add('on');
+  mvpSel.replaceChildren();unload();say('finding a server…');
+  try{
+    mStreams=await playerStreams(id);
+    if(!mStreams.length)return say('no server answered for this one yet');
+    labelStreams(mStreams);
+    mvpSel.replaceChildren(...mLabels.map((n,i)=>new Option(n,String(i))));
+    const want=store.get('mvsrc',''),at=Math.max(0,mLabels.indexOf(want));
+    play(mStreams[at]||mStreams[0]);
+  }catch(e){say(e.message)}
+}
+function closePlayer(){mvp.classList.remove('on');unload();mPlayId=null;mStreams=[];mLabels=[]}
+
+mvpSel.onchange=()=>{const i=Number(mvpSel.value);store.set('mvsrc',mLabels[i]||'');play(mStreams[i],mvpV.currentTime)};
 $('#mvp-x').onclick=closePlayer;
+mvpPlay.onclick=()=>{mvpV.paused?mvpV.play().catch(()=>{}):mvpV.pause()};
+mvpV.onclick=()=>mvpPlay.onclick();
+mvpV.ondblclick=()=>mvpFS.onclick();
+mvpV.onplay=()=>{mvpPlay.textContent='❚❚'};
+mvpV.onpause=()=>{mvpPlay.textContent='▶'};
+mvpV.ontimeupdate=()=>{
+  mvpCur.textContent=clock(mvpV.currentTime);
+  const d=mvpV.duration;
+  if(d&&Number.isFinite(d))mvpSeek.value=String(Math.round(mvpV.currentTime/d*1000));
+};
+mvpV.onloadedmetadata=()=>{mvpDur.textContent=clock(mvpV.duration)};
+mvpV.ondurationchange=mvpV.onloadedmetadata;
+mvpV.onwaiting=()=>say('buffering…');
+mvpV.onplaying=()=>say('');
+mvpV.onerror=()=>say('this stream stopped — try another server');
+mvpSeek.oninput=()=>{const d=mvpV.duration;if(d&&Number.isFinite(d))mvpV.currentTime=mvpSeek.value/1000*d};
+mvpSeek.onchange=()=>{const d=mvpV.duration;if(d&&Number.isFinite(d))mvpV.currentTime=mvpSeek.value/1000*d};
+mvpMute.onclick=()=>{mvpV.muted=!mvpV.muted};
+mvpVol.oninput=()=>{mvpV.volume=Number(mvpVol.value)/100;mvpV.muted=!mvpV.volume};
+mvpV.onvolumechange=()=>{
+  mvpVol.value=String(Math.round((mvpV.muted?0:mvpV.volume)*100));
+  mvpMute.textContent=mvpV.muted||!mvpV.volume?'🔇':'🔊';
+};
+mvpCC.onclick=()=>{mvpCCL.hidden=!mvpCCL.hidden;if(!mvpCCL.hidden)buildSubs()};
+mvpFS.onclick=()=>{document.fullscreenElement?document.exitFullscreen():mvp.requestFullscreen&&mvp.requestFullscreen().catch(()=>{})};
+mvpPip.onclick=()=>{
+  if(document.pictureInPictureElement)document.exitPictureInPicture();
+  else if(mvpV.requestPictureInPicture)mvpV.requestPictureInPicture().catch(()=>{});
+};
+
+addEventListener('keydown',e=>{
+  if(!mvp.classList.contains('on'))return;
+  if(/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;
+  const k=e.key.toLowerCase();
+  if(k===' '||k==='k'){e.preventDefault();mvpV.paused?mvpV.play().catch(()=>{}):mvpV.pause()}
+  else if(k==='arrowleft'){e.preventDefault();mvpV.currentTime=Math.max(0,mvpV.currentTime-10)}
+  else if(k==='arrowright'){e.preventDefault();mvpV.currentTime=Math.min(mvpV.duration||Infinity,mvpV.currentTime+10)}
+  else if(k==='arrowup'){e.preventDefault();mvpV.volume=Math.min(1,mvpV.volume+.1);mvpV.muted=false}
+  else if(k==='arrowdown'){e.preventDefault();mvpV.volume=Math.max(0,mvpV.volume-.1)}
+  else if(k==='m')mvpV.muted=!mvpV.muted;
+  else if(k==='f')mvpFS.onclick();
+  else if(k==='c')mvpCC.onclick();
+});
 
 const mCard=(img,title,fn)=>h('button',{class:'mg-card',onclick:fn},h('img',{src:img||'',loading:'lazy',alt:''}),h('span',{},title));
 
@@ -69,7 +160,7 @@ addEventListener('keydown',e=>{
   if(mv.classList.contains('on'))mback();
 });
 
-/* leaving the page takes the player with it, so nothing keeps playing in a hidden frame */
+/* leaving the page takes the player with it, so nothing keeps playing in the background */
 new MutationObserver(()=>{if(!mv.classList.contains('on'))closePlayer()}).observe(mv,{attributes:true,attributeFilter:['class']});
 
 function mRow(title,items){

@@ -74,7 +74,7 @@ function play(stream,at=0){
   mSub=-1;buildSubs();
   say('loading '+stream.providerName+'…');
   const url=relay(stream);
-  const start=()=>{if(at>0&&Number.isFinite(at))mvpV.currentTime=at;mvpV.play().catch(()=>{})};
+  const start=()=>{if(at>0&&Number.isFinite(at))mvpV.currentTime=at;mvpV.play().catch(()=>say('press play to start'))};
   if(window.Hls&&Hls.isSupported()){
     mHls=new Hls({enableWorker:true,maxBufferLength:30,maxMaxBufferLength:60});
     mHls.on(Hls.Events.MANIFEST_PARSED,()=>{say('');buildSubs();start()});
@@ -119,7 +119,7 @@ mvpV.onloadedmetadata=()=>{mvpDur.textContent=clock(mvpV.duration)};
 mvpV.ondurationchange=mvpV.onloadedmetadata;
 mvpV.onwaiting=()=>say('buffering…');
 mvpV.onplaying=()=>say('');
-mvpV.onerror=()=>say('this stream stopped — try another server');
+mvpV.onerror=()=>{if(mvpV.error)say('this stream stopped — try another server')};
 mvpSeek.oninput=()=>{const d=mvpV.duration;if(d&&Number.isFinite(d))mvpV.currentTime=mvpSeek.value/1000*d};
 mvpSeek.onchange=()=>{const d=mvpV.duration;if(d&&Number.isFinite(d))mvpV.currentTime=mvpSeek.value/1000*d};
 mvpMute.onclick=()=>{mvpV.muted=!mvpV.muted};

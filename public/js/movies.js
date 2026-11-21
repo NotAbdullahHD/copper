@@ -144,6 +144,86 @@ function mvLabelStreams(list){
   const seen={};
   mLabels=list.map(s=>{const n=s.providerName||s.provider||'server';seen[n]=(seen[n]||0)+1;return seen[n]>1?n+' '+seen[n]:n});
 }
+/* ---- servers the page fetches itself ------------------------------------
+   The api scrapes from a datacenter, and some of these hosts answer a
+   datacenter ip with a rate-limit page while a visitor's own connection gets
+   the streams. Their api allows any origin, so this is that second attempt:
+   the same encrypted reply, fetched and opened here, so the server picker is
+   not limited to what one network could reach. */
+const MVVN={api:'https://new.vidnest.fun',secret:'K3p8vQ2mX9rL5wZ0fN7bG1sH4tJ6dC9_y8S3wM1nQ5pL2',
+  servers:{Catflix:'yflix',Filxer:'rogflix',Gama:'vidzee',Lamda:'ophim',Beta:'flixhq',Prime:'rpmvid',Ophim:'klikxxi',Delta:'allmovies'}};
+const mvMedia=/\.(m3u8|mp4|mkv|webm|mpd)(\?|$)/i;
+const mvB64=t=>{const p=t.replace(/-/g,'+').replace(/_/g,'/'),b=atob(p+'='.repeat((4-p.length%4)%4)),o=new Uint8Array(b.length);for(let i=0;i<b.length;i++)o[i]=b.charCodeAt(i);return o};
+async function mvDecrypt(reply,key){
+  const buf=mvB64(reply.d);
+  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(reply.n+'|'+key));
+  const k=await crypto.subtle.importKey('raw',digest,'AES-GCM',false,['decrypt']);
+  const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:buf.subarray(0,12)},k,buf.subarray(12));
+  try{return JSON.parse(new TextDecoder().decode(plain))}catch{return null}
+}
+/* one reply, six shapes: walk it and take every media url and subtitle file. */
+function mvWalk(node,found,inherited,depth){
+  if(!node||typeof node!=='object'||depth>8)return;
+  if(Array.isArray(node)){for(const item of node)mvWalk(item,found,inherited,depth+1);return}
+  const headers={...(inherited||{})};
+  if(node.headers&&typeof node.headers==='object')
+    for(const [n,v] of Object.entries(node.headers))
+      if(/^(referer|origin|user-agent)$/i.test(n)&&typeof v==='string'&&v)headers[n.toLowerCase()]=v;
+  const url=typeof node.url==='string'?node.url:'',kind=String(node.type||'').toLowerCase();
+  if(/^https?:\/\//i.test(url)&&!/\/embed[./]/i.test(url)&&(mvMedia.test(url)||kind==='hls'||kind==='mp4')){
+    const q=/(\d{3,4})p?/i.exec(String(node.quality||node.resolution||''));
+    found.streams.push({url,type:/mp4|mkv|webm/.test(kind)||/\.(mp4|mkv|webm)(\?|$)/i.test(url)?'file':'hls',
+      quality:q?q[1]+'p':undefined,headers:Object.keys(headers).length?headers:undefined});
+  }
+  const subs=node.subtitles||node.captions||node.tracks;
+  if(Array.isArray(subs))
+    for(const e of subs){
+      const u=e&&(e.url||e.file||e.src);
+      if(typeof u==='string'&&/^https?:\/\//i.test(u))
+        found.subs.push({url:u,label:String(e.label||e.language||e.lang||'subtitle'),lang:String(e.lang||e.language||'')});
+    }
+  for(const v of Object.values(node))if(v&&typeof v==='object')mvWalk(v,found,headers,depth+1);
+}
+async function mvBrowserServers(type,id,season,episode){
+  if(!window.crypto||!crypto.subtle)return [];
+  const bytes=crypto.getRandomValues(new Uint8Array(16));let raw='';
+  for(const b of bytes)raw+=String.fromCharCode(b);
+  const nonce=btoa(raw).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  const jobs=Object.entries(MVVN.servers).map(async([name,seg])=>{
+    const path=type==='tv'?'/'+seg+'/tv/'+id+'/'+season+'/'+episode:'/'+seg+'/movie/'+id;
+    try{
+      const r=await fetch(MVVN.api+path+'?_n='+nonce,{headers:{accept:'application/json'},signal:AbortSignal.timeout(12000)});
+      const reply=await r.json().catch(()=>null);
+      if(!reply||!reply.d)return [];
+      const data=await mvDecrypt(reply,MVVN.secret);
+      if(!data||data.error)return [];
+      const found={streams:[],subs:[]};
+      mvWalk(data,found,null,0);
+      return found.streams.map(s=>({...s,provider:'vidnest',providerName:'VidNest '+name,subtitles:found.subs,direct:true}));
+    }catch{return []}
+  });
+  const seen=new Set();
+  return (await Promise.all(jobs)).flat().filter(s=>seen.has(s.url)?false:seen.add(s.url)).slice(0,10);
+}
+/* late arrivals go into the picker without interrupting what is playing. */
+function mvMerge(extra){
+  if(!extra||!extra.length)return -1;
+  const have=new Set(mStreams.map(s=>s.url));
+  const add=extra.filter(s=>have.has(s.url)?false:have.add(s.url));
+  if(!add.length)return -1;
+  const playing=mStreams[mPick],at=mStreams.length;
+  mStreams=mStreams.concat(add);
+  mvLabelStreams(mStreams);mvFillSelect();
+  if(playing){const i=mStreams.indexOf(playing);if(i>-1){mPick=i;mvpSel.value=String(i)}}
+  return at;
+}
+function mvMoreServers(type,id,season,episode){
+  mvBrowserServers(type,id,season,episode).then(list=>{
+    if(!mvp.classList.contains('on')||String(mPlayId)!==String(id))return;
+    const at=mvMerge(list);
+    if(at>-1&&mvpLoad.classList.contains('ended')){mBad.clear();mvSpinner('found another server — trying it…');mvStart(at,0)}
+  }).catch(()=>{/* the hosts said no; the api's list stands */});
+}
 function mvFillSelect(){
   mvpSel.replaceChildren(...mLabels.map((n,i)=>new Option(n,String(i))));
   mvpSel.value=String(Math.max(0,mPick));
@@ -205,8 +285,9 @@ async function mvStart(index,at=0){
   const ways=[];
   if(stream.proxy)ways.push(stream.proxy);
   if(stream.url&&stream.url!==stream.proxy)ways.push(stream.url);
-  // a plain file needs no relay unless its host refuses the page's origin
-  if(stream.type==='file')ways.reverse();
+  // the page's own connection first when the page found the url, and a plain
+  // file without its host refusing our origin
+  if(stream.direct||stream.type==='file')ways.reverse();
 
   for(const url of ways){
     if(token!==mToken)return;
@@ -237,9 +318,11 @@ async function mvReload(){
   mvSpinner('finding sources…');
   try{
     mStreams=await mvPlayerStreams(id,true);
+    if(!mStreams.length)mStreams=await mvBrowserServers('movie',id);
     if(!mStreams.length)return mvStuck('no server has this film right now');
     mvLabelStreams(mStreams);mvFillSelect();
     mvStart(0);
+    mvMoreServers('movie',id);
   }catch(e){mvStuck(e.message||'the movies api did not answer')}
 }
 
@@ -249,12 +332,14 @@ async function mvPlayMovie(id,title){
   mBad.clear();mStreams=[];mPick=-1;
   mvSpinner('finding sources…');
   try{
-    mStreams=await mvPlayerStreams(id);
-    if(!mStreams.length){mvSpinner('no server had it — asking again…');mStreams=await mvPlayerStreams(id,true)}
-    if(!mStreams.length)return mvStuck('no server has this film right now');
+    let apiDown=false;
+    try{mStreams=await mvPlayerStreams(id)}catch{apiDown=true}
+    if(!mStreams.length)mStreams=await mvBrowserServers('movie',id);
+    if(!mStreams.length)return mvStuck(apiDown?'the movies api did not answer':'no server has this film right now');
     mvLabelStreams(mStreams);mvFillSelect();
     const want=store.get('mvsrc',''),at=Math.max(0,mLabels.indexOf(want));
     mvStart(at);
+    mvMoreServers('movie',id);
   }catch(e){mvStuck(e.message||'the movies api did not answer')}
 }
 function mvClosePlayer(){mvp.classList.remove('on','idle');mvUnload();mvQuiet();mPlayId=null;mStreams=[];mLabels=[];mPick=-1;mBad.clear()}

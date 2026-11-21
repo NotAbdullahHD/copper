@@ -3,10 +3,15 @@
    so there is no embed page, no provider chrome and no ads.
    two addresses: /movies for the shelves, /movies/movie/<id> for one film. */
 const mv=$('#mv'),mvb=$('#mvbody'),TM='https://api.themoviedb.org/3',TI='https://image.tmdb.org/t/p/',KEY=window.COPPER_TMDB||'',API=(window.COPPER_MOVIES_API||'').replace(/\/+$/,'');
-let mq='',mback=closeMovies,mcurId=null,mPlayId=null;
+let mq='',mback=closeMovies,mcurId=null,mcurType='movie';
+/* one catalogue, two kinds: everything, films only, or shows only. */
+let mkind=['all','movie','tv'].includes(store.get('mvkind'))?store.get('mvkind'):'all';
+const mvName=x=>x.title||x.name||'untitled';
+const mvKindOf=x=>x.media_type==='tv'||x.media_type==='movie'?x.media_type:(x.first_air_date?'tv':'movie');
+const mvYear=x=>(x.release_date||x.first_air_date||'').slice(0,4);
 const mNote=(t,retry)=>mvb.replaceChildren(empty(t,retry,t==='loading…'));
 function closeMovies(){mv.classList.remove('on')}
-window.mvPath=()=>mcurId?'/movies/movie/'+mcurId:'/movies';
+window.mvPath=()=>mcurId?'/movies/'+(mcurType==='tv'?'tv':'movie')+'/'+mcurId:'/movies';
 async function tmdb(path){
   /* our own movies-api leads: same paths, and the catalogue key stays on its server */
   if(API){
@@ -58,6 +63,9 @@ mvpPlay.innerHTML=MVICON.play;mvpBack.innerHTML=MVICON.back;mvpFwd.innerHTML=MVI
 mvpMute.innerHTML=MVICON.volume;mvpPip.innerHTML=MVICON.pip;mvpFS.innerHTML=MVICON.fs;mvpX.innerHTML=MVICON.close;
 
 let mStreams=[],mLabels=[],mHls=null,mSub='-1',mPick=-1,mToken=0,mBad=new Set(),mWatch=null,mIdle=null;
+/* what the player is on right now: a film, or one episode of a show. */
+let mPlay={type:'movie',id:null,season:null,episode:null},mResumeAt=0;
+const mvMiss=()=>mPlay.type==='tv'?"couldn't find a working server for this episode":"couldn't find a working server for this film";
 
 const mvClock=s=>{s=Math.max(0,Math.round(s||0));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=String(s%60).padStart(2,'0');return h?h+':'+String(m).padStart(2,'0')+':'+x:m+':'+x};
 const mvLabel=i=>mLabels[i]||(mStreams[i]&&mStreams[i].providerName)||'server';
@@ -94,16 +102,18 @@ function mvDetach(){
   mvpV.removeAttribute('src');mvpV.load();
 }
 function mvUnload(){
-  mToken++;
+  mToken++;mResumeAt=0;
   mvDetach();
   mSub='-1';mvpCC.setAttribute('aria-pressed','false');mvpCCL.hidden=true;
   mvpSeek.value='0';mvpSeek.style.setProperty('--p','0%');
   mvpCur.textContent='0:00';mvpDur.textContent='0:00';
 }
 
-async function mvPlayerStreams(id,refresh=false){
+const mvResumeKey=()=>mPlay.type==='tv'?'resume:tv:'+mPlay.id+':'+mPlay.season+':'+mPlay.episode:'resume:movie:'+mPlay.id;
+async function mvPlayerStreams(type,id,season,episode,refresh=false){
   if(!API)throw new Error('no movies api set — put its address in js/config.js');
-  const r=await fetch(API+'/api/stream/movie/'+id+(refresh?'?refresh=1':''),{headers:{accept:'application/json'}});
+  const path=type==='tv'?'/api/stream/tv/'+id+'/'+season+'/'+episode:'/api/stream/movie/'+id;
+  const r=await fetch(API+path+(refresh?'?refresh=1':''),{headers:{accept:'application/json'}});
   const d=await r.json().catch(()=>null);
   if(!r.ok||!d||d.error)throw new Error((d&&d.error)||'streams answered '+r.status);
   return d.streams||[];
@@ -218,9 +228,10 @@ function mvMerge(extra){
   if(playing){const i=mStreams.indexOf(playing);if(i>-1){mPick=i;mvpSel.value=String(i)}}
   return at;
 }
-function mvMoreServers(type,id,season,episode){
-  mvBrowserServers(type,id,season,episode).then(list=>{
-    if(!mvp.classList.contains('on')||String(mPlayId)!==String(id))return;
+function mvMoreServers(){
+  const p={...mPlay},same=()=>mPlay.id===p.id&&mPlay.season===p.season&&mPlay.episode===p.episode;
+  mvBrowserServers(p.type,p.id,p.season,p.episode).then(list=>{
+    if(!mvp.classList.contains('on')||!same())return;
     const at=mvMerge(list);
     if(at>-1&&mvpLoad.classList.contains('ended')){mBad.clear();mvSpinner('found another server — trying it…');mvStart(at,0)}
   }).catch(()=>{/* the hosts said no; the api's list stands */});
@@ -309,41 +320,47 @@ async function mvStart(index,at=0){
     if(token!==mToken)return;
     return mvStart(fallback,at);
   }
-  mvStuck('couldn\'t find a working server for this film');
+  mvStuck(mvMiss());
 }
 
 async function mvReload(){
-  const id=mPlayId;
-  if(!id)return;
+  const p={...mPlay};
+  if(!p.id)return;
   mBad.clear();
   mvSpinner('finding sources…');
   try{
-    mStreams=await mvPlayerStreams(id,true);
-    if(!mStreams.length)mStreams=await mvBrowserServers('movie',id);
-    if(!mStreams.length)return mvStuck('no server has this film right now');
+    mStreams=await mvPlayerStreams(p.type,p.id,p.season,p.episode,true);
+    if(!mStreams.length)mStreams=await mvBrowserServers(p.type,p.id,p.season,p.episode);
+    if(!mStreams.length)return mvStuck(p.type==='tv'?'no server has this episode right now':'no server has this film right now');
     mvLabelStreams(mStreams);mvFillSelect();
     mvStart(0);
-    mvMoreServers('movie',id);
+    mvMoreServers();
   }catch(e){mvStuck(e.message||'the movies api did not answer')}
 }
 
-async function mvPlayMovie(id,title){
-  mPlayId=id;mvpTitle.textContent=title||'';mvp.classList.add('on');
+/* one door for both kinds: a film, or one episode of a show. */
+async function mvOpenItem(type,id,title,season,episode){
+  mPlay={type,id,season:season??null,episode:episode??null};
+  mvpTitle.textContent=title||'';mvp.classList.add('on');
   mvpSel.replaceChildren();mvUnload();
   mBad.clear();mStreams=[];mPick=-1;
   mvSpinner('finding sources…');
   try{
     let apiDown=false;
-    try{mStreams=await mvPlayerStreams(id)}catch{apiDown=true}
-    if(!mStreams.length)mStreams=await mvBrowserServers('movie',id);
-    if(!mStreams.length)return mvStuck(apiDown?'the movies api did not answer':'no server has this film right now');
+    try{mStreams=await mvPlayerStreams(type,id,season,episode)}catch{apiDown=true}
+    if(!mStreams.length)mStreams=await mvBrowserServers(type,id,season,episode);
+    if(!mStreams.length)return mvStuck(apiDown?'the movies api did not answer':type==='tv'?'no server has this episode right now':'no server has this film right now');
     mvLabelStreams(mStreams);mvFillSelect();
-    const want=store.get('mvsrc',''),at=Math.max(0,mLabels.indexOf(want));
-    mvStart(at);
-    mvMoreServers('movie',id);
+    /* a remembered server first, and the spot we stopped at last time */
+    const want=store.get('mvsrc',''),index=Math.max(0,mLabels.indexOf(want));
+    const from=Math.max(0,Number(store.get(mvResumeKey(),0))||0);
+    mvStart(index,from);
+    mvMoreServers();
   }catch(e){mvStuck(e.message||'the movies api did not answer')}
 }
-function mvClosePlayer(){mvp.classList.remove('on','idle');mvUnload();mvQuiet();mPlayId=null;mStreams=[];mLabels=[];mPick=-1;mBad.clear()}
+const mvPlayMovie=(id,title)=>mvOpenItem('movie',id,title);
+const mvPlayEpisode=(id,season,episode,title)=>mvOpenItem('tv',id,title,season,episode);
+function mvClosePlayer(){mvp.classList.remove('on','idle');mvUnload();mvQuiet();mPlay={type:'movie',id:null,season:null,episode:null};mStreams=[];mLabels=[];mPick=-1;mBad.clear()}
 
 /* ---- controls ----------------------------------------------------------- */
 const mvSeekTo=t=>{if(Number.isFinite(mvpV.duration))mvpV.currentTime=Math.min(mvpV.duration,Math.max(0,t))};
@@ -370,6 +387,11 @@ mvpV.ontimeupdate=()=>{
     const p=Math.round(mvpV.currentTime/d*1000);
     mvpSeek.value=String(p);
     mvpSeek.style.setProperty('--p',(p/10)+'%');
+    /* where we stopped, so the next visit starts there — and not in the credits */
+    if(mPlay.id&&!mvpV.paused){
+      if(d-mvpV.currentTime<30){if(mResumeAt)store.set(mvResumeKey(),0);mResumeAt=0}
+      else if(Math.abs(mvpV.currentTime-mResumeAt)>=5){mResumeAt=mvpV.currentTime;store.set(mvResumeKey(),Math.floor(mvpV.currentTime))}
+    }
   }
 };
 mvpV.onloadedmetadata=()=>{mvpDur.textContent=mvClock(mvpV.duration)};
@@ -440,7 +462,22 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-const mCard=(img,title,fn)=>h('button',{class:'mg-card',onclick:fn},h('img',{src:img||'',loading:'lazy',alt:''}),h('span',{},title));
+const mCard=(item,type)=>h('button',{class:'mg-card',onclick:()=>mDetail(item.id,true,type)},
+  h('img',{src:item.poster_path?TI+'w342'+item.poster_path:'',loading:'lazy',alt:''}),h('span',{},mvName(item)));
+
+/* the kind switch beside the search field: everything, films, or shows. */
+function mvKindUI(){
+  for(const b of $('#mv-kind').querySelectorAll('button'))b.classList.toggle('on',b.dataset.k===mkind);
+  $('#mv-q').placeholder=mkind==='tv'?'search shows':mkind==='movie'?'search movies':'search movies and shows';
+}
+mvKindUI();
+$('#mv-kind').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-k]');
+  if(!b||b.dataset.k===mkind)return;
+  mkind=b.dataset.k;store.set('mvkind',mkind);mvKindUI();
+  /* the words stay: a search that found nothing as films often finds the show */
+  mq=$('#mv-q').value.trim();mList();
+});
 
 $('#open-movies').onclick=()=>{mv.classList.add('on');if(!mvb.childElementCount)mList()};
 $('#mv-back').onclick=()=>mback();
@@ -454,12 +491,18 @@ addEventListener('keydown',e=>{
 /* leaving the page takes the player with it, so nothing keeps playing in the background */
 new MutationObserver(()=>{if(!mv.classList.contains('on'))mvClosePlayer()}).observe(mv,{attributes:true,attributeFilter:['class']});
 
-function mRow(title,items){
-  const sc=h('div',{class:'mrow-scroll'},...items.filter(m=>m.poster_path).map(m=>mCard(TI+'w342'+m.poster_path,m.title,()=>mDetail(m.id))));
+function mRow(title,items,type){
+  const sc=h('div',{class:'mrow-scroll'},...items.filter(m=>m.poster_path&&m.media_type!=='person').map(m=>mCard(m,m.media_type||type||mvKindOf(m))));
   const go=d=>()=>sc.scrollBy({left:d*sc.clientWidth*.8,behavior:'smooth'});
   return h('section',{class:'mrow'},h('div',{class:'mrow-head'},h('h4',{},title),
     h('span',{},h('button',{class:'mrow-nav',onclick:go(-1),'aria-label':'scroll left'},'‹'),h('button',{class:'mrow-nav',onclick:go(1),'aria-label':'scroll right'},'›'))),sc);
 }
+/* the shelves each kind gets. a type of null means the rows carry their own. */
+const MV_ROWS={
+  all:[['trending this week','/trending/all/week',null],['films · popular','/movie/popular','movie'],['shows · popular','/tv/popular','tv'],['films · top rated','/movie/top_rated','movie'],['shows · top rated','/tv/top_rated','tv']],
+  movie:[['trending this week','/trending/movie/week','movie'],['popular','/movie/popular','movie'],['top rated','/movie/top_rated','movie'],['coming soon','/movie/upcoming','movie']],
+  tv:[['trending this week','/trending/tv/week','tv'],['popular','/tv/popular','tv'],['top rated','/tv/top_rated','tv'],['airing today','/tv/airing_today','tv'],['returning','/tv/on_the_air','tv']]
+};
 async function mList(push=true){
   mcurId=null;mv.classList.remove('detail');mvb.classList.remove('dt');
   mback=closeMovies;mNote('loading…');
@@ -467,39 +510,79 @@ async function mList(push=true){
     if(!KEY&&!API)return mNote('no TMDB key yet — put one in js/config.js and the posters appear');
     const credit=h('p',{class:'mg-credit'},'This product uses the TMDB API but is not endorsed or certified by TMDB.');
     if(mq){
-      const d=await tmdb('/search/movie?include_adult=false&query='+encodeURIComponent(mq));
-      const res=(d.results||[]).filter(m=>m.poster_path);
+      const d=await tmdb('/search/'+(mkind==='all'?'multi':mkind)+'?include_adult=false&query='+encodeURIComponent(mq));
+      const res=(d.results||[]).filter(m=>m.poster_path&&m.media_type!=='person');
       if(!res.length)return mNote('nothing found. the catalogue is thinner than it looks.');
-      mvb.replaceChildren(h('div',{class:'mg-grid'},...res.map(m=>mCard(TI+'w342'+m.poster_path,m.title,()=>mDetail(m.id)))),credit);
+      mvb.replaceChildren(h('div',{class:'mg-grid'},...res.map(m=>mCard(m,mvKindOf(m)))),credit);
       if(push)setPath('/movies',true);
       return;
     }
-    const [tr,po,tp,up]=await Promise.all(['/trending/movie/week','/movie/popular','/movie/top_rated','/movie/upcoming'].map(p=>tmdb(p)));
     const seen=store.get('mvrecent',[]);
-    mvb.replaceChildren(...[seen.length?mRow('recently viewed',seen):null,mRow('trending this week',tr.results),mRow('popular',po.results),mRow('top rated',tp.results),mRow('coming soon',up.results)].filter(Boolean),credit);
+    const rows=await Promise.all(MV_ROWS[mkind].map(async([label,path,type])=>[label,(await tmdb(path)).results||[],type]));
+    mvb.replaceChildren(...[seen.length?mRow('recently viewed',seen):null,...rows.map(([label,items,type])=>mRow(label,items,type))].filter(Boolean),credit);
     if(push)setPath('/movies',true);
   }catch(e){mNote(e.message,()=>mList())}
 }
 function runTime(n){return n?Math.floor(n/60)+'h '+(n%60)+'m':''}
-async function mDetail(id,push=true){
-  mback=()=>mList();mcurId=Number(id);mNote('loading…');badge('cinema');
+
+/* one season's episodes, each a click away from the player. */
+async function mvEpisodes(show,season,box,showName){
+  box.replaceChildren(h('p',{class:'mvx-epmsg'},'loading episodes…'));
   try{
-    const d=await tmdb('/movie/'+id);
-    {const r=store.get('mvrecent',[]).filter(x=>x.id!==d.id);r.unshift({id:d.id,title:d.title,poster_path:d.poster_path,release_date:d.release_date});store.set('mvrecent',r.slice(0,12))}
-    const meta=[(d.release_date||'').slice(0,4),runTime(d.runtime),d.vote_average?'★ '+d.vote_average.toFixed(1):''].filter(Boolean).join(' · ');
+    const d=await tmdb('/tv/'+show+'/season/'+season);
+    const eps=d.episodes||[];
+    if(!eps.length)return box.replaceChildren(h('p',{class:'mvx-epmsg'},'no episodes listed for this season'));
+    box.replaceChildren(...eps.map(e=>{
+      const at=Math.max(0,Number(store.get('resume:tv:'+show+':'+season+':'+e.episode_number,0))||0);
+      return h('button',{class:'mvx-ep',onclick:()=>mvPlayEpisode(show,season,e.episode_number,'S'+season+' E'+e.episode_number+(showName?' · '+showName:''))},
+        h('b',{},String(e.episode_number).padStart(2,'0')),
+        h('i',{},e.name||'episode '+e.episode_number),
+        h('small',{},at?'resume '+mvClock(at):e.runtime?e.runtime+'m':''),
+        h('span',{class:'mvx-ep-play'},'▶'));
+    }));
+  }catch(e){box.replaceChildren(h('p',{class:'mvx-epmsg'},e.message||'episodes did not load'))}
+}
+
+async function mDetail(id,push=true,type='movie'){
+  mback=()=>mList();mcurId=Number(id);mcurType=type==='tv'?'tv':'movie';mNote('loading…');badge('cinema');
+  try{
+    const d=await tmdb('/'+mcurType+'/'+id);
+    {const r=store.get('mvrecent',[]).filter(x=>!(Number(x.id)===Number(d.id)&&(x.media_type||'movie')===mcurType));
+     r.unshift({id:d.id,media_type:mcurType,title:mvName(d),poster_path:d.poster_path,release_date:d.release_date||d.first_air_date});
+     store.set('mvrecent',r.slice(0,12))}
+    const tv=mcurType==='tv';
+    const seasons=(d.seasons||[]).filter(s=>s.season_number>0);
+    const first=seasons.find(s=>s.season_number===1)||seasons[0];
+    const meta=[
+      mvYear(d),
+      tv?((d.number_of_seasons||0)+' season'+(d.number_of_seasons===1?'':'s')+' · '+(d.number_of_episodes||0)+' episodes'):runTime(d.runtime),
+      d.vote_average?'★ '+d.vote_average.toFixed(1):''
+    ].filter(Boolean).join(' · ');
+    const at=tv?0:Math.max(0,Number(store.get('resume:movie:'+d.id,0))||0);
+    const play=h('button',{class:'mvx-play',onclick:()=>tv?mvPlayEpisode(d.id,first?first.season_number:1,1,'S'+(first?first.season_number:1)+' E1 · '+mvName(d)):mvPlayMovie(d.id,mvName(d))},
+      '▶ '+(at?'resume '+mvClock(at):'play'));
+    const epsBox=h('div',{class:'mvx-eps'});
+    let seasonBar=null;
+    if(tv&&seasons.length){
+      const sel=h('select',{class:'mvx-season','aria-label':'Season'},...seasons.map(s=>new Option(s.name||('season '+s.season_number),String(s.season_number))));
+      sel.onchange=()=>mvEpisodes(d.id,sel.value,epsBox,mvName(d));
+      seasonBar=h('div',{class:'mvx-seasons'},h('label',{},'season'),sel);
+    }
     mvb.replaceChildren(
       h('article',{class:'mvx'},
         h('div',{class:'mvx-ban'},d.backdrop_path?h('img',{src:TI+'w1280'+d.backdrop_path,alt:'',loading:'lazy'}):null),
         h('div',{class:'mvx-in'},
           h('img',{class:'mvx-poster',src:d.poster_path?TI+'w500'+d.poster_path:'',alt:''}),
           h('div',{class:'mvx-txt'},
-            h('h2',{},d.title),
+            h('h2',{},mvName(d)),
             meta?h('p',{class:'mvx-meta'},meta):null,
             d.tagline?h('p',{class:'mvx-tag'},d.tagline):null,
             h('p',{class:'mvx-desc'},d.overview||'no description yet.'),
-            h('div',{class:'mvx-act'},h('button',{class:'mvx-play',onclick:()=>mvPlayMovie(d.id,d.title)},'▶ play'))))),
+            h('div',{class:'mvx-act'},play))),
+        tv?h('div',{class:'mvx-seasonbox'},seasonBar,epsBox):null),
       h('p',{class:'mg-credit'},'This product uses the TMDB API but is not endorsed or certified by TMDB.'));
     mv.classList.add('detail');mvb.classList.add('dt');
-    if(push)setPath('/movies/movie/'+d.id,true);
-  }catch(e){mNote(e.message,()=>mDetail(id,push))}
+    if(push)setPath('/movies/'+(tv?'tv':'movie')+'/'+d.id,true);
+    if(tv&&first)mvEpisodes(d.id,first.season_number,epsBox,mvName(d));
+  }catch(e){mNote(e.message,()=>mDetail(id,push,type))}
 }

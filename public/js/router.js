@@ -58,7 +58,7 @@ function openPath(p, push) {
     if (name === 'movies' && window.mvPath) {
       /* one film has its own address inside the movies page */
       $('#mv').classList.add('on');
-      if (sub === 'movie' && /^\d+$/.test(parts[3] || '')) { mDetail(parts[3], false); out = '/movies/movie/' + parts[3]; }
+      if ((sub === 'movie' || sub === 'tv') && /^\d+$/.test(parts[3] || '')) { mDetail(parts[3], false, sub); out = '/movies/' + sub + '/' + parts[3]; }
       else { if (mcurId || !$('#mvbody').childElementCount) mList(false); out = '/movies'; }
     } else {
       $('#open-' + name).click();

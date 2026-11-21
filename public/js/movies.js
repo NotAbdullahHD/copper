@@ -184,6 +184,7 @@ function mvWalk(node,found,inherited,depth){
     }
   for(const v of Object.values(node))if(v&&typeof v==='object')mvWalk(v,found,headers,depth+1);
 }
+const mvRelay=(url,headers)=>API+'/api/proxy?url='+encodeURIComponent(url)+(headers?'&headers='+encodeURIComponent(JSON.stringify(headers)):'');
 async function mvBrowserServers(type,id,season,episode){
   if(!window.crypto||!crypto.subtle)return [];
   const bytes=crypto.getRandomValues(new Uint8Array(16));let raw='';
@@ -199,7 +200,7 @@ async function mvBrowserServers(type,id,season,episode){
       if(!data||data.error)return [];
       const found={streams:[],subs:[]};
       mvWalk(data,found,null,0);
-      return found.streams.map(s=>({...s,provider:'vidnest',providerName:'VidNest '+name,subtitles:found.subs,direct:true}));
+      return found.streams.map(s=>({...s,provider:'vidnest',providerName:'VidNest '+name,subtitles:found.subs,direct:true,proxy:mvRelay(s.url,s.headers)}));
     }catch{return []}
   });
   const seen=new Set();

@@ -32,7 +32,7 @@ const mvp=$('#mvp'),mvpSel=$('#mvp-sel'),mvpTitle=$('#mvp-t'),mvpV=$('#mvp-v'),m
   mvpPlay=$('#mvp-play'),mvpSeek=$('#mvp-seek'),mvpCur=$('#mvp-cur'),mvpDur=$('#mvp-dur'),
   mvpMute=$('#mvp-mute'),mvpVol=$('#mvp-vol'),mvpCC=$('#mvp-cc'),mvpCCL=$('#mvp-ccl'),
   mvpFS=$('#mvp-fs'),mvpPip=$('#mvp-pip');
-let mStreams=[],mLabels=[],mHls=null,mSub=-1;
+let mStreams=[],mLabels=[],mHls=null,mSub='-1';
 
 const clock=s=>{s=Math.max(0,Math.round(s||0));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=String(s%60).padStart(2,'0');return h?h+':'+String(m).padStart(2,'0')+':'+x:m+':'+x};
 /* playback goes through the relay: these hosts answer without CORS and check the
@@ -42,8 +42,9 @@ const say=t=>{mvpMsg.textContent=t||'';mvpMsg.hidden=!t};
 
 function unload(){
   if(mHls){mHls.destroy();mHls=null}
+  for(const t of [...mvpV.querySelectorAll('track')])t.remove();
   mvpV.removeAttribute('src');mvpV.load();
-  mSub=-1;mvpCC.setAttribute('aria-pressed','false');mvpCCL.hidden=true;
+  mSub='-1';mvpCC.setAttribute('aria-pressed','false');mvpCCL.hidden=true;
 }
 async function playerStreams(id){
   if(!API)throw new Error('no movies api set — put its address in js/config.js');
@@ -52,13 +53,33 @@ async function playerStreams(id){
   if(!r.ok||!d||d.error)throw new Error((d&&d.error)||'streams answered '+r.status);
   return d.streams||[];
 }
+/* a stream can carry two kinds of subtitle: tracks inside the playlist, and
+   separate files the api handed over (served as vtt by its subtitle route).
+   both belong in one menu, so rows are keyed h<index> and t<index>. */
+function addSubs(stream){
+  for(const t of [...mvpV.querySelectorAll('track')])t.remove();
+  for(const s of (stream&&stream.subtitles)||[]){
+    if(!s||!s.url)continue;
+    const t=document.createElement('track');
+    t.kind='subtitles';t.label=s.label||'subtitles';
+    t.srclang=/^[a-z]{2,3}$/i.test(s.lang||'')?s.lang:'und';
+    t.src=s.url;mvpV.appendChild(t);
+  }
+}
+function applySubs(){
+  const tags=[...mvpV.querySelectorAll('track')];
+  tags.forEach((t,i)=>{try{t.track.mode=mSub==='t'+i?'showing':'disabled'}catch{}});
+  const inHls=mSub[0]==='h'?Number(mSub.slice(1)):-1;
+  if(mHls){mHls.subtitleDisplay=inHls>-1;mHls.subtitleTrack=inHls}
+  mvpCC.setAttribute('aria-pressed',String(mSub!=='-1'));
+}
 function buildSubs(){
-  const tracks=(mHls&&mHls.subtitleTracks)||[];
-  const rows=[{i:-1,label:'off'}].concat(tracks.map((t,i)=>({i,label:t.name||t.lang||'subtitle '+(i+1)})));
-  mvpCCL.replaceChildren(...rows.map(o=>h('button',{'aria-selected':String(o.i===mSub),onclick:()=>{
-    mSub=o.i;
-    if(mHls){mHls.subtitleDisplay=o.i>-1;mHls.subtitleTrack=o.i}
-    mvpCC.setAttribute('aria-pressed',String(o.i>-1));mvpCCL.hidden=true;buildSubs();
+  const tracks=(mHls&&mHls.subtitleTracks)||[],tags=[...mvpV.querySelectorAll('track')];
+  const rows=[{k:'-1',label:'off'}]
+    .concat(tracks.map((t,i)=>({k:'h'+i,label:t.name||t.lang||'subtitle '+(i+1)})))
+    .concat(tags.map((t,i)=>({k:'t'+i,label:t.label||'subtitle '+(i+1)})));
+  mvpCCL.replaceChildren(...rows.map(o=>h('button',{'aria-selected':String(o.k===mSub),onclick:()=>{
+    mSub=o.k;applySubs();mvpCCL.hidden=true;buildSubs();
   }},o.label)));
 }
 /* one provider can answer with several servers, and three rows called "2Embed" is
@@ -71,14 +92,19 @@ function play(stream,at=0){
   unload();
   if(!stream)return say('no server answered for this film');
   mvpSel.value=String(mStreams.indexOf(stream));
-  mSub=-1;buildSubs();
+  addSubs(stream);buildSubs();
   say('loading '+stream.providerName+'…');
   const url=relay(stream);
   const start=()=>{if(at>0&&Number.isFinite(at))mvpV.currentTime=at;mvpV.play().catch(()=>say('press play to start'))};
-  if(window.Hls&&Hls.isSupported()){
+  /* a plain file plays itself; only playlists need hls.js */
+  if(stream.type==='file'||/\.(mp4|webm|m4v)(\?|$)/i.test(stream.url)){
+    mvpV.src=url;
+    mvpV.addEventListener('loadedmetadata',start,{once:true});
+    mvpV.addEventListener('error',()=>{if(mvpV.error)say('this stream stopped — try another server')},{once:true});
+  }else if(window.Hls&&Hls.isSupported()){
     mHls=new Hls({enableWorker:true,maxBufferLength:30,maxMaxBufferLength:60});
-    mHls.on(Hls.Events.MANIFEST_PARSED,()=>{say('');buildSubs();start()});
-    mHls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED,buildSubs);
+    mHls.on(Hls.Events.MANIFEST_PARSED,()=>{say('');buildSubs();applySubs();start()});
+    mHls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED,()=>{buildSubs();applySubs()});
     mHls.on(Hls.Events.ERROR,(_e,d)=>{
       if(d&&d.fatal)say((d.details==='manifestLoadError'?'this server did not answer — ':'')+'try another server');
     });

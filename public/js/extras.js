@@ -4,14 +4,20 @@ $('#gx').onclick=()=>gm.close();$('#sx').onclick=()=>st.close();
 
 /* settings */
 function syncSettings(){
-  $('#s-eng').value=store.get('engine',DEFAULT_ENGINE);$('#s-se').value=store.get('search','ddg');
+  $('#s-eng').value=store.get('engine',DEFAULT_ENGINE);$('#s-se').value=store.get('search','bing');
   const w=store.get('wax',null);
   document.querySelectorAll('#s-pat button').forEach(b=>b.classList.toggle('on',b.dataset.s===(w===null?'auto':String(w))));
   paintTheme();paintAccent();
 }
 $('#open-set').onclick=()=>{syncSettings();st.showModal()};
-$('#s-eng').onchange=e=>{store.set('engine',e.target.value);$('#eng').value=e.target.value};
-$('#s-se').onchange=e=>store.set('search',e.target.value);
+$('#s-eng').onchange=e=>{store.set('engine',e.target.value);store.set('engmem',{});$('#eng').value=e.target.value};
+// The results page is Copper's own, so switching the engine re-runs the query at once instead of
+// waiting for the next search.
+$('#s-se').onchange=e=>{
+  store.set('search',e.target.value);
+  const v=$('#sr-q').value.trim();
+  if($('#sr').classList.contains('on')&&v&&typeof srOpen==='function')srOpen(v,e.target.value);
+};
 $('#s-pat').onclick=e=>{const b=e.target.closest('button');if(!b)return;
   store.set('wax',b.dataset.s==='auto'?null:+b.dataset.s);paintPatina();syncSettings()};
 

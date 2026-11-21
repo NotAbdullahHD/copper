@@ -6,7 +6,7 @@ const PRIVATE = /^(localhost|.*\.local|.*\.internal|127\.|10\.|192\.168\.|169\.2
 const DROP = ['x-frame-options','content-security-policy','content-security-policy-report-only','set-cookie','cross-origin-opener-policy','cross-origin-embedder-policy','content-length','content-encoding','strict-transport-security','referrer-policy'];
 // Only these sites may use this proxy. Add your own domain here when you get one (no trailing slash).
 const ALLOWED = ['https://copper.gghh.workers.dev', 'https://copper-p08m.onrender.com'];
-const VERSION = 8; // bump when the browser side needs something new; Copper warns if your deployed copy is older
+const VERSION = 10; // bump when the browser side needs something new; Copper warns if your deployed copy is older
 const SKIP = /^(data:|javascript:|#|mailto:|tel:|blob:|about:)/i;
 
 // Every proxied site shares this worker's origin, so their cookies would land in one jar and
@@ -37,6 +37,154 @@ function permitted(req, self) {
   let ref = '';
   try { ref = new URL(req.headers.get('referer')).origin; } catch {}
   return [origin, ref].some(o => o === self.origin || ALLOWED.includes(o));
+}
+
+/* ---- search ---------------------------------------------------------------
+   Framing an engine is what made only Brave look like it worked: Google answers a
+   datacenter IP with a JavaScript wall and DuckDuckGo with an "anomaly" page, so a
+   proxied tab showed that instead of results. Copper now asks the engine itself and
+   renders the results here — Bing's RSS endpoint and Brave's HTML are the two that
+   answer a Worker. If the engine you picked refuses, the next one answers and the
+   page says so, so every engine in the picker returns real results. */
+const SEARCH_NAME = { ddg: 'DuckDuckGo', bing: 'Bing', brave: 'Brave', google: 'Google' };
+const SEARCH_ORDER = ['ddg', 'bing', 'brave', 'google'];
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const plain = s => String(s || '').replace(/<!\[CDATA\[|\]\]>/g, '').replace(/<[^>]*>/g, ' ')
+  .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'")
+  .replace(/\s+/g, ' ').trim();
+const siteOf = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return ''; } };
+function usable(list) {
+  const seen = new Set(), out = [];
+  for (const r of list) {
+    if (!r || !r.title || !/^https?:\/\//i.test(r.url || '')) continue;
+    let u; try { u = new URL(r.url); } catch { continue; }
+    if (!/^https?:$/.test(u.protocol)) continue;
+    const k = u.href.replace(/#.*$/, '');
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push({ title: r.title, url: u.href, snippet: r.snippet || '', site: siteOf(u.href) });
+  }
+  return out;
+}
+async function bingSearch(q) {
+  const r = await fetch('https://www.bing.com/search?format=rss&count=20&q=' + encodeURIComponent(q), { headers: { 'user-agent': UA, 'accept-language': 'en' } });
+  if (!r.ok) throw new Error('bing ' + r.status);
+  const xml = await r.text(), out = [];
+  for (const m of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
+    const b = m[1], t = /<title>([\s\S]*?)<\/title>/.exec(b), l = /<link>([\s\S]*?)<\/link>/.exec(b), d = /<description>([\s\S]*?)<\/description>/.exec(b);
+    if (t && l) out.push({ title: plain(t[1]), url: plain(l[1]), snippet: d ? plain(d[1]) : '' });
+  }
+  return usable(out);
+}
+async function braveSearch(q) {
+  const r = await fetch('https://search.brave.com/search?q=' + encodeURIComponent(q) + '&source=web', { headers: { 'user-agent': UA, 'accept-language': 'en', accept: 'text/html' } });
+  if (!r.ok) throw new Error('brave ' + r.status);
+  const html = await r.text();
+  if (/Just a moment|Enable JavaScript/i.test(html) && !/search-snippet-title/.test(html)) throw new Error('brave wants JavaScript');
+  const parts = html.split('class="title search-snippet-title'), out = [];
+  for (let i = 1; i < parts.length; i++) {
+    const hrefs = [...parts[i - 1].matchAll(/href="(https?:\/\/[^"]+)"/g)];
+    const url = hrefs.length ? hrefs[hrefs.length - 1][1] : '';
+    const t = /title="([^"]*)"/.exec(parts[i]);
+    const sn = /class="content[^"]*"[^>]*>([\s\S]*?)<\/div>/.exec(parts[i]);
+    if (t && url) out.push({ title: plain(t[1]), url, snippet: sn ? plain(sn[1]) : '' });
+  }
+  return usable(out);
+}
+async function ddgSearch(q) {
+  const r = await fetch('https://html.duckduckgo.com/html/', {
+    method: 'POST', body: 'q=' + encodeURIComponent(q),
+    headers: { 'user-agent': UA, 'accept-language': 'en', 'content-type': 'application/x-www-form-urlencoded' },
+  });
+  const html = await r.text();
+  if (!/result__a/.test(html)) throw new Error(/anomaly|long inline script/i.test(html) ? 'duckduckgo blocked the request' : 'duckduckgo ' + r.status);
+  const out = [], snips = [...html.matchAll(/class="[^"]*result__snippet[^"]*"[^>]*>([\s\S]*?)<\/a>/g)].map(x => plain(x[1]));
+  let m, i = 0;
+  const re = /<a[^>]+class="[^"]*result__a[^"]*"[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
+  while ((m = re.exec(html))) {
+    let u = m[1];
+    const uu = /[?&]uddg=([^&]+)/.exec(u); if (uu) u = decodeURIComponent(uu[1]);
+    if (u.startsWith('//')) u = 'https:' + u;
+    out.push({ title: plain(m[2]), url: u, snippet: snips[i++] || '' });
+  }
+  return usable(out);
+}
+async function googleSearch(q) {
+  const r = await fetch('https://www.google.com/search?q=' + encodeURIComponent(q) + '&num=20&hl=en', { headers: { 'user-agent': UA, 'accept-language': 'en', accept: 'text/html' } });
+  const html = await r.text();
+  if (!/\/url\?q=/.test(html)) throw new Error('google asks every server request for JavaScript');
+  const out = [], re = /<a[^>]+href="\/url\?q=([^"&]+)[^"]*"[^>]*>([\s\S]*?)<\/a>/g;
+  let m;
+  while ((m = re.exec(html))) out.push({ title: plain(m[2]), url: decodeURIComponent(m[1]), snippet: '' });
+  return usable(out);
+}
+const ASK = { bing: bingSearch, brave: braveSearch, ddg: ddgSearch, google: googleSearch };
+async function findResults(q, asked) {
+  const order = [asked, ...SEARCH_ORDER.filter(e => e !== asked)];
+  const tried = [];
+  for (const e of order) {
+    try {
+      const list = await ASK[e](q);
+      if (list.length) return { engine: e, results: list.slice(0, 20), tried };
+      tried.push({ e, why: 'no results' });
+    } catch (err) { tried.push({ e, why: String(err && err.message || err) }); }
+  }
+  return { engine: null, results: [], tried };
+}
+function searchHtml(q, asked, found) {
+  const chips = SEARCH_ORDER.map(e => `<a class="chip${e === asked ? ' on' : ''}" href="/search?q=${encodeURIComponent(q)}&e=${e}">${SEARCH_NAME[e]}</a>`).join('');
+  const rows = found.results.map((r, i) => `<a class="r" href="/?url=${encodeURIComponent(r.url)}" data-u="${esc(r.url)}">
+    <span class="n">${i + 1}</span><span class="u">${esc(r.site)}</span>
+    <h3>${esc(r.title)}</h3>
+    ${r.snippet ? `<p>${esc(r.snippet)}</p>` : ''}
+  </a>`).join('');
+  const note = found.engine && found.engine !== asked
+    ? `<p class="note">${esc(SEARCH_NAME[asked])} won't answer Copper's server, so these are ${esc(SEARCH_NAME[found.engine])} results.</p>` : '';
+  const empty = found.results.length ? rows : `<div class="empty"><b>no results</b><p>${esc(found.tried.map(t => SEARCH_NAME[t.e] + ': ' + t.why).join(' · '))}</p></div>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(q)} · copper search</title><style>
+:root{--bg:#0b0b0c;--fg:#e8e4df;--dim:#8d8781;--line:#23211f;--acc:#c98b5f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.top{position:sticky;top:0;background:rgba(11,11,12,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:14px 18px;z-index:2}
+form{display:flex;gap:8px;max-width:820px;margin:0 auto}input{flex:1;min-width:0;background:#151413;border:1px solid var(--line);color:var(--fg);border-radius:999px;padding:10px 16px;font:inherit;outline:none}
+input:focus{border-color:var(--acc)}button{background:var(--acc);color:#150f0b;border:0;border-radius:999px;padding:0 18px;font:inherit;font-weight:600;cursor:pointer}
+.chips{display:flex;gap:6px;max-width:820px;margin:10px auto 0;flex-wrap:wrap}.chip{color:var(--dim);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px}
+.chip.on{color:#150f0b;background:var(--acc);border-color:var(--acc);font-weight:600}
+main{max-width:820px;margin:0 auto;padding:16px 18px 60px}.note{color:#c9a27f;font-size:13px;margin:12px 0}
+.r{display:block;position:relative;padding:12px 12px 14px 44px;border-radius:12px;text-decoration:none;color:inherit}
+.r:hover{background:#121110}.r .n{position:absolute;left:8px;top:13px;color:#4a453f;font-size:12px;width:26px;text-align:right}.r .u{color:var(--dim);font-size:12px}
+.r h3{margin:2px 0 3px;font-size:17px;font-weight:600;color:#cbb49f;line-height:1.35}.r:hover h3{text-decoration:underline}
+.r p{margin:0;color:#a29b94;font-size:13.5px}.empty{padding:28px 8px;color:var(--dim)}.empty b{color:var(--fg)}.empty p{font-size:13px}
+</style></head><body>
+<div class="top"><form action="/search" method="get"><input name="q" value="${esc(q)}" aria-label="Search" autocomplete="off"><input type="hidden" name="e" value="${esc(asked)}"><button>Search</button></form><div class="chips">${chips}</div></div>
+<main>${note}${empty}</main>
+<script>document.addEventListener('click',e=>{const a=e.target.closest('a.r');if(a&&a.dataset.u){try{parent.postMessage({copperPage:{u:a.dataset.u,t:''}},'*')}catch{}}});</script>
+</body></html>`;
+}
+async function searchRoute(req, self, ctx) {
+  // cross-origin-embedder-policy is what lets Copper's isolated page frame this document at all;
+  // without it Chrome refuses the frame with ERR_BLOCKED_BY_RESPONSE and the tab looks blank.
+  const cors = { 'access-control-allow-origin': '*', 'cross-origin-resource-policy': 'cross-origin', 'cross-origin-embedder-policy': 'credentialless', 'cache-control': 'public, max-age=600' };
+  if (!permitted(req, self)) return new Response(JSON.stringify({ error: 'blocked' }), { status: 403, headers: { ...cors, 'content-type': 'application/json' } });
+  const q = (self.searchParams.get('q') || '').replace(/\s+/g, ' ').trim().slice(0, 160);
+  const asked = (self.searchParams.get('e') || 'ddg').toLowerCase();
+  const json = self.searchParams.get('format') === 'json' || (req.headers.get('accept') || '').includes('application/json');
+  const type = json ? 'application/json' : 'text/html; charset=utf-8';
+  if (!q) return new Response(JSON.stringify({ error: 'missing q' }), { status: 400, headers: { ...cors, 'content-type': type } });
+  if (!ASK[asked]) return new Response(JSON.stringify({ error: 'unknown engine' }), { status: 400, headers: { ...cors, 'content-type': type } });
+  const cache = caches.default;
+  const ck = new Request(`https://search.cache/${json ? 'j' : 'h'}/${asked}/${encodeURIComponent(q.toLowerCase())}`);
+  const hit = await cache.match(ck);
+  if (hit) return new Response(hit.body, { headers: { ...cors, 'content-type': type } });
+  const found = await findResults(q, asked);
+  const body = json
+    ? JSON.stringify({ q, asked, engine: found.engine, fellBack: !!found.engine && found.engine !== asked, results: found.results, tried: found.tried,
+        note: found.engine && found.engine !== asked ? `${SEARCH_NAME[asked]} won't answer Copper's server, so these are ${SEARCH_NAME[found.engine]} results.` : '' })
+    : searchHtml(q, asked, found);
+  const res = new Response(body, { headers: { ...cors, 'content-type': type } });
+  if (found.results.length) ctx.waitUntil(cache.put(ck, res.clone()));
+  return res;
 }
 
 // Sound-effect search through Freesound. The API key lives in the worker (secret FREESOUND_KEY), never in the page.
@@ -107,8 +255,13 @@ export default {
     const self = new URL(req.url);
     // cross-origin-resource-policy on every response, not just documents: a redirect in the middle
     // of a navigation is checked too, and without it Chrome refuses the whole chain in a Copper tab.
-    const cors = { 'access-control-allow-origin': '*', 'cross-origin-resource-policy': 'cross-origin' };
+    // Embedder policy belongs here too: Copper's own pages are cross-origin isolated, and a frame
+    // without it is refused outright, so every error notice (403, 502, "could not reach") showed up
+    // as an empty blocked frame that never finished loading instead of the reason.
+    const cors = { 'access-control-allow-origin': '*', 'cross-origin-resource-policy': 'cross-origin',
+      'cross-origin-embedder-policy': 'credentialless' };
     const raw = self.searchParams.get('url');
+    if (self.pathname === '/search') return searchRoute(req, self, ctx);
     if (self.pathname === '/wm') return watchmode(self, req, env || {}, ctx);
     if (self.pathname === '/snd') return sounds(self, req, env || {}, ctx);
     if (!raw) {

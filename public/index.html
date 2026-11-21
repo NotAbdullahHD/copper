@@ -72,7 +72,8 @@
     <button class="ib" id="nav-back" title="Back (Alt+←)">←</button><button class="ib" id="nav-fwd" title="Forward (Alt+→)">→</button>
     <button class="ib" id="reload" title="Reload">↻</button>
     <input id="url" spellcheck="false" aria-label="Address">
-    <select id="eng" title="Proxy engine"><option value="auto">Auto</option><option value="lite">Lite</option><option value="scramjet">Scramjet</option><option value="uv">Ultraviolet</option><option value="direct">Direct</option></select>
+    <span id="eng-used" class="eng-used" title=""></span>
+    <select id="eng" title="Proxy engine"><option value="auto">Fast</option><option value="lite">Lite</option><option value="scramjet">Scramjet v2</option><option value="uv">Ultraviolet</option><option value="direct">Direct</option></select>
     <button class="ib" id="ext" title="Open in new tab">↗</button>
   </div>
   <div id="load"></div>
@@ -99,13 +100,13 @@
   <div class="set"><span>copper</span><span class="seg" id="s-pat"><button data-s="auto">auto</button><button data-s="0">fresh</button><button data-s="1">exposed</button><button data-s="2">weathered</button><button data-s="3">oxidized</button></span></div>
   <div class="set"><span>wallpaper</span><span class="seg" id="s-wall"><button data-v="none">none</button><button data-v="night">night</button><button data-v="cave">cave</button><button data-v="desert">desert</button></span></div>
   </div>
-  <div class="sp" data-p="proxy"><div class="set"><span>engine</span><select id="s-eng"><option value="auto">Auto</option><option value="lite">Lite</option><option value="scramjet">Scramjet</option><option value="uv">Ultraviolet</option><option value="direct">Direct</option></select></div>
+  <div class="sp" data-p="proxy"><div class="set"><span>engine</span><select id="s-eng"><option value="auto">Fast (Lite)</option><option value="lite">Lite</option><option value="scramjet">Scramjet v2</option><option value="uv">Ultraviolet</option><option value="direct">Direct</option></select></div>
   <div class="set"><span>lite worker</span><span id="s-lite" class="status">…</span></div>
   <div class="set"><span>wisp server</span><input id="s-wisp" placeholder="wss://your-server.example/wisp/" spellcheck="false"></div>
   <div class="set"><span>lite worker</span><input id="s-liteurl" placeholder="https://your-worker.workers.dev" spellcheck="false"></div>
   <div class="set"><span>custom servers</span><span class="seg"><button id="s-pxreset">use the defaults</button></span></div>
   <p class="hint">Run your own? Paste its address here. A Wisp server must be wss:// on https sites. Your Lite Worker's ALLOWED list needs this site's address. Takes effect after a reload.</p>
-  <p class="hint">Auto tries Scramjet first and falls back to Lite. Direct loads sites without a proxy, so many will refuse.</p></div>
+  <p class="hint">Fast opens pages through the Lite worker — one round trip, no engine to start. Scramjet and Ultraviolet need the full engine host (node/server.js), so they are greyed out on a static deployment. Direct loads sites without a proxy, so many will refuse.</p></div>
   <div class="sp" data-p="cloaking"><div class="set"><span>tab cloak</span><select id="s-cloak"><option value="off">off</option><option value="docs">Google Docs</option><option value="class">Classroom</option><option value="drive">Drive</option><option value="cal">Calendar</option><option value="custom">custom…</option></select></div>
   <div class="set" id="cloak-custom" hidden><input id="cc-t" placeholder="tab title"><input id="cc-i" placeholder="icon: a site like docs.google.com, or an image link"></div>
   <div class="set"><span>cloak when</span><span class="seg" id="s-cmode"><button data-v="always">always</button><button data-v="away">I switch tabs</button></span></div></div>
@@ -118,6 +119,10 @@
   </div></div></dialog>
 <dialog id="nt" class="wide"><div class="dh"><h3>notes</h3><button class="ib" id="nx">×</button></div>
   <textarea id="nta" placeholder="Jot something down…" spellcheck="false"></textarea><p class="hs">saved in this browser</p></dialog>
+<section id="sr"><div class="mg-bar lbar"><button class="ib" id="sr-back" title="Back (Esc)">←</button><h3 id="sr-h">search</h3>
+  <input id="sr-q" placeholder="search the web" spellcheck="false">
+  <span class="seg" id="sr-eng"><button data-e="ddg">ddg</button><button data-e="bing" class="on">bing</button><button data-e="brave">brave</button><button data-e="google">google</button></span></div>
+  <div id="srbody"></div></section>
 <section id="gp"><div class="mg-bar lbar"><button class="ib" id="gp-back" title="Back (Esc)">←</button><h3>games</h3><input id="gp-q" placeholder="search games" spellcheck="false"></div>
   <div id="gpbody"><div class="seg gp-cats" id="gp-cats"></div><div class="mg-grid g-grid" id="gl"></div>
    <p class="mg-credit">game catalog from OnlineGames.io · extra games from community web ports</p></div>
@@ -157,6 +162,7 @@
 <script src="js/app.js"></script>
 <script src="js/proxy.js"></script>
 <script src="js/tabs.js"></script>
+<script src="js/search.js"></script>
 <script src="js/extras.js"></script>
 <script src="js/extras2.js"></script>
 <script src="js/cloak.js"></script>

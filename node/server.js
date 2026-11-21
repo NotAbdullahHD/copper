@@ -40,10 +40,20 @@ app.use('/uv', express.static(uvPath));
 app.use('/baremux', express.static(baremuxPath));
 app.use('/libcurl', express.static(nm('@mercuryworkshop/libcurl-transport/dist')));
 
+// The deployed site is served with single-page-app fallback, so /home and /movies/... answer with
+// index.html. Locally express only knew the files, and every deep link was "Cannot GET /home" —
+// the dev server behaving differently from production is how router bugs hide.
+app.use((req, res, next) => {
+  if (req.method !== 'GET' || /\.[a-z0-9]+$/i.test(req.path)) return next();
+  res.sendFile(join(root, 'public', 'index.html'));
+});
+
 const server = createServer(app);
 server.on('upgrade', (req, socket, head) => {
   if (req.url.startsWith('/wisp/')) wisp.routeRequest(req, socket, head);
   else socket.end();
 });
-const port = process.env.PORT || 8080;
+// PORT=0 is a real thing to pass a program ("pick any free port"), and taking it literally is how
+// this server ended up listening on a random port while its log still promised 8080.
+const asked = Number(process.env.PORT), port = Number.isFinite(asked) && asked > 0 ? asked : 8080;
 server.listen(port, () => console.log(`Copper on http://localhost:${port}`));

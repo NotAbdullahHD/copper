@@ -3,7 +3,14 @@ function normalize(s){s=s.trim();if(!s||/\s/.test(s))return null;
   if(/^https?:\/\//i.test(s))return s;
   if(/^(localhost|[\w-]+(\.[\w-]+)+)(:\d+)?(\/.*)?$/i.test(s))return 'https://'+s;return null}
 const SE={ddg:'https://duckduckgo.com/html/?q=',bing:'https://www.bing.com/search?q=',brave:'https://search.brave.com/search?q=',google:'https://www.google.com/search?q='};
-const toUrl=s=>normalize(s)||(SE[store.get('search','ddg')]||SE.ddg)+encodeURIComponent(s.trim());
+const liteOrigin=()=>window.COPPER_LITE?String(window.COPPER_LITE).replace(/\/$/,''):'';
+const toUrl=s=>normalize(s)||(SE[store.get('search','bing')]||SE.bing)+encodeURIComponent(s.trim());
+/* Sites remember the engine that last loaded them: a page that only works on Scramjet should not
+   be handed back to Lite on the next visit, and a page Lite opens instantly should not pay for a
+   heavy engine again. */
+const engmem=()=>store.get('engmem',{})||{};
+function engineFor(h){return engmem()[h]||store.get('engine',DEFAULT_ENGINE)}
+function rememberEngine(h,e){if(!h||!e||e==='search')return;const m=engmem();m[h]=e;const ks=Object.keys(m);if(ks.length>80)delete m[ks[0]];store.set('engmem',m)}
 
 const tabs=[],frames=$('#frames'),bar=$('#load'),golemSrc=$('#golem').src;let act=-1,hintT;
 const favSrc=t=>t.fixed?golemSrc:'https://www.google.com/s2/favicons?domain='+host(t.u)+'&sz=32';
@@ -90,18 +97,31 @@ function watchReloads(t){
 }
 function mkFrame(t){
   const f=document.createElement('iframe');f.referrerPolicy='no-referrer';f.allow='fullscreen';f.title='page';frames.append(f);
-  f.onload=()=>{watchReloads(t);hookPanic(f);syncSame(t);if(t===tabs[act]){bar.style.width='100%';setTimeout(()=>bar.style.width='0',350)}};
+  f.onload=()=>{t.busy=false;setReloadIcon(t);watchReloads(t);hookPanic(f);syncSame(t);if(t===tabs[act]){bar.style.width='100%';setTimeout(()=>bar.style.width='0',350)}};
   t.f=f;t.sj=null;
 }
+function setReloadIcon(t){const b=$('#reload');if(!b)return;const busy=!!(t&&t.busy);b.textContent=busy?'×':'↻';b.title=busy?'Stop loading':'Reload'}
 async function load(t,u){
   t.u=u;t.looped=false;t.loads=[];t.title=t.fixed||host(u);$('#url').value=u;addRecent(t);if(t.pinned)savePins();
   bar.style.width='0';requestAnimationFrame(()=>bar.style.width='70%');hint();drawTabs();
-  const e=t.pre||store.get('engine',DEFAULT_ENGINE);
+  const h=host(u),e=t.pre||engineFor(h);
   if(t.engine&&t.engine!==e){const nf=document.createElement('iframe');nf.referrerPolicy='no-referrer';nf.allow='fullscreen';nf.title='page';
     nf.className=t.f.className;nf.onload=t.f.onload;t.f.replaceWith(nf);t.f=nf;t.sj=null}
-  t.engine=e;track('site_open',{engine:e});
-  try{await Engines[e](t,u)}catch(err){console.error(err);toast(e+' failed ('+(err.message||err)+')');
-    if(window.COPPER_LITE&&e!=='lite'){t.engine='lite';return Engines.lite(t,u)}t.f.src=u}
+  t.engine=e;t.busy=true;setReloadIcon(t);paintEngine(t);track('site_open',{engine:e});
+  // A frame the browser refuses to render (a blocked or refused response) fires no load event at
+  // all, so the tab used to sit on a spinner forever. Say so and leave the reload button live.
+  clearTimeout(t.wd);
+  t.wd=setTimeout(()=>{if(t.busy){t.busy=false;setReloadIcon(t);if(t===tabs[act])toast('this site is not loading · reload, or switch engine',6000)}},14000);
+  try{await Engines[e](t,u);rememberEngine(h,e)}
+  catch(err){
+    console.error(err);t.busy=false;setReloadIcon(t);
+    if(e!=='lite'&&e!=='auto'&&window.COPPER_LITE){
+      toast(e+' could not start · using Lite',4000);t.engine='lite';t.busy=true;paintEngine(t);setReloadIcon(t);
+      try{await Engines.lite(t,u);rememberEngine(h,'lite');return}catch(err2){console.error(err2)}
+    }
+    toast(e+' failed ('+(err.message||err)+')');
+    if(window.COPPER_LITE&&e!=='lite'){t.engine='lite';return Engines.lite(t,u)}t.f.src=u
+  }
 }
 function newTab(u,pre,title){
   badge('first-tab');{const n=store.get('opened',0)+1;store.set('opened',n);if(n>=100)badge('tabs100')}
@@ -110,7 +130,7 @@ function newTab(u,pre,title){
 function select(i){
   const t=tabs[i];act=i;document.body.classList.add('viewing');
   if(!t.f){mkFrame(t);load(t,t.u)}
-  tabs.forEach((x,j)=>x.f&&x.f.classList.toggle('on',j===i));$('#url').value=t.u;drawTabs();
+  tabs.forEach((x,j)=>x.f&&x.f.classList.toggle('on',j===i));$('#url').value=t.u;paintEngine(t);setReloadIcon(t);drawTabs();
 }
 function closeTab(i){
   const t=tabs[i];t.f&&t.f.remove();tabs.splice(i,1);
@@ -120,10 +140,15 @@ function closeTab(i){
 function goHome(){document.body.classList.remove('viewing');act=-1;$('#hint').classList.remove('on');drawTabs()}
 const openUrl=newTab;
 
-$('#sf').onsubmit=e=>{e.preventDefault();if(q.value.trim()){newTab(toUrl(q.value));q.value='';q.blur()}};
+$('#sf').onsubmit=e=>{
+  e.preventDefault();const v=q.value.trim();if(!v)return;
+  const u=normalize(v);
+  if(u)newTab(u);else if(typeof srOpen==='function')srOpen(v);else newTab(toUrl(v));
+  q.value='';q.blur();
+};
 $('#home-btn').onclick=goHome;
 $('#eng').value=store.get('engine',DEFAULT_ENGINE);
-$('#eng').onchange=e=>{store.set('engine',e.target.value);toast('engine · '+e.target.value+' (applies on next load)')};
+$('#eng').onchange=e=>{store.set('engine',e.target.value);store.set('engmem',{});toast('engine · '+e.target.value+' (applies on next load)')};
 $('#back').onclick=()=>{let j=tabs.length-1;while(j>=0&&!tabs[j].f)j--;if(j>=0)select(j)};
 function navTab(dir){
   const t=tabs[act];if(!t||!t.f)return;
@@ -135,11 +160,20 @@ $('#nav-back').onclick=()=>navTab('back');$('#nav-fwd').onclick=()=>navTab('forw
 addEventListener('message',e=>{ // Lite pages report their real address and title
   const d=e.data&&e.data.copperPage;if(!d||!/^https?:\/\//.test(d.u||''))return;
   const t=tabs.find(x=>x.f&&x.f.contentWindow===e.source);if(!t)return;
-  t.u=d.u;if(d.t&&!t.fixed)t.title=String(d.t).slice(0,40);if(t.pinned)savePins();if(tabs[act]===t)$('#url').value=d.u;drawTabs();
+  t.u=d.u;if(d.t&&!t.fixed)t.title=String(d.t).slice(0,40);if(t.pinned)savePins();if(tabs[act]===t){$('#url').value=d.u;paintEngine(t)}drawTabs();
 });
-$('#reload').onclick=()=>act>=0&&load(tabs[act],tabs[act].u);
+$('#reload').onclick=()=>{
+  const t=tabs[act];if(!t)return;
+  if(t.busy){t.busy=false;try{t.f.src='about:blank'}catch{}setReloadIcon(t);toast('stopped');return}
+  load(t,t.u);
+};
 $('#ext').onclick=$('#hint-ext').onclick=()=>act>=0&&window.open(tabs[act].u,'_blank','noopener');
-$('#url').addEventListener('keydown',e=>{if(e.key==='Enter'&&act>=0)load(tabs[act],toUrl(e.target.value))});
+$('#url').addEventListener('keydown',e=>{
+  if(e.key!=='Enter'||act<0)return;
+  const v=e.target.value.trim();if(!v)return;
+  if(!normalize(v)&&typeof srOpen==='function'){srOpen(v);return}
+  load(tabs[act],toUrl(v));
+});
 addEventListener('keydown',e=>{
   const viewing=document.body.classList.contains('viewing');
   if(e.key==='Escape'&&viewing&&!$('#dlg').open)goHome();

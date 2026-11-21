@@ -127,14 +127,22 @@
   <span class="seg" id="mg-tabs"><button data-t="popular" class="on">popular</button><button data-t="latest">latest</button><button data-t="library">saved</button></span>
   <input id="mg-q" placeholder="search manga" spellcheck="false"></div><div id="mgbody"></div></section>
 <section id="mv"><div class="mg-bar"><button class="ib" id="mv-back" title="Back (Esc)">←</button><h3>movies</h3>
-  <input id="mv-q" placeholder="search movies" spellcheck="false"></div><div id="mvbody"></div><div id="mvp"><div class="mvp-bar"><button id="mvp-x" title="Close (Esc)" aria-label="Close player">✕</button><b id="mvp-t"></b><select id="mvp-sel" aria-label="Server"></select></div>
-  <div id="mvp-box"><video id="mvp-v" playsinline preload="metadata" crossorigin="anonymous"></video><div id="mvp-msg" class="mvp-msg">loading…</div>
+  <input id="mv-q" placeholder="search movies" spellcheck="false"></div><div id="mvbody"></div><div id="mvp"><div class="mvp-top"><button id="mvp-x" class="mvp-tb" title="Close (Esc)" aria-label="Close player"></button><b id="mvp-t"></b></div>
+  <div id="mvp-box"><video id="mvp-v" playsinline preload="metadata" crossorigin="anonymous"></video>
+   <div id="mvp-load" class="mvp-load"><span class="mvp-ring"></span><p class="mvp-note">finding sources…</p></div>
    <div id="mvp-ccl" class="mvp-ccl" hidden></div></div>
-  <div class="mvp-ctl"><button id="mvp-play" class="mvp-b" title="Play / pause (space)" aria-label="Play or pause">▶</button><span id="mvp-cur" class="mvp-t">0:00</span>
-    <input id="mvp-seek" class="mvp-seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek"><span id="mvp-dur" class="mvp-t">0:00</span>
-    <button id="mvp-mute" class="mvp-b" title="Mute (m)" aria-label="Mute">🔊</button><input id="mvp-vol" class="mvp-vol" type="range" min="0" max="100" value="100" aria-label="Volume">
-    <button id="mvp-cc" class="mvp-b" title="Subtitles (c)" aria-pressed="false">CC</button><button id="mvp-pip" class="mvp-b" title="Picture in picture" aria-label="Picture in picture">⧉</button>
-    <button id="mvp-fs" class="mvp-b" title="Fullscreen (f)" aria-label="Fullscreen">⛶</button></div></div></section>
+  <div class="mvp-ctl"><div class="mvp-seekrow"><span id="mvp-cur" class="mvp-time">0:00</span>
+    <input id="mvp-seek" class="mvp-seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek"><span id="mvp-dur" class="mvp-time">0:00</span></div>
+   <div class="mvp-row"><button id="mvp-play" class="mvp-ic" title="Play / pause (space)" aria-label="Play or pause"></button>
+    <button id="mvp-back" class="mvp-ic" title="Back 10 seconds (←)" aria-label="Back 10 seconds"></button>
+    <button id="mvp-fwd" class="mvp-ic" title="Forward 10 seconds (→)" aria-label="Forward 10 seconds"></button>
+    <div class="mvp-volw"><button id="mvp-mute" class="mvp-ic" title="Mute (m)" aria-label="Mute"></button>
+     <input id="mvp-vol" class="mvp-vol" type="range" min="0" max="100" value="100" aria-label="Volume"></div>
+    <span class="mvp-grow"></span>
+    <select id="mvp-sel" class="mvp-sel" aria-label="Server"></select>
+    <button id="mvp-cc" class="mvp-ic" title="Subtitles (c)" aria-pressed="false" aria-label="Subtitles">CC</button>
+    <button id="mvp-pip" class="mvp-ic" title="Picture in picture (p)" aria-label="Picture in picture"></button>
+    <button id="mvp-fs" class="mvp-ic" title="Fullscreen (f)" aria-label="Fullscreen"></button></div></div></div></section>
 <section id="ch"><div class="mg-bar"><button class="ib" id="ch-back" title="Back (Esc)">←</button><button class="mg-btn" id="ch-menu" title="Channels and DMs">menu</button><h3>chat</h3><span id="ch-counts" class="status"></span><button class="mg-btn" id="ch-members">members</button></div><div id="chbody"></div></section>
 <dialog id="bd" class="wide"><div class="dh"><h3>badges</h3><button class="ib" id="bdx">×</button></div><div id="bdl"></div></dialog>
 <div id="toast"></div>

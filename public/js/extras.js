@@ -10,13 +10,13 @@ function syncSettings(){
   paintTheme();paintAccent();
 }
 $('#open-set').onclick=()=>{syncSettings();st.showModal()};
-$('#s-eng').onchange=e=>{store.set('engine',e.target.value);store.set('engmem',{});$('#eng').value=e.target.value};
-// The results page is Copper's own, so switching the engine re-runs the query at once instead of
-// waiting for the next search.
+$('#s-eng').onchange=e=>{store.set('engine',e.target.value);store.set('engmem',{});toast('engine · '+e.target.value+' (applies on next load)')};
+// The results page is Copper's own, so switching the engine re-runs the open search at once
+// instead of waiting for the next one.
 $('#s-se').onchange=e=>{
   store.set('search',e.target.value);
-  const v=$('#sr-q').value.trim();
-  if($('#sr').classList.contains('on')&&v&&typeof srOpen==='function')srOpen(v,e.target.value);
+  const t=tabs.find(x=>x.q);
+  if(t&&t.q)load(t,SEARCH_MARK+encodeURIComponent(t.q));
 };
 $('#s-pat').onclick=e=>{const b=e.target.closest('button');if(!b)return;
   store.set('wax',b.dataset.s==='auto'?null:+b.dataset.s);paintPatina();syncSettings()};

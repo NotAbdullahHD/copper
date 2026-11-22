@@ -1,83 +1,92 @@
-/* Copper's own results page. A search engine in a frame is what made only Brave look like it
-   worked: Google answers a datacenter IP with a JavaScript wall and DuckDuckGo with an "anomaly"
-   page, so the frame showed that instead of results. The Lite worker asks the engine itself and
-   returns plain JSON; Copper draws the hits, so every engine in the picker returns real results,
-   instantly, with no captcha anywhere. If the worker is missing or older than /search, the engine's
-   own page opens as a tab, exactly as before. */
+/* Copper's own results page. It is a tab like any other — the tab strip and the address bar stay
+   where they are — but the document is drawn by Copper from the Lite worker's JSON instead of
+   being somebody else's results page in a frame. That is why every engine answers here: Google
+   and DuckDuckGo hand a framed page a captcha wall, but the worker asks them directly and the
+   hits arrive as data. The engine is chosen in settings; this page only reports which one answered
+   and when a different one had to fill in. */
 (function(){
-  const sec=$('#sr'),list=$('#srbody'),input=$('#sr-q'),eng=$('#sr-eng');
-  if(!sec||!list)return;
   const NAME={ddg:'DuckDuckGo',bing:'Bing',brave:'Brave',google:'Google'};
-  let q='',e=store.get('search','bing'),seq=0,last=null;
-
+  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const base=()=>window.COPPER_LITE?String(window.COPPER_LITE).replace(/\/$/,''):'';
-  const note=t=>{const p=document.createElement('p');p.className='sr-note';p.textContent=t;return p};
-  function markEng(){eng.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.e===e))}
-  function close(){sec.classList.remove('on')}
-  function enginePage(){
-    close();
-    newTab((SE[e]||SE.bing)+encodeURIComponent(q));
-    toast('opening '+NAME[e]+' in a tab');
+  const engine=()=>store.get('search','bing');
+
+  function theme(){
+    const cs=getComputedStyle(document.documentElement),v=(n,f)=>cs.getPropertyValue(n).trim()||f;
+    return {accent:v('--accent','#c98b5f'),bg:v('--bg','#0c0b0a'),text:v('--text','#e9e4de'),
+      muted:v('--muted','#8b8178'),surface:v('--surface','#171412')};
   }
-  function hit(r,i){
-    const a=document.createElement('a');a.className='sr-hit';a.href=r.url;a.rel='noreferrer';
-    const n=document.createElement('span');n.className='sr-n';n.textContent=i+1;
-    const u=document.createElement('span');u.className='sr-u';u.textContent=r.site||host(r.url);
-    const t=document.createElement('h4');t.textContent=r.title;
-    const p=document.createElement('p');p.textContent=r.snippet||'';
-    a.append(n,u,t,p);
-    a.onclick=ev=>{ev.preventDefault();close();newTab(r.url)};
-    return a;
+  function shell(title,body){
+    const c=theme();
+    return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title>
+<style>
+:root{color-scheme:dark}
+html,body{margin:0;background:${c.bg};color:${c.text}}
+body{font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:20px clamp(16px,4vw,42px) 60px;
+  -webkit-font-smoothing:antialiased}
+.f{font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:${c.muted};margin:0 0 16px}
+.f b{color:${c.text};font-weight:500}
+ol{list-style:none;margin:0;padding:0;counter-reset:n}
+li{position:relative;padding:11px 14px 13px 42px;border-radius:10px;counter-increment:n}
+li:hover{background:${c.surface}}
+li::before{content:counter(n);position:absolute;left:8px;top:13px;width:26px;text-align:right;
+  font:11px ui-monospace,Menlo,monospace;color:${c.muted};opacity:.6}
+.u{display:block;font:11px ui-monospace,Menlo,monospace;color:${c.muted}}
+a{display:inline-block;margin:3px 0 4px;color:${c.accent};text-decoration:none;font-size:17px;
+  font-weight:600;line-height:1.35}
+a:hover{text-decoration:underline}
+p{margin:0;color:${c.muted};font-size:13.5px;line-height:1.5}
+.empty{margin:10px 2px;font:13px ui-monospace,Menlo,monospace;color:${c.muted}}
+</style></head><body>${body}
+<script>
+document.addEventListener('click',e=>{const a=e.target.closest('a[data-u]');if(!a)return;
+  e.preventDefault();parent.postMessage({copperOpen:a.getAttribute('data-u')},'*')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')parent.postMessage({copperHome:1},'*')});
+</script>
+</body></html>`;
   }
-  function render(d){
-    list.textContent='';
-    if(d.note)list.append(note(d.note));
-    const rows=d.results||[];
-    if(!rows.length){
-      const why=(d.tried||[]).map(t=>NAME[t.e]+': '+t.why).join(' · ');
-      list.append(note('no results for “'+q+'”'+(why?' · '+why:'')));
-      const again=document.createElement('button');again.className='mg-btn';again.textContent='try '+NAME[e]+' directly';
-      again.onclick=enginePage;list.append(again);
+  const hits=rows=>'<ol>'+rows.map(r=>`<li><span class="u">${esc(r.site||r.url)}</span>`
+    +`<a data-u="${esc(r.url)}" href="${esc(r.url)}">${esc(r.title)}</a>`
+    +`<p>${esc(r.snippet)}</p></li>`).join('')+'</ol>';
+
+  function skeleton(q){
+    const c=theme();
+    return shell('search · '+q,`<p class="f" style="color:${c.muted}">searching ${esc(NAME[engine()])} for <b style="color:${c.text}">${esc(q)}</b>…</p>`);
+  }
+  async function ask(q){
+    if(!base())throw new Error('no Lite worker is set, so Copper cannot ask an engine');
+    const r=await fetch(base()+'/search?format=json&q='+encodeURIComponent(q)+'&e='+encodeURIComponent(engine()),{cache:'no-store'});
+    if(!r.ok||!/json/i.test(r.headers.get('content-type')||''))throw new Error('this Lite worker is older than its /search route');
+    return r.json();
+  }
+  /* the tab asks for this: draw the skeleton now, then the hits when the worker answers */
+  window.srDraw=async function(t,q){
+    t.f.srcdoc=skeleton(q);
+    let d;
+    try{d=await ask(q)}
+    catch(err){
+      console.warn('search:',err);
+      if(t.q!==q)return;
+      const url=(SE[engine()]||SE.bing)+encodeURIComponent(q);
+      t.f.srcdoc=shell('search · '+q,`<p class="f">${esc(err.message||err)}</p>`
+        +`<ol><li><span class="u">${esc(NAME[engine()])}</span><a data-u="${esc(url)}" href="${esc(url)}">open this search on ${esc(NAME[engine()])}</a><p>Copper could not ask the engine itself this time.</p></li></ol>`);
       return;
     }
-    const frag=document.createDocumentFragment();
-    rows.forEach((r,i)=>frag.append(hit(r,i)));
-    list.append(frag);
-  }
-  async function run(){
-    const my=++seq;markEng();
-    if(!base())return enginePage();
-    list.textContent='';list.append(note('asking '+NAME[e]+'…'));
-    try{
-      const r=await fetch(base()+'/search?format=json&q='+encodeURIComponent(q)+'&e='+encodeURIComponent(e),{cache:'no-store'});
-      if(!r.ok||!/json/i.test(r.headers.get('content-type')||''))throw new Error('this Lite worker predates /search');
-      const d=await r.json();
-      if(my!==seq)return;
-      last=d;render(d);
-    }catch(err){
-      if(my!==seq)return;
-      console.warn('search:',err);
-      enginePage();
+    if(t.q!==q)return;
+    const rows=d.results||[];
+    const note=d.note?`<p class="f">${esc(d.note)}</p>`:'';
+    const head=`<p class="f"><b>${rows.length}</b> result${rows.length===1?'':'s'} for `
+      +`<b>${esc(q)}</b> · ${esc(NAME[d.engine]||NAME[engine()])}</p>`;
+    if(!rows.length){
+      const why=(d.tried||[]).map(x=>NAME[x.e]+': '+x.why).join(' · ');
+      t.f.srcdoc=shell('search · '+q,head+`<p class="empty">nothing came back${why?' · '+esc(why):''}</p>`);
+      return;
     }
-  }
-  function open(v,engine){
-    if(engine){e=engine;store.set('search',e)}
-    q=(v==null?input.value:v).trim();if(!q)return;
-    document.querySelectorAll('section.on').forEach(s=>{if(s!==sec)s.classList.remove('on')});
-    if(document.body.classList.contains('viewing'))goHome();
-    sec.classList.add('on');input.value=q;
-    if(navigator.onLine!==false&&typeof track==='function')track('search',{engine:e});
-    run();
-  }
-  input.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();open(input.value)}});
-  $('#sr-back').onclick=()=>{close();goHome()};
-  eng.addEventListener('click',ev=>{
-    const b=ev.target.closest('button[data-e]');if(!b)return;
-    e=b.dataset.e;store.set('search',e);
-    if($('#s-se'))$('#s-se').value=e;
-    if(q)run();
-  });
-  document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&sec.classList.contains('on')&&!$('#st').open)close()});
-  markEng();
-  window.srOpen=open;
+    t.f.srcdoc=shell('search · '+q,note+head+hits(rows));
+  };
+  /* the home bar calls this */
+  window.srOpen=q=>{
+    q=String(q||'').trim();if(!q)return;
+    if(typeof openSearchTab==='function')openSearchTab(q);
+    else newTab((SE[engine()]||SE.bing)+encodeURIComponent(q));
+  };
 })();

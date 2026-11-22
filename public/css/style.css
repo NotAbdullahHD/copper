@@ -747,19 +747,3 @@ dialog#st::backdrop{background:#000;backdrop-filter:none;-webkit-backdrop-filter
 .eng-used{font:10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);opacity:.85;padding:0 2px;white-space:nowrap}
 .eng-used:empty{display:none}
 #eng option:disabled{color:var(--muted);opacity:.5}
-/* search results, drawn by Copper rather than framed from an engine */
-#sr{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;z-index:40}
-#sr.on{display:flex;animation:pageIn .18s ease both}
-body:has(#sr.on) .dock{display:none}
-#srbody{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:8px clamp(14px,4vw,34px) 70px}
-.sr-note{margin:14px 2px;font:12px var(--mono);color:var(--muted)}
-.sr-hit{display:block;position:relative;padding:12px 14px 14px 44px;border-radius:10px;text-decoration:none;color:inherit}
-.sr-hit:hover{background:var(--surface)}
-.sr-hit .sr-n{position:absolute;left:8px;top:14px;width:26px;text-align:right;font:11px var(--mono);color:var(--muted);opacity:.6}
-.sr-hit .sr-u{font:11px var(--mono);color:var(--muted)}
-.sr-hit h4{margin:3px 0 4px;font-size:17px;font-weight:600;color:var(--accent);line-height:1.35}
-.sr-hit:hover h4{text-decoration:underline}
-.sr-hit p{margin:0;font-size:13.5px;line-height:1.5;color:var(--muted)}
-#sr-eng{flex:none;margin-left:auto}
-#sr-q{flex:1;min-width:0}
-@media(max-width:620px){#sr .mg-bar{flex-wrap:wrap}#sr-eng{display:flex;order:9;width:100%;margin:8px 0 2px}#sr-eng button{flex:1}.sr-hit{padding-left:36px}.sr-hit .sr-n{left:2px}}

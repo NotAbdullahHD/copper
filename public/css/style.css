@@ -756,7 +756,15 @@ dialog#st::backdrop{background:#000;backdrop-filter:none;-webkit-backdrop-filter
   background:radial-gradient(120% 92% at 18% 0%,hsl(var(--h,24) 82% 58%/.34),transparent 62%)}
 .gcover::after{content:"";position:absolute;inset:0;opacity:.18;
   background-image:linear-gradient(#0000 0 50%,#000 50% 100%);background-size:100% 4px}
-.gcover i{position:relative;z-index:1;font-style:normal;font-size:32px;line-height:1;filter:drop-shadow(0 4px 10px #0009)}
+.gtile{position:relative;z-index:1;font:600 25px/1 var(--serif);letter-spacing:.06em;
+  color:color-mix(in srgb,var(--accent) 72%,#fff);text-shadow:0 3px 12px #000a}
+.gic{position:relative;z-index:1;display:none;max-width:74%;max-height:74%;object-fit:contain;border-radius:6px;
+  filter:drop-shadow(0 5px 12px #000a)}
+.gcover.has .gtile{display:none}
+.gcover.has .gic{display:block}
+.gcover.cover .gic{position:absolute;inset:0;max-width:none;max-height:none;width:100%;height:100%;
+  object-fit:cover;border-radius:0;filter:none}
+.gcover.cover::after{opacity:.09}
 .gbadge{position:absolute;z-index:2;top:6px;right:6px;padding:3px 6px;border-radius:4px;background:#0b0a09d9;
   border:1px solid color-mix(in srgb,var(--accent) 50%,var(--line));color:var(--accent);
   font:9.5px/1.2 var(--mono);letter-spacing:.07em;text-transform:uppercase}

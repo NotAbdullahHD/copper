@@ -1,17 +1,42 @@
 /* games page: a hand-picked library (games-data.js), a small player, and golem hop */
 const gp=$('#gp'),gl=$('#gl');let gcat='all',gq='';
-const GSRC={s:'https://rawcdn.githack.com/sslightly/Html5-games/main/',t:'https://rawcdn.githack.com/he-is-talha/html-css-javascript-games/main/'};
-const CATS=['all','arcade','action','puzzle','strategy','sandbox','sports','racing','classic','retro'];
-const BUILTIN={n:'Golem Hop',cat:'arcade',own:true,e:'🗿',h:24,k:'copper golem jump',run:startHop};
+const SD='https://rawcdn.githack.com/ShadowDevLabs/files/main/';        // game pages (the rawcid githack host serves text/html, with no notice page)
+const SDICON='https://cdn.jsdelivr.net/gh/ShadowDevLabs/files@main/';   // the logos living in each folder
+const CATS=['all','arcade','action','puzzle','strategy','sandbox','sports','racing','classic'];
+const BUILTIN={n:'Golem Hop',cat:'arcade',own:true,h:24,k:'copper golem jump',run:startHop};
 
 function library(){
-  const list=GAMES.map(([n,s,p,c,e,h,t,k])=>({n,u:GSRC[s]+p,cat:c,e,h,tag:t,k:k||''}));
-  return [BUILTIN].concat(list);
+  return [BUILTIN].concat(GAMES.map(([n,f,c,h,t,k,icon])=>{
+    const direct=/^https?:/.test(f);
+    return {n,folder:direct?'':f,u:direct?f:SD+f+'/index.html',cat:c,h,tag:t,k:k||'',icon:icon||''};
+  }));
+}
+function initials(n){
+  const words=n.replace(/[^\w\s.]/g,'').split(/[\s.]+/).filter(Boolean);
+  return (words.length>1?words[0][0]+words[1][0]:n.replace(/[^\w]/g,'').slice(0,2)).toUpperCase();
+}
+/* a folder keeps its own artwork under one of a few names; walk the list until one loads */
+function iconInto(art,g){
+  if(!g.folder||!g.icon)return; // folders with no artwork keep their initials tile instead of firing 404s
+  const tries=[g.icon,'logo.png','logo.jpg','icon.png', g.folder+'.png', g.folder+'.jpg','splash.png','favicon.png','favicon.ico']
+    .filter((v,i,a)=>v&&a.indexOf(v)===i);
+  const im=new Image();im.className='gic';im.alt='';im.loading='lazy';im.decoding='async';im.referrerPolicy='no-referrer';
+  let at=0;
+  im.onload=()=>{
+    if(im.naturalWidth<2)return;
+    art.classList.add('has');
+    if(im.naturalWidth/im.naturalHeight>1.75)art.classList.add('cover'); // wide splash art fills the card
+  };
+  im.onerror=()=>{if(++at<tries.length)im.src=SDICON+g.folder+'/'+tries[at];else im.remove()};
+  im.src=SDICON+g.folder+'/'+tries[0];
+  art.append(im);
 }
 function card(g){
   const b=document.createElement('button');b.className='gcard';b.type='button';b.title=g.n;
   const art=document.createElement('div');art.className='gcover';art.style.setProperty('--h',g.h);
-  const ic=document.createElement('i');ic.textContent=g.e;ic.setAttribute('aria-hidden','true');art.append(ic);
+  const tile=document.createElement('span');tile.className='gtile';tile.setAttribute('aria-hidden','true');
+  tile.textContent=initials(g.n);art.append(tile);
+  iconInto(art,g);
   if(g.tag){const t=document.createElement('span');t.className='gbadge';t.textContent=g.tag;art.append(t)}
   const n=document.createElement('b');n.textContent=g.n;
   const s=document.createElement('small');s.textContent=g.own?'built in · by copper':g.cat;

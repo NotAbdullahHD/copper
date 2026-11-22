@@ -6,7 +6,7 @@ const PRIVATE = /^(localhost|.*\.local|.*\.internal|127\.|10\.|192\.168\.|169\.2
 const DROP = ['x-frame-options','content-security-policy','content-security-policy-report-only','set-cookie','cross-origin-opener-policy','cross-origin-embedder-policy','content-length','content-encoding','strict-transport-security','referrer-policy'];
 // Only these sites may use this proxy. Add your own domain here when you get one (no trailing slash).
 const ALLOWED = ['https://copper.gghh.workers.dev', 'https://copper-p08m.onrender.com'];
-const VERSION = 10; // bump when the browser side needs something new; Copper warns if your deployed copy is older
+const VERSION = 11; // bump when the browser side needs something new; Copper warns if your deployed copy is older
 const SKIP = /^(data:|javascript:|#|mailto:|tel:|blob:|about:)/i;
 
 // Every proxied site shares this worker's origin, so their cookies would land in one jar and
@@ -312,6 +312,9 @@ export default {
       .filter(c => c.startsWith(ck)).map(c => c.slice(ck.length)).join('; ');
     if (cookieIn) h.cookie = cookieIn;
     if (req.headers.get('range')) h.range = req.headers.get('range');
+    // Conditional requests. Without them the browser's cached copy is never revalidated, so every
+    // navigation downloaded the site's images and scripts again through the proxy.
+    for (const k of ['if-none-match', 'if-modified-since']) { const v = req.headers.get(k); if (v) h[k] = v; }
     const hasBody = !['GET', 'HEAD'].includes(req.method);
     if (hasBody && req.headers.get('content-type')) h['content-type'] = req.headers.get('content-type');
     let up;
@@ -360,7 +363,20 @@ export default {
                .replace(/@import\s+(['"])([^'"]+)\1/g, (m, q, u) => (abs(u) ? `@import ${q}${rw(u)}${q}` : m));
       return new Response(css, { status: up.status, headers: out });
     }
-    if (!type.includes('text/html')) return new Response(up.body, { status: up.status, headers: out });
+    if (!type.includes('text/html')) {
+      // The body is byte-for-byte the site's own, so its length belongs back: video and audio cannot
+      // seek, show a duration or buffer properly without it, and that is most of why players looked
+      // dead in here. Zstd/gzip stay stripped because fetch already handed us the decoded bytes.
+      // Only when the site sent no encoding: fetch hands back decoded bytes, so a length measured on
+      // compressed bytes would cut the body short.
+      const len = up.headers.get('content-encoding') ? null : up.headers.get('content-length');
+      if (len) out.set('content-length', len);
+      // Nothing was rewritten, so the browser may keep it. Without this, every visit paid the proxy
+      // for the same scripts, images and fonts, which is most of what made sites feel slow.
+      if (req.method === 'GET' && up.status === 200 && !setCookies.length && !out.get('cache-control'))
+        out.set('cache-control', 'private, max-age=600');
+      return new Response(up.body, { status: up.status, headers: out });
+    }
 
     out.set('cross-origin-embedder-policy', 'credentialless'); // lets Copper's isolated pages frame this
     const attr = (sel, name) => ({ sel, name, handler: { element(el) { const v = el.getAttribute(name); if (v) el.setAttribute(name, rw(v)); } } });
@@ -378,7 +394,8 @@ const say=()=>{if(parent!==window)parent.postMessage({copperPage:{u:T,t:document
 document.addEventListener('DOMContentLoaded',say);addEventListener('load',say);
 const ifd=Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype,'src');if(ifd&&ifd.set)Object.defineProperty(HTMLIFrameElement.prototype,'src',{get:ifd.get,set(v){ifd.set.call(this,v?R(v):v)},configurable:true});
 const sa=Element.prototype.setAttribute;Element.prototype.setAttribute=function(n,v){return sa.call(this,n,this instanceof HTMLIFrameElement&&n==='src'&&v?R(v):v)};
-['pushState','replaceState'].forEach(k=>{const o=history[k];history[k]=function(...a){try{return o.apply(this,a)}catch{}}});const go=u=>location.href=R(u);
+['pushState','replaceState'].forEach(k=>{const o=history[k];history[k]=function(s,t,u){try{return o.call(this,s,t,u==null?u:R(String(u)))}catch{try{return o.call(this,s,t)}catch{}}}});const go=u=>location.href=R(u);
+try{if(navigator.serviceWorker)navigator.serviceWorker.register=()=>Promise.reject(new Error('Copper: no service workers inside a proxied page'))}catch{}
 const dc=Object.getOwnPropertyDescriptor(Document.prototype,'cookie');
 if(dc&&dc.get&&dc.set)try{Object.defineProperty(document,'cookie',{configurable:true,
   get(){return (dc.get.call(document)||'').split(';').map(s=>s.trim()).filter(s=>s.startsWith(CK)).map(s=>s.slice(CK.length)).join('; ')},

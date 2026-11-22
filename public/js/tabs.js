@@ -11,6 +11,10 @@ const toUrl=s=>normalize(s)||(SE[store.get('search','bing')]||SE.bing)+encodeURI
 const engmem=()=>store.get('engmem',{})||{};
 function engineFor(h){return engmem()[h]||store.get('engine',DEFAULT_ENGINE)}
 function rememberEngine(h,e){if(!h||!e||e==='search')return;const m=engmem();m[h]=e;const ks=Object.keys(m);if(ks.length>80)delete m[ks[0]];store.set('engmem',m)}
+/* A page that never finished is the one case where retrying the same engine is pointless: the tab
+   remembers that and ↻ comes back on the other one instead of waiting out the same silence again. */
+const ENG_NAME={auto:'fast',lite:'lite',scramjet:'scramjet',uv:'ultraviolet',direct:'direct',search:'search'};
+const otherEngine=e=>(e==='lite'||e==='auto')?'scramjet':'lite';
 
 const tabs=[],frames=$('#frames'),bar=$('#load'),golemSrc=$('#golem').src;let act=-1,hintT;
 const favSrc=t=>t.fixed?golemSrc:'https://www.google.com/s2/favicons?domain='+host(t.u)+'&sz=32';
@@ -97,7 +101,7 @@ function watchReloads(t){
 }
 function mkFrame(t){
   const f=document.createElement('iframe');f.referrerPolicy='no-referrer';f.allow='fullscreen';f.title='page';frames.append(f);
-  f.onload=()=>{t.busy=false;setReloadIcon(t);watchReloads(t);hookPanic(f);syncSame(t);if(t===tabs[act]){bar.style.width='100%';setTimeout(()=>bar.style.width='0',350)}};
+  f.onload=()=>{t.busy=false;t.failed=false;setReloadIcon(t);watchReloads(t);hookPanic(f);syncSame(t);if(t===tabs[act]){bar.style.width='100%';setTimeout(()=>bar.style.width='0',350)}};
   t.f=f;t.sj=null;
 }
 function setReloadIcon(t){const b=$('#reload');if(!b)return;const busy=!!(t&&t.busy);b.textContent=busy?'×':'↻';b.title=busy?'Stop loading':'Reload'}
@@ -107,11 +111,15 @@ async function load(t,u){
   const h=host(u),e=t.pre||engineFor(h);
   if(t.engine&&t.engine!==e){const nf=document.createElement('iframe');nf.referrerPolicy='no-referrer';nf.allow='fullscreen';nf.title='page';
     nf.className=t.f.className;nf.onload=t.f.onload;t.f.replaceWith(nf);t.f=nf;t.sj=null}
-  t.engine=e;t.busy=true;setReloadIcon(t);paintEngine(t);track('site_open',{engine:e});
+  t.engine=e;t.busy=true;t.failed=false;setReloadIcon(t);paintEngine(t);track('site_open',{engine:e});
   // A frame the browser refuses to render (a blocked or refused response) fires no load event at
-  // all, so the tab used to sit on a spinner forever. Say so and leave the reload button live.
+  // all, so the tab used to sit on a spinner forever. Say so, and let ↻ bring the other engine.
   clearTimeout(t.wd);
-  t.wd=setTimeout(()=>{if(t.busy){t.busy=false;setReloadIcon(t);if(t===tabs[act])toast('this site is not loading · reload, or switch engine',6000)}},14000);
+  t.wd=setTimeout(()=>{
+    if(!t.busy)return;
+    t.busy=false;t.failed=true;setReloadIcon(t);
+    if(t===tabs[act])toast('not loading on '+ENG_NAME[e]+' · ↻ retries on '+ENG_NAME[otherEngine(e)],7000);
+  },14000);
   try{await Engines[e](t,u);rememberEngine(h,e)}
   catch(err){
     console.error(err);t.busy=false;setReloadIcon(t);
@@ -164,7 +172,11 @@ addEventListener('message',e=>{ // Lite pages report their real address and titl
 });
 $('#reload').onclick=()=>{
   const t=tabs[act];if(!t)return;
-  if(t.busy){t.busy=false;try{t.f.src='about:blank'}catch{}setReloadIcon(t);toast('stopped');return}
+  if(t.busy){t.busy=false;t.failed=false;try{t.f.src='about:blank'}catch{}setReloadIcon(t);toast('stopped');return}
+  if(t.failed){
+    const alt=otherEngine(t.engine||'lite');t.pre=alt;t.failed=false;
+    toast('trying '+ENG_NAME[alt]);load(t,t.u);return;
+  }
   load(t,t.u);
 };
 $('#ext').onclick=$('#hint-ext').onclick=()=>act>=0&&window.open(tabs[act].u,'_blank','noopener');

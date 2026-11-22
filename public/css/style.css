@@ -747,3 +747,28 @@ dialog#st::backdrop{background:#000;backdrop-filter:none;-webkit-backdrop-filter
 .eng-used{font:10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);opacity:.85;padding:0 2px;white-space:nowrap}
 .eng-used:empty{display:none}
 #eng option:disabled{color:var(--muted);opacity:.5}
+
+/* ---------- game library ---------- */
+.g-grid{grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:14px}
+.gcover{position:relative;width:100%;aspect-ratio:16/9;display:grid;place-items:center;overflow:hidden;
+  border:1px solid var(--line);border-radius:6px;background:linear-gradient(145deg,hsl(var(--h,24) 46% 26%),hsl(var(--h,24) 62% 8%))}
+.gcover::before{content:"";position:absolute;inset:0;
+  background:radial-gradient(120% 92% at 18% 0%,hsl(var(--h,24) 82% 58%/.34),transparent 62%)}
+.gcover::after{content:"";position:absolute;inset:0;opacity:.18;
+  background-image:linear-gradient(#0000 0 50%,#000 50% 100%);background-size:100% 4px}
+.gcover i{position:relative;z-index:1;font-style:normal;font-size:32px;line-height:1;filter:drop-shadow(0 4px 10px #0009)}
+.gbadge{position:absolute;z-index:2;top:6px;right:6px;padding:3px 6px;border-radius:4px;background:#0b0a09d9;
+  border:1px solid color-mix(in srgb,var(--accent) 50%,var(--line));color:var(--accent);
+  font:9.5px/1.2 var(--mono);letter-spacing:.07em;text-transform:uppercase}
+.gcard{padding:9px;gap:7px}
+.gcard b{font:600 15px/1.25 var(--serif);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.gcard small{font-size:10.5px;letter-spacing:.02em}
+.gp-empty{grid-column:1/-1;text-align:center;color:var(--muted);font:13px var(--mono);padding:46px 0}
+#gslot{position:relative}
+.gload{position:absolute;inset:0;z-index:2;display:grid;place-content:center;justify-items:center;gap:10px;
+  background:var(--bg);color:var(--muted);font:11.5px var(--mono);text-align:center;padding:20px}
+.gload b{font:600 20px var(--serif);color:var(--text)}
+.gload.gone{display:none}
+.gspin{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:gspin .7s linear infinite}
+@keyframes gspin{to{transform:rotate(1turn)}}
+@media(prefers-reduced-motion:reduce){.gspin{animation:none}}

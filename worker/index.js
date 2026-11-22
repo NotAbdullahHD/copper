@@ -6,7 +6,7 @@ const PRIVATE = /^(localhost|.*\.local|.*\.internal|127\.|10\.|192\.168\.|169\.2
 const DROP = ['x-frame-options','content-security-policy','content-security-policy-report-only','set-cookie','cross-origin-opener-policy','cross-origin-embedder-policy','content-length','content-encoding','strict-transport-security','referrer-policy'];
 // Only these sites may use this proxy. Add your own domain here when you get one (no trailing slash).
 const ALLOWED = ['https://copper.gghh.workers.dev', 'https://copper-p08m.onrender.com'];
-const VERSION = 11; // bump when the browser side needs something new; Copper warns if your deployed copy is older
+const VERSION = 12; // bump when the browser side needs something new; Copper warns if your deployed copy is older
 const SKIP = /^(data:|javascript:|#|mailto:|tel:|blob:|about:)/i;
 
 // Every proxied site shares this worker's origin, so their cookies would land in one jar and
@@ -84,8 +84,12 @@ async function braveSearch(q) {
   if (/Just a moment|Enable JavaScript/i.test(html) && !/search-snippet-title/.test(html)) throw new Error('brave wants JavaScript');
   const parts = html.split('class="title search-snippet-title'), out = [];
   for (let i = 1; i < parts.length; i++) {
-    const hrefs = [...parts[i - 1].matchAll(/href="(https?:\/\/[^"]+)"/g)];
-    const url = hrefs.length ? hrefs[hrefs.length - 1][1] : '';
+    // Brave serves some hits from its own cdn and wraps others in a redirect, so the first link that
+    // is not brave.com is the page the person actually wants.
+    const hrefs = [...parts[i - 1].matchAll(/href="(https?:\/\/[^"]+)"/g)].map(m => m[1].replace(/&amp;/g, '&'))
+      .filter(u => !/^https?:\/\/([a-z0-9-]+\.)*brave\.com\//i.test(u));
+    let url = hrefs.length ? hrefs[0] : '';
+    try { const rr = new URL(url); const t = rr.searchParams.get('u') || rr.searchParams.get('url'); if (t && /^https?:/i.test(t)) url = t; } catch {}
     const t = /title="([^"]*)"/.exec(parts[i]);
     const sn = /class="content[^"]*"[^>]*>([\s\S]*?)<\/div>/.exec(parts[i]);
     if (t && url) out.push({ title: plain(t[1]), url, snippet: sn ? plain(sn[1]) : '' });
@@ -162,6 +166,53 @@ main{max-width:820px;margin:0 auto;padding:16px 18px 60px}.note{color:#c9a27f;fo
 <script>document.addEventListener('click',e=>{const a=e.target.closest('a.r');if(a&&a.dataset.u){try{parent.postMessage({copperPage:{u:a.dataset.u,t:''}},'*')}catch{}}});</script>
 </body></html>`;
 }
+/* ---- manga ---------------------------------------------------------------
+   MangaDex sends no CORS headers to other sites, challenges requests that look like a browser coming
+   from a datacenter, and refuses its own images unless the referer is mangadex.org — which is what
+   the generic proxy sends, so the shelf filled with broken covers. These two routes are Copper's own
+   manga API: /mg?p=<api path> asks MangaDex server-side, /mg/img?u=<image url> fetches a cover or a
+   page with the referer it wants. Both are cached at the edge, and only mangadex hosts are reachable
+   through the image route. */
+const MG_HOST = /(^|\.)mangadex\.(org|network)$/i;
+const MG_PATH = /^\/(manga|chapter|at-home|cover)(\/|\?|$)/;
+async function mangaRoute(req, self, ctx) {
+  const cors = { 'access-control-allow-origin': '*', 'cross-origin-resource-policy': 'cross-origin' };
+  const json = o => new Response(JSON.stringify(o), { status: 400, headers: { ...cors, 'content-type': 'application/json' } });
+  if (!permitted(req, self)) return json({ error: 'blocked' });
+  const cache = caches.default;
+  if (self.pathname === '/mg') {
+    const p = self.searchParams.get('p') || '';
+    if (!MG_PATH.test(p)) return json({ error: 'unknown path' });
+    const key = new Request('https://manga.cache/' + encodeURIComponent(p));
+    const hit = await cache.match(key);
+    if (hit) return new Response(hit.body, { headers: { ...cors, 'content-type': 'application/json', 'cache-control': 'public, max-age=300' } });
+    let up;
+    try { up = await fetch('https://api.mangadex.org' + p, { headers: { 'user-agent': 'copper-lite/' + VERSION, accept: 'application/json' } }); }
+    catch { return new Response(JSON.stringify({ error: 'could not reach MangaDex' }), { status: 502, headers: { ...cors, 'content-type': 'application/json' } }); }
+    const body = await up.text();
+    const res = new Response(body, { status: up.status, headers: { ...cors, 'content-type': 'application/json', 'cache-control': up.ok ? 'public, max-age=300' : 'no-store' } });
+    if (up.ok) ctx.waitUntil(cache.put(key, res.clone()));
+    return res;
+  }
+  const raw = self.searchParams.get('u') || '';
+  let img; try { img = new URL(raw); } catch { return json({ error: 'bad url' }); }
+  if (!/^https?:$/.test(img.protocol) || !MG_HOST.test(img.hostname)) return new Response('only mangadex images', { status: 403, headers: cors });
+  const cover = /\/covers\//.test(img.pathname);
+  const key = new Request('https://manga.cache/img/' + encodeURIComponent(img.href));
+  const hit = await cache.match(key);
+  const cacheFor = cover ? 'public, max-age=2592000, immutable' : 'public, max-age=86400';
+  if (hit) return new Response(hit.body, { headers: { ...cors, 'content-type': hit.headers.get('content-type') || 'image/jpeg', 'cache-control': cacheFor } });
+  let up;
+  try {
+    up = await fetch(img.href, { headers: { 'user-agent': 'Mozilla/5.0 (compatible; copper-lite/' + VERSION + ')',
+      accept: 'image/avif,image/webp,image/*,*/*;q=0.8', referer: 'https://mangadex.org/' } });
+  } catch { return new Response('could not reach the image host', { status: 502, headers: cors }); }
+  const type = up.headers.get('content-type') || 'image/jpeg';
+  const res = new Response(up.body, { status: up.status, headers: { ...cors, 'content-type': type, 'cache-control': up.ok ? cacheFor : 'no-store' } });
+  if (up.ok && cover) ctx.waitUntil(cache.put(key, res.clone()));
+  return res;
+}
+
 async function searchRoute(req, self, ctx) {
   // cross-origin-embedder-policy is what lets Copper's isolated page frame this document at all;
   // without it Chrome refuses the frame with ERR_BLOCKED_BY_RESPONSE and the tab looks blank.
@@ -262,6 +313,7 @@ export default {
       'cross-origin-embedder-policy': 'credentialless' };
     const raw = self.searchParams.get('url');
     if (self.pathname === '/search') return searchRoute(req, self, ctx);
+    if (self.pathname === '/mg' || self.pathname === '/mg/img') return mangaRoute(req, self, ctx);
     if (self.pathname === '/wm') return watchmode(self, req, env || {}, ctx);
     if (self.pathname === '/snd') return sounds(self, req, env || {}, ctx);
     if (!raw) {

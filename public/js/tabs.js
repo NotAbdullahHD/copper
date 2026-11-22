@@ -184,6 +184,10 @@ $('#nav-back').onclick=()=>navTab('back');$('#nav-fwd').onclick=()=>navTab('forw
 addEventListener('message',e=>{ // Lite pages report their real address and title
   const raw=e.data||{};
   if(raw.copperHome){goHome();return}
+  if(raw.copperRaw){ // a real browser tab, outside the proxy
+    if(/^https?:\/\//.test(raw.copperRaw))window.open(raw.copperRaw,'_blank','noopener');
+    return;
+  }
   if(raw.copperOpen){
     const t=tabs.find(x=>x.f&&x.f.contentWindow===e.source);
     if(t&&/^https?:\/\//.test(raw.copperOpen))newTab(raw.copperOpen);

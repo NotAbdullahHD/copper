@@ -2,10 +2,19 @@
    (MangaDex sends no CORS headers to other sites and asks that images be proxied). */
 const mg=$('#mg'),mgb=$('#mgbody'),MD='https://api.mangadex.org',RATE='&contentRating[]=safe&contentRating[]=suggestive';
 const lite=u=>window.COPPER_LITE.replace(/\/$/,'')+'/?url='+encodeURIComponent(u);
+/* Copper's own manga endpoint on the Lite worker: it asks MangaDex with the headers the API wants and
+   fetches covers with the referer the image host wants, then caches both. Going through it is what
+   keeps the shelf from being a wall of broken covers. */
+const mgBase=()=>String(window.COPPER_LITE||'').replace(/\/$/,'');
+const mgImg=u=>mgBase()+'/mg/img?u='+encodeURIComponent(u);
 async function api(p,tries=4){
   if(!window.COPPER_LITE)throw new Error('set COPPER_LITE in js/config.js');
   for(let attempt=0;;attempt++){
-  let r;try{r=await fetch(lite(MD+p),{headers:{accept:'application/json'},redirect:'manual'})}catch{throw new Error('the proxy hit a snag — the Lite worker may be asleep.')}
+  let r;try{
+    r=await fetch(mgBase()+'/mg?p='+encodeURIComponent(p),{headers:{accept:'application/json'}});
+    // a worker deployed before /mg existed still answers through the generic proxy
+    if(r.status===404)r=await fetch(lite(MD+p),{headers:{accept:'application/json'},redirect:'manual'});
+  }catch{throw new Error('the proxy hit a snag — the Lite worker may be asleep.')}
   const bounced=r.type==='opaqueredirect'||r.status===0,text=bounced?'':await r.text();let d=null;if(!bounced)try{d=JSON.parse(text)}catch{}
   if(r.ok&&d&&!d.error)return d;
   // MangaDex challenges the worker's address every so often: the worker hands the challenge
@@ -26,7 +35,7 @@ const h=(t,p={},...k)=>{const e=document.createElement(t);
   e.append(...k.filter(x=>x!=null));return e};
 const mTitle=m=>{const t=m.attributes.title;return t.en||Object.values(t)[0]||'Untitled'};
 const cover=(m,sz=256)=>{const r=m.relationships.find(x=>x.type==='cover_art');
-  return r&&r.attributes?lite(`https://uploads.mangadex.org/covers/${m.id}/${r.attributes.fileName}.${sz}.jpg`):''};
+  return r&&r.attributes?mgImg(`https://uploads.mangadex.org/covers/${m.id}/${r.attributes.fileName}.${sz}.jpg`):''};
 function empty(t,retry,busy){
   t=/failed to fetch|networkerror|load failed/i.test(t)?"couldn't reach the server. check your connection and try again":t;
   const i=new Image();i.src=$('#golem').src;i.alt='';
@@ -95,7 +104,7 @@ async function read(i){
     const nav=()=>h('div',{class:'mg-nav'},h('button',{class:'mg-btn',onclick:()=>detail()},'chapters'),
       i>0?h('button',{class:'mg-btn',onclick:()=>read(i-1)},'← prev'):null,
       i<chs.length-1?h('button',{class:'mg-btn pri',onclick:()=>read(i+1)},'next →'):null);
-    mgb.replaceChildren(nav(),h('div',{class:'mg-read'},...d.chapter.dataSaver.map(f=>h('img',{class:'mg-page',src:lite(base+f),loading:'lazy',alt:''}))),nav(),credit());
+    mgb.replaceChildren(nav(),h('div',{class:'mg-read'},...d.chapter.dataSaver.map(f=>h('img',{class:'mg-page',src:mgImg(base+f),loading:'lazy',alt:''}))),nav(),credit());
     mgb.scrollTop=0;
   }catch(e){note(e.message)}
 }

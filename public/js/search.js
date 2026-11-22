@@ -9,6 +9,7 @@
   const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const base=()=>window.COPPER_LITE?String(window.COPPER_LITE).replace(/\/$/,''):'';
   const engine=()=>store.get('search','bing');
+  const hostOf=u=>{try{return new URL(u).hostname.replace(/^www\./,'')}catch{return String(u)}};
 
   function theme(){
     const cs=getComputedStyle(document.documentElement),v=(n,f)=>cs.getPropertyValue(n).trim()||f;
@@ -34,17 +35,20 @@ li::before{content:counter(n);position:absolute;left:8px;top:13px;width:26px;tex
 a{display:inline-block;margin:3px 0 4px;color:${c.accent};text-decoration:none;font-size:17px;
   font-weight:600;line-height:1.35}
 a:hover{text-decoration:underline}
+a.o{margin:0;font-size:12px;font-weight:400;text-decoration:underline;opacity:.85}
 p{margin:0;color:${c.muted};font-size:13.5px;line-height:1.5}
 .empty{margin:10px 2px;font:13px ui-monospace,Menlo,monospace;color:${c.muted}}
 </style></head><body>${body}
 <script>
-document.addEventListener('click',e=>{const a=e.target.closest('a[data-u]');if(!a)return;
+document.addEventListener('click',e=>{
+  const r=e.target.closest('a[data-raw]');if(r){e.preventDefault();parent.postMessage({copperRaw:r.getAttribute('data-raw')},'*');return}
+  const a=e.target.closest('a[data-u]');if(!a)return;
   e.preventDefault();parent.postMessage({copperOpen:a.getAttribute('data-u')},'*')});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')parent.postMessage({copperHome:1},'*')});
 </script>
 </body></html>`;
   }
-  const hits=rows=>'<ol>'+rows.map(r=>`<li><span class="u">${esc(r.site||r.url)}</span>`
+  const hits=rows=>'<ol>'+rows.map(r=>`<li><span class="u">${esc(r.site||hostOf(r.url))}</span>`
     +`<a data-u="${esc(r.url)}" href="${esc(r.url)}">${esc(r.title)}</a>`
     +`<p>${esc(r.snippet)}</p></li>`).join('')+'</ol>';
 
@@ -74,8 +78,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')parent.postMessage({
     if(t.q!==q)return;
     const rows=d.results||[];
     const note=d.note?`<p class="f">${esc(d.note)}</p>`:'';
+    // The list is Copper's, so a search can never show the engine's own page by accident; this is
+    // the way to the real thing: brave.com in a normal browser tab, outside every proxy.
+    const real=(SE[engine()]||SE.bing)+encodeURIComponent(q);
     const head=`<p class="f"><b>${rows.length}</b> result${rows.length===1?'':'s'} for `
-      +`<b>${esc(q)}</b> · ${esc(NAME[d.engine]||NAME[engine()])}</p>`;
+      +`<b>${esc(q)}</b> · ${esc(NAME[d.engine]||NAME[engine()])} `
+      +`<a class="o" data-raw="${esc(real)}" href="${esc(real)}">open on ${esc(NAME[engine()])} ↗</a></p>`;
     if(!rows.length){
       const why=(d.tried||[]).map(x=>NAME[x.e]+': '+x.why).join(' · ');
       t.f.srcdoc=shell('search · '+q,head+`<p class="empty">nothing came back${why?' · '+esc(why):''}</p>`);

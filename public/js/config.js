@@ -2,7 +2,11 @@
 window.COPPER_LITE = 'https://copperlite.zeoghost.workers.dev';
 
 // Google Analytics 4 Measurement ID, e.g. 'G-ABC123XYZ'. Leave empty to turn analytics off completely.
-window.COPPER_GA = 'G-37P1LM9FVV';
+window.COPPER_GA = 'G-5H7TYD1VQT';
+
+// Google Tag Manager container, e.g. 'GTM-ABC1234'. It loads with the same switch as analytics:
+// turning visits off in settings stops both this container and the GA4 tag above.
+window.COPPER_GTM = 'GTM-MVV4XNRT';
 
 // Your own movie API (the movies-api/ folder in this project). Set it to the deployed
 // origin, e.g. 'https://movies-api.example.workers.dev', and the shelf, its rows, search

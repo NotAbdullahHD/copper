@@ -1,0 +1,10 @@
+// The Lite worker is its own Worker, separate from the site: wrangler.jsonc uploads public/ as
+// assets, and this one answers /search and /?url=... for it. Deploy with
+//   npx wrangler deploy -c wrangler.lite.jsonc
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "copperlite",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-11-18",
+  "observability": { "enabled": true }
+}

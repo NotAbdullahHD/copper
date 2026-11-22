@@ -69,8 +69,16 @@ plain bucket plus a rewrite rule is fine.
 
 `worker/index.js` is a Cloudflare Worker that fetches a page, drops the headers
 that stop it being framed, and rewrites links so they keep flowing through the
-worker. No Wisp server, no Node. Deploy it, then put its address in
-`public/js/config.js`:
+worker. No Wisp server, no Node. It is its own Worker, so it has its own config:
+
+```
+npx wrangler deploy -c wrangler.lite.jsonc
+```
+
+No wrangler? Paste the whole of `worker/index.js` over the code in the
+dashboards' *Workers & Pages → copperlite → Edit code* and deploy. Either way,
+the address stays the same, so nothing else needs changing. Then put its address
+in `public/js/config.js` (only if you deploy it somewhere new):
 
 ```js
 window.COPPER_LITE = 'https://your-worker.workers.dev';

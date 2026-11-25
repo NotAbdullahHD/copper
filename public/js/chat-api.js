@@ -112,10 +112,23 @@ window.ChatAPI={
       .subscribe();
     return()=>sb.removeChannel(c);
   },
-  presence(me,cb){
+  presence(me,cb,meta){ // who is here right now, plus each person's short status. off.update({st}) changes yours
     const c=sb.channel('copper-online',{config:{presence:{key:me.id}}});
-    c.on('presence',{event:'sync'},()=>cb(Object.keys(c.presenceState()))).subscribe(async s=>{if(s==='SUBSCRIBED')await c.track({at:Date.now()})});
+    const read=()=>{const o={},st=c.presenceState();for(const k of Object.keys(st)){const m=st[k]&&st[k][st[k].length-1]||{};o[k]={st:String(m.st||'').slice(0,40)}}return o};
+    c.on('presence',{event:'sync'},()=>cb(read())).subscribe(async s=>{if(s==='SUBSCRIBED')await c.track({at:Date.now(),...(meta||{})})});
+    const off=()=>sb.removeChannel(c);off.update=m=>c.track({at:Date.now(),...m}).catch(()=>{});return off;
+  },
+  onAll(cb){ // every new channel message you are allowed to read (drives unread dots and @mentions)
+    const c=sb.channel('copper-all').on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},p=>{if(p.new&&p.new.id&&p.new.channel_id)cb(p.new)}).subscribe();
     return()=>sb.removeChannel(c);
+  },
+  async recent(){ // a light look at the latest messages, to work out what is unread
+    const d=await ok(sb.from('messages').select('channel_id,user_id,content,created_at').not('channel_id','is',null).order('created_at',{ascending:false}).limit(400));
+    return d||[];
+  },
+  typing(key,cb){ // "someone is typing" travels as a live signal only, nothing is stored
+    const c=sb.channel('typing-'+key,{config:{broadcast:{self:false}}}).on('broadcast',{event:'typing'},p=>{if(p.payload&&p.payload.id)cb(p.payload.id)}).subscribe();
+    return{send:()=>{c.send({type:'broadcast',event:'typing',payload:{id:uid}})},off:()=>sb.removeChannel(c)};
   },
 
   /* ----- friends + DMs ----- */

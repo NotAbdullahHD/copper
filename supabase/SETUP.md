@@ -1,3 +1,24 @@
+# Chat v4 (new look, no database change needed)
+
+Upload the changed files (`public/js/chat.js`, `public/js/chat-api.js`, `public/css/style.css`) and reload. That is all: v4 uses the tables you already have.
+
+What is new in the chat page
+- One sidebar like Discord: **friends** at the top, then the channel categories, then your **direct messages**, and your name + status at the bottom.
+- **Unread dots and @mention badges** on channels. A closed category still shows the channels that need you. Opening a chat after being away shows a red **NEW** line where you left off.
+- **@mentions**: type `@` and pick someone. Mentions highlight the message for the person mentioned and pop a toast if they are in another channel.
+- **Typing indicator** ("Api is typing…"), a **new messages ↓** pill when you are scrolled up, date dividers and a welcome header at the top of each channel.
+- **Status**: click your name at the bottom left. It shows under your name in the member list while you are online.
+- Light formatting in messages: `**bold**`, `*italic*`, `~~strike~~`, `` `code` ``, `||spoiler||` and `> quote`. Links still only work in staff channels.
+- Hover tools are icons now (react, reply, edit, delete, report). Staff get an owner / admin / mod tag next to their name.
+- The member list shows staff and special roles first, then everyone online, then offline. The people icon in the channel header hides it.
+
+Optional: fewer channels (`supabase/chat-v4-channels.sql`)
+Run it once in **SQL Editor** if you want the shorter list (rules, announcements, general, games, arcade, feedback, vip-lounge and the staff ones). It deletes the extra channels and their messages, and renames casino to arcade and suggestions to feedback. Read the comments at the top first. Skip it if you like your current channels.
+
+Note: `supabase/schema.sql` in this repo is the old v2 script. Your live database already has the later columns (avatar_url, banner_url, pronouns, gif_url), so do not re-run schema.sql.
+
+---
+
 # Chat setup v2 (Supabase, free plan)
 
 You already have a Supabase project and `public/js/config.local.js`. Keep both. This update only needs three things in the dashboard and one SQL run.

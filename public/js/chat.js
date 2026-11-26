@@ -8,31 +8,36 @@ const RANK={bot:0,member:1,og:2,vip:2,mod:3,admin:4,owner:5};
 const BOT='00000000-0000-0000-0000-00000000c0b0';
 const QUICK=['👍','😂','🔥','👀','🎉','💀','😮','🧡'];
 const RESERVED=['admin','mod','moderator','owner','copper','system','staff','support','everyone','here','helper','bot','copperbot'];
-const ROLE_GROUPS=[['owner','owner'],['admin','admins'],['mod','mods'],['vip','vip'],['og','og'],['member','members']];
-const PX={
-  crown:['#...#...#','##..#..##','#########','#########','.#######.'],
-  shield:['#######','#######','#######','#######','#######','.#####.','..###..','...#...'],
-  gem:['..###..','.#####.','#######','.#####.','..###..','...#...'],
-  flame:['...#...','..##...','..###..','.#####.','#######','#######','.#####.']};
-const BADGE={owner:['crown','#ffb21e'],admin:['shield','#ff5a4e'],mod:['shield','#3ecdb2'],vip:['gem','#a35cf6'],og:['flame','#ff7b2e']};
+const ROLE_LABEL={owner:'owner',admin:'admins',mod:'mods',vip:'vip',og:'og'};
+const BADGE={owner:['crown','#ffb21e'],admin:['shieldok','#ff5a4e'],mod:['shield','#3ecdb2'],vip:['gem','#a35cf6'],og:['flame','#ff7b2e']};
+/* icons: Lucide (lucide.dev, ISC licence), drawn on a 24 grid */
 const ICON={
-  dm:'<path d="M2 3h12v8H7l-3 2.5V11H2z"/>',
-  channels:'<path d="M6.5 2 5.5 14M10.5 2l-1 12M2.5 6h11.5M2 10h11.5"/>',
-  friends:'<circle cx="6" cy="5.5" r="2.5"/><path d="M1.5 13c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4"/><path d="M10.5 3.2a2.5 2.5 0 0 1 0 4.6M12 9.3c1.6.5 2.5 1.7 2.5 3.7"/>',
-  smile:'<circle cx="8" cy="8" r="6"/><path d="M5.5 9.5c.7 1 1.5 1.5 2.5 1.5s1.8-.5 2.5-1.5M6 6.5h.01M10 6.5h.01"/>',
-  send:'<path d="M14 2 7 9M14 2l-4.5 12L7 9 1.5 6.5z"/>',
-  search:'<circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/>',
-  hash:'<path d="M6.5 2 5.5 14M10.5 2l-1 12M2.5 6h11.5M2 10h11.5"/>',
-  mega:'<path d="M2.5 6.5v3h2.5l5 3.2V3.3L5 6.5zM12.5 6v4"/>',
-  lock:'<rect x="3.5" y="7" width="9" height="6.5" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/>',
-  reply:'<path d="M6.5 3 2.5 7l4 4M2.5 7h7a4 4 0 0 1 4 4v1.5"/>',
-  edit:'<path d="M2.5 13.5h3L13 6l-3-3-7.5 7.5zM9 4l3 3"/>',
-  trash:'<path d="M3 4.5h10M6 4.5V3h4v1.5M4.5 4.5l.6 8.5h5.8l.6-8.5"/>',
-  flag:'<path d="M3.5 14V2.5M3.5 3h8l-1.5 2.8 1.5 2.7h-8"/>',
-  back:'<path d="M10 3 5 8l5 5"/>',
-  react:'<circle cx="7" cy="8.5" r="5.2"/><path d="M5 10c.5.8 1.2 1.2 2 1.2s1.5-.4 2-1.2M5.5 7.3h.01M8.5 7.3h.01M12.5 1.8v3.4M10.8 3.5h3.4"/>',
-  gear:'<circle cx="8" cy="8" r="2.2"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4"/>'};
-const icon=(n,cls='ico')=>{const s=el('span',cls);s.innerHTML=`<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${ICON[n]}</svg>`;return s};
+  dm:'<path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" />',
+  channels:'<line x1="4" x2="20" y1="9" y2="9" /> <line x1="4" x2="20" y1="15" y2="15" /> <line x1="10" x2="8" y1="3" y2="21" /> <line x1="16" x2="14" y1="3" y2="21" />',
+  friends:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /> <path d="M16 3.128a4 4 0 0 1 0 7.744" /> <path d="M22 21v-2a4 4 0 0 0-3-3.87" /> <circle cx="9" cy="7" r="4" />',
+  smile:'<path d="M15 10V9" /> <path d="M16.472 15a6 6 0 01-8.943 0" /> <path d="M9 10V9" /> <circle cx="12" cy="12" r="10" />',
+  send:'<path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" /> <path d="m21.854 2.147-10.94 10.939" />',
+  search:'<path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" />',
+  hash:'<line x1="4" x2="20" y1="9" y2="9" /> <line x1="4" x2="20" y1="15" y2="15" /> <line x1="10" x2="8" y1="3" y2="21" /> <line x1="16" x2="14" y1="3" y2="21" />',
+  mega:'<path d="M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" /> <path d="M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14" /> <path d="M8 6v8" />',
+  lock:'<rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 10 0v4" />',
+  reply:'<path d="M20 18v-2a4 4 0 0 0-4-4H4" /> <path d="m9 17-5-5 5-5" />',
+  edit:'<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" />',
+  trash:'<path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />',
+  flag:'<path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528" />',
+  back:'<path d="m12 19-7-7 7-7" /> <path d="M19 12H5" />',
+  react:'<path d="M13.267 2.08a10 10 0 108.653 8.653" /> <path d="M15 10V9" /> <path d="M16 5h6" /> <path d="M16.472 15a6 6 0 01-8.943 0" /> <path d="M19 2v6" /> <path d="M9 10V9" />',
+  gear:'<path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" /> <circle cx="12" cy="12" r="3" />',
+  crown:'<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" /> <path d="M5 21h14" />',
+  shieldok:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /> <path d="m9 12 2 2 4-4" />',
+  shield:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />',
+  gem:'<path d="M10.5 3 8 9l4 13 4-13-2.5-6" /> <path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z" /> <path d="M2 9h20" />',
+  flame:'<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4" />',
+  user:'<circle cx="12" cy="8" r="5" /> <path d="M20 21a8 8 0 0 0-16 0" />',
+  out:'<path d="m16 17 5-5-5-5" /> <path d="M21 12H9" /> <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />',
+  x:'<path d="M18 6 6 18" /> <path d="m6 6 12 12" />',
+  plus:'<path d="M5 12h14" /> <path d="M12 5v14" />'};
+const icon=(n,cls='ico',px=16)=>{const s=el('span',cls);s.innerHTML=`<svg viewBox="0 0 24 24" width="${px}" height="${px}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[n]||''}</svg>`;return s};
 
 let me=null,cats=[],chans=[],people=new Map(),online=new Set(),pmeta={},friends=[],dms=[],cur=null,msgs=[],hasMore=false,seq=0;
 let unread=new Map(),mentions=new Map(),seen={},typers=new Map(),newAfter=null,newBelow=0,ment=null,lastTyping=0,offTyping=null,offAll=null;
@@ -51,11 +56,9 @@ function avatar(p,size=32){
   const a=AV.find(x=>x[0]===p.avatar)||AV[0],i=new Image();i.src=$('#golem').src;i.alt='';i.className='cav';
   i.style.cssText=`width:${size*.75}px;height:${size}px;filter:hue-rotate(${a[1]}deg) saturate(${a[2]})`;return i}
 function avatarDot(p,size=30){const w=el('span','pa');w.append(avatar(p,size));if(online.has(p.id)){w.append(el('i','pd'))}return w}
-function pxSvg(rows,color,px=2){const w=rows[0].length;return `<svg viewBox="0 0 ${w} ${rows.length}" width="${w*px}" height="${rows.length*px}" shape-rendering="crispEdges" fill="${color}">`+
-  rows.map((r,y)=>[...r].map((c,x)=>c==='#'?`<rect x="${x}" y="${y}" width="1" height="1"/>`:'').join('')).join('')+'</svg>'}
 function roleBadge(role){
   if(role==='bot'){const s=el('span','rbot','bot');s.title='bot';return s}
-  const b=BADGE[role];if(!b)return null;const s=el('span','rb');s.title=role;s.innerHTML=pxSvg(PX[b[0]],b[1]);return s}
+  const b=BADGE[role];if(!b)return null;const s=el('span','rb');s.title=role;s.style.color=b[1];s.append(icon(b[0],'rb-i',14));return s}
 const timeOf=iso=>{const d=new Date(iso),n=new Date(),t=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});return d.toDateString()===n.toDateString()?t:d.toLocaleDateString([],{month:'short',day:'numeric'})+' '+t};
 const snip=(t,n=80)=>{t=(t||'').replace(/\s+/g,' ').trim();return t.length>n?t.slice(0,n-1)+'…':t};
 const preview=m=>m.content?snip(m.content):m.gif_url?'GIF':'';
@@ -103,7 +106,7 @@ async function enter(first){
   try{await loadAll()}catch(e){started=false;return chb.replaceChildren(empty(e.message,boot))}
   layout();connect();
   go({t:'channel',c:chans.find(c=>c.name==='general')||chans.find(canSeeChan)||chans[0]});
-  if(first)openSettings('profile',true);
+  if(first)openAccountSettings(true);
 }
 async function resume(){ // coming back to the chat page after closing it
   try{await loadAll()}catch(e){return toast(e.message,3000)}
@@ -140,7 +143,7 @@ function connect(){
 function markRead(d){const k=d.user_a===me.id?'a_read_at':'b_read_at';d[k]=new Date().toISOString();ChatAPI.markDmRead(d.id).catch(()=>{});renderLeft()}
 
 /* ---------- sign in / sign up (nothing else on this page, everything else happens inside) ---------- */
-function showAuth(){
+function showAuth(target=chb,done){
   let mode='in';
   const box=el('div','setup auth');
   const draw=()=>{
@@ -166,7 +169,7 @@ function showAuth(){
       go.disabled=true;go.textContent='one sec…';
       try{me=up?await ChatAPI.signUp({username:u,password:p,email:m}):await ChatAPI.signIn({username:u,password:p});
         if(!me)throw new Error('could not load your account, try again');
-        people.set(me.id,me);enter(up)}
+        people.set(me.id,me);done?done(up):enter(up)}
       catch(x){err.textContent=x.message;go.disabled=false;go.textContent=up?'create account':'sign in'}};
     box.replaceChildren(el('h2','',up?'join Copper chat':'welcome back'),
       el('p','hint',up?'One account per person. You can make your avatar, banner and bio after you are in. Keep real names, schools and addresses out of chat.':'Sign in with your username and password.'),
@@ -174,7 +177,7 @@ function showAuth(){
       el('p','hint small',up?'Forgot your password later? Without an email, a staff member has to reset it for you.':'No account yet? Use the sign up tab.'));
     un.focus();
   };
-  draw();chb.replaceChildren(box);
+  draw();target.replaceChildren(box);
 }
 
 /* ---------- profile card (used in someone's popup and in the settings preview) ---------- */
@@ -204,90 +207,102 @@ async function cropImage(file,w,h,q=.86){
   return blob;
 }
 
-/* ---------- settings (like Discord: categories on the left) ---------- */
-function openSettings(section='profile',welcome=false){
-  const d=el('dialog','set'),nav=el('nav','set-nav'),body=el('div','set-body'),x=el('button','ib set-x','×');
-  const urls=[];x.onclick=()=>d.close();d.onclose=()=>{urls.forEach(u=>URL.revokeObjectURL(u));d.remove()};
-  const secs=[['profile','profile'],['account','my account']];
-  const draw=s=>{section=s;nav.querySelectorAll('.sn').forEach(b=>b.classList.toggle('on',b.dataset.k===s));body.scrollTop=0;
-    body.replaceChildren(el('h2','',s==='profile'?'profile':'my account'));(s==='profile'?drawProfile:drawAccount)(body)};
-  nav.append(el('h5','','user settings'));
-  secs.forEach(([k,t])=>{const b=el('button','sn',t);b.dataset.k=k;b.onclick=()=>draw(k);nav.append(b)});
-  nav.append(el('div','sp'));const out=el('button','sn danger','log out');out.onclick=signOut;nav.append(out);
-  d.append(nav,body,x);
-
-  function drawProfile(box){
-    const v={display_name:me.display_name,pronouns:me.pronouns||'',bio:me.bio||'',color:me.color,avatar:me.avatar,avatar_url:me.avatar_url||null,banner_url:me.banner_url||null};
-    const pend={avatar:null,banner:null};   // a new image (Blob) or 'remove'
-    if(welcome)box.append(el('p','hint','Welcome! Make it yours. Everything here is optional and you can change it any time.'));
-    const wrap=el('div','set-cols'),form=el('form','pf'),side=el('div','set-side'),pvBox=el('div');
-    const row=(label,node,hint)=>{const w=el('div','pf-row');w.append(el('span','',label),node);if(hint)w.append(el('small','pf-hint',hint));return w};
-    const dn=el('input');dn.value=v.display_name;dn.maxLength=24;dn.placeholder='what people see';
-    const pr=el('input');pr.value=v.pronouns;pr.maxLength=24;pr.placeholder='e.g. she/her, he/him, they/them';
-    const bio=el('textarea');bio.value=v.bio;bio.maxLength=190;bio.rows=3;bio.placeholder='a few words about you';
-    const cnt=el('small','pf-hint','');
-    const sw=el('div','swatches');COLORS.forEach(c=>{const b=el('button','sw');b.type='button';b.style.background=c;b.title=c;b.onclick=()=>{v.color=c;refresh()};sw.append(b)});
-    const av=el('div','swatches');AV.forEach(a=>{const b=el('button','sw av');b.type='button';b.title=a[0]+' golem';b.append(avatar({avatar:a[0]},26));b.onclick=()=>{v.avatar=a[0];refresh()};av.append(b)});
-    const pick=(kind,w,h,label)=>{const f=el('input');f.type='file';f.accept='image/png,image/jpeg,image/webp,image/gif';f.hidden=true;
-      f.onchange=async()=>{const file=f.files[0];f.value='';if(!file)return;
-        try{const blob=await cropImage(file,w,h);pend[kind]=blob;const u=URL.createObjectURL(blob);urls.push(u);v[kind+'_url']=u;refresh()}catch(e){toast(e.message,3000)}};
-      const up=el('button','mg-btn',label);up.type='button';up.onclick=()=>f.click();
-      const rm=el('button','mg-btn warn','remove');rm.type='button';rm.onclick=()=>{pend[kind]='remove';v[kind+'_url']=null;refresh()};
-      const r=el('div','up-row');r.append(up,rm,f);r.rm=rm;r.kind=kind;return r};
-    const avUp=pick('avatar',256,256,'upload avatar'),bnUp=pick('banner',960,320,'upload banner');
-    const err=el('p','pf-err'),save=el('button','mg-btn pri','save changes');save.type='submit';
-    form.append(row('display name',dn),row('pronouns',pr),row('bio',bio),cnt,row('name color',sw),
-      row('avatar',av,'Upload your own picture, or pick a golem. Uploads are cropped to a square.'),avUp,
-      row('banner',el('span'),'Wide pictures work best (cropped to 3:1).'),bnUp,err,save);
-    const refresh=()=>{
-      sw.querySelectorAll('.sw').forEach((b,i)=>b.classList.toggle('on',COLORS[i]===v.color));
-      av.querySelectorAll('.sw').forEach((b,i)=>b.classList.toggle('on',AV[i][0]===v.avatar&&!v.avatar_url));
-      avUp.rm.style.display=v.avatar_url?'':'none';bnUp.rm.style.display=v.banner_url?'':'none';
-      cnt.textContent=bio.value.length+'/190';
-      pvBox.replaceChildren(profileCard({...me,...v,display_name:dn.value.trim()||'your name',pronouns:pr.value.trim(),bio:bio.value.trim()},true));
-    };
-    [dn,pr,bio].forEach(i=>i.oninput=refresh);refresh();
-    form.onsubmit=async e=>{e.preventDefault();err.textContent='';
-      const name=dn.value.trim();if(!name)return err.textContent='pick a display name';
-      save.disabled=true;save.textContent='saving…';
-      try{
-        let au=me.avatar_url||null,bu=me.banner_url||null;const old=[];
-        if(pend.avatar instanceof Blob){old.push(au);au=await ChatAPI.uploadImage('avatars',pend.avatar)}else if(pend.avatar==='remove'){old.push(au);au=null}
-        if(pend.banner instanceof Blob){old.push(bu);bu=await ChatAPI.uploadImage('banners',pend.banner)}else if(pend.banner==='remove'){old.push(bu);bu=null}
-        me=await ChatAPI.updateProfile({display_name:name,pronouns:pr.value.trim(),bio:bio.value.trim(),color:v.color,avatar:v.avatar,avatar_url:au,banner_url:bu});
-        old.filter(Boolean).forEach(u=>ChatAPI.removeImage(u).catch(()=>{}));
-        people.set(me.id,me);welcome=false;renderLeft();renderMembers();renderMsgs();
-        pend.avatar=pend.banner=null;Object.assign(v,{avatar_url:me.avatar_url,banner_url:me.banner_url});toast('profile saved');refresh();
-      }catch(x){err.textContent=x.message}finally{save.disabled=false;save.textContent='save changes'}};
-    side.append(el('h5','','preview'),pvBox);wrap.append(form,side);box.append(wrap);
+/* ---------- your account lives in Settings > account (nothing separate inside chat) ---------- */
+let accUrls=[],accWelcome=false;
+function openAccountSettings(welcome=false){
+  accWelcome=welcome;
+  const ev=new MouseEvent('click',{bubbles:true});ev.keepPage=true;   // runs the normal settings open, and the router leaves the chat page open behind it
+  $('#open-set').dispatchEvent(ev);showPanel('account');
+}
+window.renderAccountPanel=box=>{box.replaceChildren(empty('loading…'));renderAccount(box)};
+async function renderAccount(box){
+  accUrls.forEach(u=>URL.revokeObjectURL(u));accUrls=[];
+  if(!ChatAPI.configured)return box.replaceChildren(empty("chat isn't switched on yet, so there are no accounts"));
+  if(!me){
+    try{me=await ChatAPI.start()}catch(e){return box.replaceChildren(empty(e.message,()=>renderAccount(box)))}
+    if(me)await refreshPeople().catch(()=>{});
   }
+  if(!me)return showAuth(box,up=>{
+    if(ch.classList.contains('on'))enter(false);else started=false;   // the chat page builds itself when it is opened
+    accWelcome=up;renderAccount(box)});
+  drawAccountPanel(box);
+}
+function drawAccountPanel(box){
+  const v={display_name:me.display_name,pronouns:me.pronouns||'',bio:me.bio||'',color:me.color,avatar:me.avatar,avatar_url:me.avatar_url||null,banner_url:me.banner_url||null};
+  const pend={avatar:null,banner:null};   // a new image (Blob) or 'remove'
+  const row=(label,hint,...ctl)=>{const r=el('div','set ac'),l=el('div','ac-l');l.append(el('b','',label));if(hint)l.append(el('small','',hint));const c=el('div','ac-c');c.append(...ctl);r.append(l,c);return r};
+  const pvBox=el('div','ac-pv'),form=el('form','ac-form');
+  const dn=el('input');dn.value=v.display_name;dn.maxLength=24;dn.placeholder='what people see';
+  const pr=el('input');pr.value=v.pronouns;pr.maxLength=24;pr.placeholder='she/her, he/him…';
+  const bio=el('textarea');bio.value=v.bio;bio.maxLength=190;bio.rows=3;bio.placeholder='a few words about you';
+  const cnt=el('small','ac-cnt','');
+  const sw=el('div','swatches');COLORS.forEach(c=>{const b=el('button','sw');b.type='button';b.style.background=c;b.title=c;b.onclick=()=>{v.color=c;refresh()};sw.append(b)});
+  const gl=el('div','swatches');AV.forEach(a=>{const b=el('button','sw av');b.type='button';b.title=a[0]+' golem';b.append(avatar({avatar:a[0]},26));b.onclick=()=>{v.avatar=a[0];v.avatar_url=null;pend.avatar=me.avatar_url?'remove':null;refresh()};gl.append(b)});
+  const pick=(kind,w,h)=>{const f=el('input');f.type='file';f.accept='image/png,image/jpeg,image/webp,image/gif';f.hidden=true;
+    f.onchange=async()=>{const file=f.files[0];f.value='';if(!file)return;
+      try{const blob=await cropImage(file,w,h);pend[kind]=blob;const u=URL.createObjectURL(blob);accUrls.push(u);v[kind+'_url']=u;refresh()}catch(e){toast(e.message,3000)}};
+    const up=el('button','mg-btn','upload');up.type='button';up.onclick=()=>f.click();
+    const rm=el('button','mg-btn','remove');rm.type='button';rm.onclick=()=>{pend[kind]='remove';v[kind+'_url']=null;refresh()};
+    const r=el('div','ac-btns');r.append(up,rm,f);r.rm=rm;return r};
+  const avUp=pick('avatar',256,256),bnUp=pick('banner',960,320);
+  const err=el('p','pf-err'),save=el('button','mg-btn pri','save changes');save.type='submit';
+  const bioRow=row('bio','A few words about you, up to 190 characters.');bioRow.classList.add('stack');bioRow.append(bio,cnt);
+  const avCtl=el('div','ac-col');avCtl.append(avUp,gl);
+  form.append(row('display name','Shown above your username.',dn),row('pronouns','Optional.',pr),bioRow,row('name color','Your name in chat.',sw),
+    row('profile picture','Cropped to a square. Or pick a golem.',avCtl),row('banner','Cropped to a wide 3:1 strip.',bnUp),el('div','ac-save'),);
+  form.lastChild.append(err,save);
+  const refresh=()=>{
+    sw.querySelectorAll('.sw').forEach((b,i)=>b.classList.toggle('on',COLORS[i]===v.color));
+    gl.querySelectorAll('.sw').forEach((b,i)=>b.classList.toggle('on',AV[i][0]===v.avatar&&!v.avatar_url));
+    avUp.rm.style.display=v.avatar_url?'':'none';bnUp.rm.style.display=v.banner_url?'':'none';
+    cnt.textContent=bio.value.length+'/190';
+    pvBox.replaceChildren(profileCard({...me,...v,display_name:dn.value.trim()||'your name',pronouns:pr.value.trim(),bio:bio.value.trim()},true));
+  };
+  [dn,pr,bio].forEach(i=>i.oninput=refresh);refresh();
+  form.onsubmit=async e=>{e.preventDefault();err.textContent='';
+    const name=dn.value.trim();if(!name)return err.textContent='pick a display name';
+    save.disabled=true;save.textContent='saving…';
+    try{
+      let au=me.avatar_url||null,bu=me.banner_url||null;const old=[];
+      if(pend.avatar instanceof Blob){old.push(au);au=await ChatAPI.uploadImage('avatars',pend.avatar)}else if(pend.avatar==='remove'){old.push(au);au=null}
+      if(pend.banner instanceof Blob){old.push(bu);bu=await ChatAPI.uploadImage('banners',pend.banner)}else if(pend.banner==='remove'){old.push(bu);bu=null}
+      me=await ChatAPI.updateProfile({display_name:name,pronouns:pr.value.trim(),bio:bio.value.trim(),color:v.color,avatar:v.avatar,avatar_url:au,banner_url:bu});
+      old.filter(Boolean).forEach(u=>ChatAPI.removeImage(u).catch(()=>{}));
+      people.set(me.id,me);accWelcome=false;
+      if(chb.querySelector('.cl-left')){renderLeft();renderMembers();renderMsgs()}
+      pend.avatar=pend.banner=null;Object.assign(v,{avatar_url:me.avatar_url,banner_url:me.banner_url});toast('profile saved');refresh();
+    }catch(x){err.textContent=x.message}finally{save.disabled=false;save.textContent='save changes'}};
 
-  function drawAccount(box){
-    const row=(label,...nodes)=>{const w=el('div','pf-row');w.append(el('span','',label),...nodes);return w};
-    const info=el('div','acct-info');info.append(avatar(me,44),Object.assign(el('div'),{}));info.lastChild.append(nameEl(me),el('small','','@'+me.username+' · '+me.role));
-    const em=el('input');em.type='email';em.placeholder='recovery email (optional)';em.autocomplete='email';
-    ChatAPI.myRecoveryEmail().then(e=>em.value=e).catch(()=>{});
-    const saveEm=el('button','mg-btn','save');saveEm.type='button';saveEm.onclick=async()=>{try{await ChatAPI.setRecoveryEmail(em.value.trim());toast('email saved')}catch(x){toast(x.message,3000)}};
-    const r1=el('div','acct-row');r1.append(em,saveEm);
-    const op=el('input');op.type='password';op.placeholder='current password';op.autocomplete='current-password';
-    const np=el('input');np.type='password';np.placeholder='new password (8+)';np.autocomplete='new-password';
-    const chg=el('button','mg-btn','change password');chg.type='button';chg.onclick=async()=>{
-      if(np.value.length<8)return toast('new password: at least 8 characters',2500);
-      try{await ChatAPI.changePassword(op.value,np.value);op.value=np.value='';toast('password changed')}catch(x){toast(x.message,3000)}};
-    const r2=el('div','acct-col');r2.append(op,np,chg);
-    const dz=el('div','danger-zone');dz.append(el('h4','','delete account'),el('p','hint','Removes your account, messages, friends, DMs and uploaded pictures. This cannot be undone.'));
-    const del=el('button','mg-btn warn','delete my account');del.type='button';
-    del.onclick=async()=>{if(!confirm('Delete your account, messages, friends and DMs? This cannot be undone.'))return;
-      try{await ChatAPI.deleteMe();location.reload()}catch(x){toast(x.message,3500)}};
-    dz.append(del);
-    box.append(info,row('recovery email',r1,el('small','pf-hint','Only you can see it. Staff reset passwords by hand until automatic email is set up.')),row('change password',r2),dz);
-  }
-  draw(section);openDialog(d);
+  /* sign-in details */
+  const em=el('input');em.type='email';em.placeholder='you@example.com';em.autocomplete='email';
+  ChatAPI.myRecoveryEmail().then(e=>em.value=e).catch(()=>{});
+  const saveEm=el('button','mg-btn','save');saveEm.type='button';saveEm.onclick=async()=>{try{await ChatAPI.setRecoveryEmail(em.value.trim());toast('email saved')}catch(x){toast(x.message,3000)}};
+  const emC=el('div','ac-btns');emC.append(em,saveEm);
+  const op=el('input');op.type='password';op.placeholder='current password';op.autocomplete='current-password';
+  const np=el('input');np.type='password';np.placeholder='new password (8+ characters)';np.autocomplete='new-password';
+  const chg=el('button','mg-btn','change password');chg.type='button';chg.onclick=async()=>{
+    if(np.value.length<8)return toast('new password: at least 8 characters',2500);
+    try{await ChatAPI.changePassword(op.value,np.value);op.value=np.value='';toast('password changed')}catch(x){toast(x.message,3000)}};
+  const pwC=el('div','ac-col');pwC.append(op,np,chg);
+  const out=el('button','mg-btn','log out');out.type='button';out.onclick=signOut;
+  const del=el('button','mg-btn warn','delete account');del.type='button';
+  del.onclick=async()=>{if(!confirm('Delete your account, messages, friends and DMs? This cannot be undone.'))return;
+    try{await ChatAPI.deleteMe();location.reload()}catch(x){toast(x.message,3500)}};
+  const acts=el('div','ac-btns');acts.append(out,del);
+
+  box.replaceChildren(
+    ...(accWelcome?[el('p','hint ac-welcome','Welcome to Copper chat! Make it yours. Everything here is optional and you can change it any time.')]:[]),
+    pvBox,form,
+    el('h4','ac-h','sign-in details'),
+    row('recovery email','Only you can see it. Used to get back in if you forget your password.',emC),
+    row('password','Change it any time.',pwC),
+    row('session','Deleting removes your account, messages, friends, DMs and pictures for good.',acts));
 }
 async function signOut(){
-  document.querySelectorAll('dialog[open]').forEach(d=>d.close());unsub();closePanel();
+  document.querySelectorAll('dialog[open]:not(#st)').forEach(d=>d.close());unsub();closePanel();
   try{await ChatAPI.signOut()}catch{}
   me=null;people.clear();friends=[];dms=[];cur=null;msgs=[];unread.clear();mentions.clear();seen={};pmeta={};started=true;showAuth();$('#ch-counts').textContent='';
+  const sp=$('#sp-account');if(sp&&$('#st').open)renderAccount(sp);
 }
 
 /* ---------- layout ---------- */
@@ -366,7 +381,7 @@ function openStatus(){
   const chips=el('div','st-chips');['playing games','studying','on a break','afk','building something','listening to music'].forEach(t=>{const c=el('button','mg-btn',t);c.type='button';c.onclick=()=>save(t);chips.append(c)});
   const row=el('div','st-row'),ok=el('button','mg-btn pri','save');ok.type='button';ok.onclick=()=>save(inp.value);
   const clr=el('button','mg-btn','clear');clr.type='button';clr.onclick=()=>save('');
-  const prof_=el('button','mg-btn','edit profile');prof_.type='button';prof_.onclick=()=>{d.close();openSettings('profile')};
+  const prof_=el('button','mg-btn','edit profile');prof_.type='button';prof_.onclick=()=>{d.close();openAccountSettings()};
   inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();save(inp.value)}};
   row.append(ok,clr,prof_);b.append(el('p','hint','Shown under your name in the member list while you are online. Everyone in chat can see it.'),inp,chips,row);
   d.append(b);openDialog(d);inp.focus();
@@ -382,7 +397,7 @@ function renderLeft(){
   s.replaceChildren(...parts);s.scrollTop=keep;
   const info=el('div','cl-meinfo'),line=el('div','cl-line');line.append(nameEl(me));const rb=roleBadge(me.role);if(rb)line.append(rb);
   info.append(line,el('small','st',myStatus()||'online'));
-  const gear=el('button','ib');gear.append(icon('gear'));gear.title='settings';gear.onclick=()=>openSettings('profile');
+  const gear=el('button','ib');gear.append(icon('gear'));gear.title='settings';gear.onclick=()=>openAccountSettings();
   const who=el('button','cl-who');who.append(avatarDot(me,34),info);who.onclick=openStatus;who.title='set your status';
   m.replaceChildren(who,gear);
 }
@@ -728,19 +743,26 @@ function gifPanel(grid,foot,input){
   load(true);
 }
 
-/* ---------- people on the right: staff and special roles first, then everyone else online / offline ---------- */
+/* ---------- people on the right: who is here now (staff first), then everyone who is away ---------- */
+let showOff=false;
 function renderMembers(){
   const box=bar('.cl-people');if(!box)return;
   const real=[...people.values()].filter(p=>p.role!=='bot');
-  const order=(a,b)=>(online.has(b.id)-online.has(a.id))||a.display_name.localeCompare(b.display_name);
-  const item=p=>{const b=el('button','cp'+(online.has(p.id)?'':' off')),t=el('div','cp-t'),l=el('div','cp-l');l.append(nameEl(p));const rb=roleBadge(p.role);if(rb)l.append(rb);t.append(l);
-    const st=online.has(p.id)&&pmeta[p.id]&&pmeta[p.id].st;if(st)t.append(el('small','',st));
+  const byRank=(a,b)=>(rank(b.role)-rank(a.role))||a.display_name.localeCompare(b.display_name);
+  const item=p=>{const here=online.has(p.id),b=el('button','cp'+(here?'':' off')),t=el('div','cp-t'),l=el('div','cp-l');l.append(nameEl(p));const rb=roleBadge(p.role);if(rb)l.append(rb);t.append(l);
+    const st=here&&pmeta[p.id]&&pmeta[p.id].st;if(st)t.append(el('small','',st));
     b.append(avatarDot(p,32),t);b.onclick=()=>profilePopup(p.id);return b};
-  const sec=(t,list)=>{if(!list.length)return null;const s=el('div','cp-sec');s.append(el('h5','',t+' — '+list.length),...list.slice(0,100).map(item));if(list.length>100)s.append(el('p','cl-none','+ '+(list.length-100)+' more'));return s};
-  const groups=ROLE_GROUPS.filter(([r])=>r!=='member').map(([r,label])=>sec(label,real.filter(p=>p.role===r).sort(order)));
-  const plain=real.filter(p=>p.role==='member').sort(order);
+  const sec=(t,list,more)=>{if(!list.length)return null;const s=el('div','cp-sec');s.append(el('h5','',t+' — '+list.length),...list.map(item));if(more)s.append(more);return s};
+  const here=real.filter(p=>online.has(p.id)).sort(byRank),away=real.filter(p=>!online.has(p.id)).sort(byRank);
+  const roles=Object.keys(ROLE_LABEL).map(r=>sec(ROLE_LABEL[r],here.filter(p=>p.role===r)));
+  const plain=here.filter(p=>!ROLE_LABEL[p.role]);
   const bots=[...people.values()].filter(p=>p.role==='bot');
-  box.replaceChildren(...[...groups,sec('online',plain.filter(p=>online.has(p.id))),sec('offline',plain.filter(p=>!online.has(p.id))),bots.length?sec('bot',bots):null].filter(Boolean));counts();
+  const LIM=30,shown=showOff?away:away.slice(0,LIM);let more=null;
+  if(away.length>LIM){more=el('button','cp-more',showOff?'show fewer':'show all '+away.length);more.onclick=()=>{showOff=!showOff;renderMembers()}}
+  const offSec=away.length?(()=>{const s=sec('offline',shown,more);s.querySelector('h5').textContent='offline — '+away.length;return s})():null;
+  box.replaceChildren(...[...roles,sec(roles.some(Boolean)?'online':'online',plain),bots.length?sec('bot',bots):null,offSec].filter(Boolean));
+  if(!here.length&&!bots.length&&!away.length)box.replaceChildren(el('p','cl-none','nobody here yet'));
+  counts();
 }
 
 /* ---------- friends page ---------- */
@@ -790,7 +812,7 @@ function profilePopup(id){
   const act=el('div','pp-act');
   const run=(fn,msg)=>async()=>{try{await fn();if(msg)toast(msg);d.close()}catch(e){toast(e.message,3000)}};
   const btn=(t,fn,cls)=>{const b=el('button','mg-btn '+(cls||''),t);b.onclick=fn;act.append(b);return b};
-  if(id===me.id)btn('edit profile',()=>{d.close();openSettings('profile')});
+  if(id===me.id)btn('edit profile',()=>{d.close();openAccountSettings()});
   else{
     if(p.role==='bot')btn('message',run(()=>openDmWith(id)),'pri');
     else{const r=rel(id);

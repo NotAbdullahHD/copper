@@ -1,9 +1,10 @@
 /* settings: one category at a time */
 let spanel='general';
 function showPanel(p){spanel=p;document.querySelectorAll('#stabs button').forEach(b=>b.classList.toggle('on',b.dataset.p===p));
-  document.querySelectorAll('.sp').forEach(s=>s.classList.toggle('on',s.dataset.p===p))}
+  document.querySelectorAll('.sp').forEach(s=>s.classList.toggle('on',s.dataset.p===p));
+  if(p==='account'&&window.renderAccountPanel)window.renderAccountPanel($('#sp-account'))}   // the account tab is drawn by chat.js
 $('#stabs').onclick=e=>{const b=e.target.closest('button');if(b)showPanel(b.dataset.p)};
-$('#open-set').addEventListener('click',()=>showPanel(spanel));
+$('#open-set').addEventListener('click',()=>showPanel('general'));   // settings always opens on general; the chat opens it on account
 const ccr=$('#cr-contact');if(ccr){ccr.textContent=window.COPPER_CONTACT||'';ccr.hidden=!window.COPPER_CONTACT}
 
 /* custom servers */

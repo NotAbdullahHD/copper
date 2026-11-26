@@ -6,7 +6,7 @@ const STEPS=[
   {s:'#golem',t:'this is the golem',x:'It slowly oxidizes the longer you use Copper. Click it to change its copper stage and keep it there.'},
   {s:'#streak',t:'your streak',x:'Visit every day to keep the flame lit. It changes color at 3, 10, 30, 100 and 200 days, ending in purple. Tap it to see the ladder.'},
   {s:'.dock',t:'more pages',x:'Games, manga, movies, chat and settings sit in the dock at the bottom. Each one has its own address; the wordmark on the left goes home.'},
-  {s:'#open-set',t:'set up cloak and panic',x:'Settings has six sections. Cloaking disguises the tab title and icon, and panic jumps to a page of your choice. Worth setting up now.'}
+  {s:'#open-set',t:'set up cloak and panic',x:'Settings has seven sections (account, general, appearance, cloak, panic, proxy and credit). Cloaking disguises the tab title and icon, and panic jumps to a page of your choice. Worth setting up now.'}
 ];
 let gi=-1,gEl=null;
 function gBuild(){

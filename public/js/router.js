@@ -2,7 +2,7 @@
    The pages already open themselves; this mirrors that into the address bar and back again. */
 const HOME = '/home';
 const SEC = { games: '#gp', manga: '#mg', movies: '#mv', chat: '#ch' };
-const PANEL = { general: 'general', appearance: 'appearance', proxy: 'proxy', cloaking: 'cloaking', panic: 'panic', credit: 'credit' };
+const PANEL = { account: 'account', general: 'general', appearance: 'appearance', proxy: 'proxy', cloaking: 'cloaking', panic: 'panic', credit: 'credit' };
 const secEls = () => Object.keys(SEC).map(n => $(SEC[n]));
 const openSec = () => Object.keys(SEC).find(n => $(SEC[n]).classList.contains('on'));
 
@@ -49,7 +49,7 @@ function openPath(p, push) {
   if ($('#st').open) $('#st').close();
   let out = p;
   if (name === 'settings') {
-    const panel = PANEL[sub] || 'appearance';
+    const panel = PANEL[sub] || 'general';
     showPanel(panel);
     $('#st').showModal();
     out = '/settings/' + (PANEL[sub] ? sub : 'general');
@@ -78,6 +78,7 @@ mo.observe($('#st'), { attributes: true, attributeFilter: ['open'] });
 
 /* the dock is one page at a time: clear the rest before a button opens its own page */
 $('#dock').addEventListener('click', e => {
+  if (e.keepPage) return; /* the chat opens settings over itself, so it must stay open */
   const b = e.target.closest('.dk, #open-home');
   if (!b) return;
   e.preventDefault();
@@ -95,7 +96,7 @@ $('#dock').addEventListener('click', e => {
 /* settings sections keep their own address too */
 $('#stabs').addEventListener('click', e => {
   const b = e.target.closest('button');
-  if (b) setPath('/settings/' + b.dataset.p, true);
+  if (b && !openSec()) setPath('/settings/' + b.dataset.p, true);   // over a page (the chat), the address stays on that page
 });
 
 addEventListener('popstate', () => openPath(location.pathname, false));

@@ -1,23 +1,24 @@
-# Chat v4 (new look, no database change needed)
+# Chat v5
 
-Upload the changed files (`public/js/chat.js`, `public/js/chat-api.js`, `public/css/style.css`) and reload. That is all: v4 uses the tables you already have.
+Files changed: `public/index.html`, `public/css/style.css`, `public/js/chat.js`, `public/js/settings.js`, `public/js/router.js`, `public/js/guide.js`, plus `supabase/chat-v4-channels.sql` and this file. Delete the stray file named `download` in the repo root (it is a .gitignore draft that ended up under the wrong name).
 
-What is new in the chat page
-- One sidebar like Discord: **friends** at the top, then the channel categories, then your **direct messages**, and your name + status at the bottom.
-- **Unread dots and @mention badges** on channels. A closed category still shows the channels that need you. Opening a chat after being away shows a red **NEW** line where you left off.
-- **@mentions**: type `@` and pick someone. Mentions highlight the message for the person mentioned and pop a toast if they are in another channel.
-- **Typing indicator** ("Api is typing…"), a **new messages ↓** pill when you are scrolled up, date dividers and a welcome header at the top of each channel.
-- **Status**: click your name at the bottom left. It shows under your name in the member list while you are online.
-- Light formatting in messages: `**bold**`, `*italic*`, `~~strike~~`, `` `code` ``, `||spoiler||` and `> quote`. Links still only work in staff channels.
-- Hover tools are icons now (react, reply, edit, delete, report). Staff get an owner / admin / mod tag next to their name.
-- The member list shows staff and special roles first, then everyone online, then offline. The people icon in the channel header hides it.
+1. **Run the channel script once** (Supabase > SQL Editor > New query > paste `supabase/chat-v4-channels.sql` > Run). It cuts the server down to rules, announcements, general, games, arcade, support (+ vip-lounge and the staff channels). It deletes the other channels and their messages. Without it the page works but you keep every old channel.
+2. Nothing else changes in the database.
 
-Optional: fewer channels (`supabase/chat-v4-channels.sql`)
-Run it once in **SQL Editor** if you want the shorter list (rules, announcements, general, games, arcade, feedback, vip-lounge and the staff ones). It deletes the extra channels and their messages, and renames casino to arcade and suggestions to feedback. Read the comments at the top first. Skip it if you like your current channels.
+What is in the chat
+- One sidebar: friends, channel categories, direct messages, and your name + status at the bottom.
+- Unread dots and @mention badges, a red NEW line where you left off, @mention suggestions while typing, typing indicator, date dividers.
+- Status: click your name at the bottom left. It shows under your name in the member list while you are online.
+- Light formatting: `**bold**`, `*italic*`, `~~strike~~`, `` `code` ``, `||spoiler||`, `> quote`. Links work only in staff channels.
+- Member list: staff first (owner, admins, mods, vip, og) among those online, then everyone else online, then offline.
+- Icons are Lucide.
+
+Profile and account now live in **Settings > account** (the same window as everything else). Opening Settings from the dock starts on General. Opening it from the chat (gear or your profile) starts on Account. If you are not signed in, the Account tab shows the sign in / sign up form.
 
 Note: `supabase/schema.sql` in this repo is the old v2 script. Your live database already has the later columns (avatar_url, banner_url, pronouns, gif_url), so do not re-run schema.sql.
 
 ---
+
 
 # Chat setup v2 (Supabase, free plan)
 

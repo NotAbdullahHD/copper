@@ -309,7 +309,7 @@ async function signOut(){
 function layout(){
   const left=el('aside','cl-left'),main=el('div','cl-main'),right=el('aside','cl-right');
   const back=el('button','ib cl-back');back.type='button';back.title='back to Copper';back.append(icon('back'));back.onclick=closeChat;
-  const tt=el('div','cl-title');tt.append(el('b','','Copper'));const cn=el('small','');cn.id='cl-counts';tt.append(cn);
+  const tt=el('div','cl-title');tt.append(el('b','','copper'));const cn=el('small','');cn.id='cl-counts';tt.append(cn);
   const top=el('div','cl-top');top.append(back,tt);
   left.append(top,el('div','cl-scroll'),el('div','cl-me'));
   const chat=el('div','cl-chat'),head=el('div','cl-head'),list=el('div','cmsgs'),jump=el('button','cl-jump','new messages ↓'),rep=el('div','cl-reply'),notice=el('div','cl-notice'),typ=el('div','cl-typing'),bb=el('div','cl-bar'),box=el('div','cl-box'),inp=el('textarea');

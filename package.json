@@ -5,7 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "node node/server.js"
+    "start": "node node/server.js",
+    "deploy:surge": "node node/surge.js"
   },
   "engines": {
     "node": ">=20"

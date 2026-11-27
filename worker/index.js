@@ -12,6 +12,7 @@ const ALLOWED = [
   'https://copper.pages.dev',          // cloudflare pages mirror
   'https://copper.netlify.app',        // netlify mirror
   'https://copper.vercel.app',         // vercel mirror
+  'https://copper-start.surge.sh',     // surge mirror (npm run deploy:surge)
 ];
 const VERSION = 12; // bump when the browser side needs something new; Copper warns if your deployed copy is older
 const SKIP = /^(data:|javascript:|#|mailto:|tel:|blob:|about:)/i;

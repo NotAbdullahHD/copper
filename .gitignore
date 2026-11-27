@@ -2,3 +2,4 @@ node_modules/
 .wrangler/
 .tmp*
 *.log
+public/200.html

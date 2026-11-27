@@ -113,7 +113,13 @@ need the Node server, so a mirror browses through Lite or direct, which is what
 npx wrangler pages deploy public --project-name copper   # copper.pages.dev
 npx netlify deploy --prod --dir public                   # copper.netlify.app
 npx vercel --prod                                        # copper.vercel.app
+npm run deploy:surge                                     # copper-start.surge.sh
 ```
+
+Surge has no rewrite config, so `node/surge.js` copies `index.html` to
+`200.html` for the upload — its fallback for any unknown path — and removes it
+again. The first run asks for an email and password and creates the account.
+Pick another domain with `npm run deploy:surge -- another.surge.sh`.
 
 Every mirror origin has to be in the Lite worker's `ALLOWED` list
 (`worker/index.js`) — the three above are, and anything with a generated name

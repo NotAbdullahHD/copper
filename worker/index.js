@@ -9,7 +9,7 @@ const DROP = ['x-frame-options','content-security-policy','content-security-poli
 const ALLOWED = [
   'https://copper.gghh.workers.dev',   // the main site
   'https://copper-p08m.onrender.com',  // render mirror
-  'https://copper.pages.dev',          // cloudflare pages mirror
+  'https://copper-start.pages.dev',    // cloudflare pages mirror (copper.pages.dev is taken)
   'https://copper.netlify.app',        // netlify mirror
   'https://copper.vercel.app',         // vercel mirror
   'https://copper-start.surge.sh',     // surge mirror (npm run deploy:surge)

@@ -110,7 +110,8 @@ need the Node server, so a mirror browses through Lite or direct, which is what
 `Fast` already picks.
 
 ```
-npx wrangler pages deploy public --project-name copper   # copper.pages.dev
+npx wrangler pages deploy public --project-name copper-start   # copper-start.pages.dev
+                                                               # (copper.pages.dev is taken)
 npx netlify deploy --prod --dir public                   # copper.netlify.app
 npx vercel --prod                                        # copper.vercel.app
 npm run deploy:surge                                     # copper-start.surge.sh

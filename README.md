@@ -121,6 +121,12 @@ Surge has no rewrite config, so `node/surge.js` copies `index.html` to
 again. The first run asks for an email and password and creates the account.
 Pick another domain with `npm run deploy:surge -- another.surge.sh`.
 
+Surge attaches a domain you already own for free, certificate included — it does
+not give you one. `npm run deploy:surge -- yourdomain.com` publishes straight
+away and prints the records to add (`www CNAME geo.surge.world`, or delegate the
+domain to `ns1`–`ns4.surge.world`). Check progress with
+`npx surge yourdomain.com status`.
+
 Every mirror origin has to be in the Lite worker's `ALLOWED` list
 (`worker/index.js`) — the three above are, and anything with a generated name
 (`copper-abc123.vercel.app`) must be added and the worker redeployed.

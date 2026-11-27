@@ -127,6 +127,12 @@ away and prints the records to add (`www CNAME geo.surge.world`, or delegate the
 domain to `ns1`–`ns4.surge.world`). Check progress with
 `npx surge yourdomain.com status`.
 
+Not every host will do. jsDelivr answers `.html` as `text/plain` with `nosniff`,
+so the browser prints the source instead of rendering it; it also serves from a
+path, which breaks `<base href="/">`, and `/games` is a 404 because there is no
+fallback. Any path-based host (jsDelivr, GitHub Pages project sites) needs the
+app made base-relative before it can live there.
+
 Every mirror origin has to be in the Lite worker's `ALLOWED` list
 (`worker/index.js`) — the three above are, and anything with a generated name
 (`copper-abc123.vercel.app`) must be added and the worker redeployed.

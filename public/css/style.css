@@ -423,8 +423,11 @@ kbd{font-size:11px;padding:2px 7px;border-radius:6px}
 .dk-brand{height:26px;padding:0 6px;margin-right:2px;border-radius:3px;color:var(--text);font-weight:500;transition:background var(--step)}
 .dk-brand:hover{background:#ffffff10}
 .dk-meta b{color:var(--accent);font-weight:500}
-.dk-txt{height:26px;padding:0 8px;border-radius:6px;color:var(--muted);font:11.5px var(--mono);white-space:nowrap}
+.dk-txt{height:26px;padding:0 8px;border-radius:6px;color:var(--muted);font:11.5px var(--mono);white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;border:0;background:none;cursor:pointer;text-decoration:none}
 .dk-txt:hover{background:#ffffff0f;color:var(--text)}
+/* The Discord mark is one square the size of the text buttons beside it, so the dock reads as one row. */
+.dk-ico{width:28px;padding:0;flex:none;margin-left:2px}
+.dk-ico svg{width:18px;height:18px;fill:currentColor;stroke:none;display:block}
 .dk-mid{display:flex;align-items:center;gap:5px;justify-self:center}
 .dk-right{justify-self:end;padding-right:4px}
 #clock{color:var(--text);font-variant-numeric:tabular-nums}

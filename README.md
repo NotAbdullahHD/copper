@@ -1,5 +1,7 @@
 # copper
 
+**1.1.0** — see [CHANGELOG.md](CHANGELOG.md) for what is in this release.
+
 A start page for a browser that opens on a blank tab. Black background, copper
 accent, a small golem standing on the search bar. It does the usual start-page
 things — search, shortcuts, recent sites — and it also has a proxy, so most
@@ -108,11 +110,13 @@ Wisp will not work over plain HTTP from an HTTPS page.
 | --- | --- |
 | `COPPER_LITE` | address of your Lite worker |
 | `COPPER_TMDB` | TMDB key for the movies page |
+| `COPPER_MOVIES_API` | your own movies api; when it answers, TMDB above is only the fallback |
 | `COPPER_GA` | GA4 measurement id; leave empty for no analytics |
+| `COPPER_GTM` | Tag Manager container; loads with the same switch as analytics |
 | `COPPER_CONTACT` | shown under settings → credit |
 
 The worker keeps its own secrets; nothing on these pages needs a key from you
-beyond `COPPER_TMDB` and the address of your Lite worker.
+beyond `COPPER_TMDB`, an optional movies api address, and your Lite worker.
 
 ## what it does not do
 
@@ -124,7 +128,8 @@ beyond `COPPER_TMDB` and the address of your Lite worker.
 
 ## credit
 
-Games catalogue from OnlineGames.io, extra games are community web ports. Manga
-data from MangaDex, movie data from TMDB, and films play through third-party
-embeds (VidLink, CineSrc, VidSrc and others), each credited on the credit page. The
-golem, the fonts and everything else are in this repo.
+Game pages and their artwork come from [ShadowDevLabs/files](https://github.com/ShadowDevLabs/files)
+(the 3kh0 game ports), served through githack and jsDelivr. Manga data from
+MangaDex, movie data from TMDB, and films play through our own movies api, with
+the credit page naming each source. The golem, the fonts and everything else are
+in this repo.

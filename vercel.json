@@ -1,12 +1,39 @@
-{ "outputDirectory": "public", "framework": null, "buildCommand": "",
+{
+  "outputDirectory": "public",
+  "framework": null,
+  "buildCommand": "",
   "rewrites": [
-    { "source": "/home", "destination": "/index.html" },
-    { "source": "/games", "destination": "/index.html" },
-    { "source": "/manga", "destination": "/index.html" },
-    { "source": "/movies", "destination": "/index.html" },
-    { "source": "/movies/movie/:id", "destination": "/index.html" },
-    { "source": "/sounds", "destination": "/index.html" },
-    { "source": "/chat", "destination": "/index.html" },
-    { "source": "/settings", "destination": "/index.html" },
-    { "source": "/settings/:panel", "destination": "/index.html" }
-  ] }
+    {
+      "source": "/home",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/games",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/manga",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/movies",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/movies/movie/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/chat",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/settings",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/settings/:panel",
+      "destination": "/index.html"
+    }
+  ]
+}

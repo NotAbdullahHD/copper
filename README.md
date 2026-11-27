@@ -133,3 +133,7 @@ Game pages and their artwork come from [ShadowDevLabs/files](https://github.com/
 MangaDex, movie data from TMDB, and films play through our own movies api, with
 the credit page naming each source. The golem, the fonts and everything else are
 in this repo.
+
+## licence
+
+MIT — see [LICENSE](LICENSE).

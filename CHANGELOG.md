@@ -15,8 +15,9 @@ The first release. Everything below is in the build that goes out.
 - Themes (system/light/dark), nine accents plus a custom colour, four wallpapers.
 
 ### browsing
-- Four ways to load a site: Fast (Lite worker), Lite, Scramjet v2, Ultraviolet,
-  or direct. Unready pages fall back to a second engine instead of dying.
+- Four engines behind the address bar: Lite (the default, shown as "fast"),
+  Scramjet v2, Ultraviolet, and direct. A tab that never finished remembers it, so
+  ↻ retries it on the other engine instead of waiting out the same silence.
 - Real addresses — `/games`, `/settings/general`, `/movies/movie/:id` — with back
   and forward. The dev server now behaves like the deployed SPA fallback.
 - Dock latency dot for the Lite worker, red when it stops answering.
@@ -24,8 +25,9 @@ The first release. Everything below is in the build that goes out.
   key, and a proxy section that points at your own worker or Wisp server.
 
 ### pages
-- **Games:** a hand-picked library of 46 games with each folder's real logo, plus
-  Golem Hop built in. Search, categories, fullscreen, open-in-tab fallback.
+- **Games:** a hand-picked library of 46 games, each card using its folder's real
+  logo where the folder ships one (16 keep an initials tile), plus Golem Hop built
+  in. Search, categories, fullscreen, open-in-tab fallback.
 - **Manga:** MangaDex popular/latest, search, a saved library and reading
   progress, with retries when MangaDex serves a challenge page.
 - **Movies:** films and shows, a shelf from our own movies api (TMDB as the

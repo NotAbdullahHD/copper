@@ -102,6 +102,30 @@ npm start
 Render, Railway, Fly or any box with a real port will do. Serve it over HTTPS;
 Wisp will not work over plain HTTP from an HTTPS page.
 
+### 4. spare addresses (optional)
+
+Free static hosts make spare links, which helps when a school or work filter
+blocks one domain. Each one is the start page only — Scramjet and Ultraviolet
+need the Node server, so a mirror browses through Lite or direct, which is what
+`Fast` already picks.
+
+```
+npx wrangler pages deploy public --project-name copper   # copper.pages.dev
+npx netlify deploy --prod --dir public                   # copper.netlify.app
+npx vercel --prod                                        # copper.vercel.app
+```
+
+Every mirror origin has to be in the Lite worker's `ALLOWED` list
+(`worker/index.js`) — the three above are, and anything with a generated name
+(`copper-abc123.vercel.app`) must be added and the worker redeployed.
+`public/_redirects` gives Pages and Netlify the same single-page fallback the
+Worker config has. GitHub Pages has no rewrites, so deep links there need a copy
+of `index.html` named `404.html`.
+
+A mirror is only as useful as the worker behind it: they all call the same Lite
+worker, so a filter that blocks `workers.dev` outright takes the proxy down on
+every one of them. A custom domain for the worker is the only cure for that.
+
 ## configuration
 
 `public/js/config.js` holds the things you might want to change:
